@@ -119,7 +119,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-SITE_ID = 2
+SITE_ID = 5
 
 LOGIN_URL = '/'
 
