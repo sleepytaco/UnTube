@@ -1,0 +1,11 @@
+/venv/
+/UnTube/client_secrets.json
+/UnTube/secrets.py
+/db.sqlite3
+/modules/t.json
+/modules/you.py
+/modules/youtube-api.py
+/modules/youtube-api-oauth.py
+/.idea/
+/apps/main/migrations/
+/apps/users/migrations/

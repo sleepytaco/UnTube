@@ -1,0 +1,40 @@
+{% load humanize %}
+
+
+<div class="list-group" id="video-checkboxes">
+  {% for video in videos %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+
+  {% if video.is_unavailable_on_yt %}
+    <a style="background-color: #E73927;" href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" class="list-group-item list-group-item-dark">
+            {{ video.video_position }}. {{ video.name }}
+        <span class="badge bg-secondary">{{ video.duration }}</span>
+    </a>
+  {% else %}
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.video_id }}" name="video-id">
+                </div>
+                  <div class="ms-4" style="max-width: 115px; max-height: 100px;">
+                      <img src="{% if video.thumbnail_url %}{{ video.thumbnail_url }}{% else %}https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg{% endif %}" class="img-fluid" alt="">
+                  </div>
+                    <div class="ms-4">
+                        <a href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" target="_blank">{{ video.video_position }}. {{ video.name }}</a> <br>
+                        <span class="badge bg-secondary">{{ video.duration }}</span>
+                        {% if video.has_cc %}<span class="badge bg-secondary">CC</span>{% endif %}
+                        {% if video.published_at %}<span class="badge bg-secondary">{{ video.published_at }}</span>{% endif %}
+                      {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
+
+                        {% if video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}<br>
+                    </div>
+            </div>
+                          <div>
+                          <a class="btn btn-sm btn-success" type="button" target="_blank" href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}">Open</a>
+
+                        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasBottom" hx-get="{% url 'video_details' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-details">Details</button>
+                          </div>
+
+  {% endif %}
+  {% endfor %}
+</li>
+</div>

@@ -1,0 +1,62 @@
+
+{% load crispy_forms_tags %}
+
+{% load socialaccount %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="/docs/4.0/assets/img/favicons/favicon.ico">
+
+    <title>UnTube</title>
+
+      <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="https://getbootstrap.com/docs/4.0/examples/cover/cover.css" rel="stylesheet">
+
+  </head>
+<body style="font-family: 'Fredoka One'">
+
+    <div class="cover-container d-flex h-100 p-3 mx-auto flex-column text-center">
+      <header class="masthead mb-auto">
+          {% for message in messages %}
+                  <div class="alert alert-success alert-success fade show" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+          {% endfor %}
+
+      </header>
+
+      <main role="main" class="inner cover">
+        <h1 class="cover-heading">UnTube</h1>
+        <p class="lead">UnTube is a simple Youtube playlist manager. Modify and keep track of your YouTube playlists with ease.</p>
+        <p class="lead">
+            <br>
+            <a class="btn btn-outline-danger" href="{% provider_login_url 'google' %}">Login with Google</a>
+
+        </p>
+      </main>
+
+      <footer class="mastfoot mt-auto">
+        <div class="inner">
+          <h6>Made with <span style="color: #e25555;">&hearts;</span> in Django</h6>
+        </div>
+      </footer>
+    </div>
+
+<!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://getbootstrap.com/docs/4.0/assets/js/vendor/popper.min.js"></script>
+    <script src="https://getbootstrap.com/docs/4.0/dist/js/bootstrap.min.js"></script>
+
+  </body>
+</html>

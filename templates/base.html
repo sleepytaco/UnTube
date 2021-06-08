@@ -1,0 +1,403 @@
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+        <meta name="generator" content="Hugo 0.83.1">
+        <title>UnTube</title>
+
+        <style type="text/css">
+            #btn-back-to-top {
+              position: fixed;
+              bottom: 20px;
+              right: 20px;
+              display: none;
+                z-index: 4;
+            }
+
+            .big-checkbox {width: 30px; height: 30px;}
+
+        </style>
+
+          <script src="https://unpkg.com/htmx.org@1.4.1"></script>
+        <script src="https://unpkg.com/htmx.org/dist/ext/class-tools.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+
+
+        <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
+
+        <script src="https://kit.fontawesome.com/5baac7e9b7.js" crossorigin="anonymous"></script>
+
+        <!-- Bootstrap core CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    </head>
+    <body class="bg-dark text-white"  style="font-family: 'Fredoka One'">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{% url 'home' %}"><h3>UnTube</h3></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="{% url 'home' %}">Dashboard</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'all_playlists' 'home' %}">Library</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Quick View
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'favorites' %}">Favorites</a></li>
+                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'watching' %}">Watching</a></li>
+                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'watching' %}">On Hold</a></li>
+                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'watching' %}">YouTube</a></li>
+                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'watching' %}">UnTube</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'all' %}">View all</a></li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'all_playlists' 'home' %}">Manage</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="offcanvas" href="#offcanvasExample" role="button" aria-controls="offcanvasExample">
+                        Settings </a>
+                        </li>
+                    </ul>
+
+
+                    <div class="navbar-nav justify-content-end">
+                        <input class="form-control me-lg-2 bg-dark mb-1" id="unTubeSearchBar" type="text" placeholder="Search UnTube">
+                                <button type="button" class="btn btn-primary visually-hidden" id="unTubeSearchBtn" data-bs-toggle="modal" data-bs-target="#unTubeSearchBarResultsModal">
+                                  Launches search model
+                                </button>
+                    </div>
+                    <a class="btn btn-outline-danger mb-1" href="{% url 'log_out' %}">
+                      Log out
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+        <div class="row">
+            <!--
+            <nav class="col-md-3 ms-sm-auto col-lg-2 px-md-4">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'all_playlists' 'home' %}">
+                              Library
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="#">
+                                Add a playlist
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                              Create a playlist
+                            </a>
+                        </li>
+                    </ul>
+
+
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                        <span>Top 3 Playlists</span>
+                        <a class="link-secondary" href="#collapseExample" aria-label="Add a new report" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        </a>
+                    </h6>
+                    <ul class="nav flex-column mb-2">
+                        <li class="nav-item">
+                        {% for pl in user_playlists|slice:"0:3" %}
+                            <a class="nav-link" href="{% url 'playlist' pl.playlist_id %}">
+                            {{ pl.name }}
+                            </a>
+                            {% if forloop.last %}
+                            {% endif %}
+                        {% empty %}
+                            <span class="nav-link link-secondary">
+                                None
+                            </span>
+                        {% endfor %}
+                        </li>
+                    </ul>
+
+                                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                        <span>Watching</span>
+
+                    </h6>
+
+                    <ul class="nav flex-column mb-2">
+                            <li class="nav-item">
+                            {% for pl in playlist_watching|slice:"0:3" %}
+                                <a class="nav-link" href="{% url 'playlist' pl.playlist_id %}">
+                                    <span data-feather="file-text"></span>
+                                    {{ pl.name }}
+                                </a>
+                            {% empty %}
+                                <span class="nav-link link-secondary">
+                                    None. Add some!
+                                </span>
+                            {% endfor %}
+                            </li>
+                    </ul>
+
+                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+                      <span>Logged in as <b>{{ user.username }}</b></span>
+                    </h6>
+                </div>
+            </nav>
+            -->
+            <!-- <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">-->
+            <main class="ms-lg-auto px-lg-5">
+    {% block content %}
+    {% endblock %}
+
+            <!-- Button trigger modal -->
+
+
+        <!-- Modal -->
+        <div class="modal fade bg-dark" id="unTubeSearchBarResultsModal" tabindex="-1" aria-labelledby="unTubeSearchBarResultsModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-xl modal-dialog-scrollable bg-dark">
+            <div class="modal-content bg-dark">
+              <div class="modal-body bg-dark">
+              <div id="untube-searchbar-results">
+                <input class="form-control me-lg-2 bg-dark text-white" id="unTubeSearchBar" type="text"
+                           name="search" placeholder="Search UnTube"
+                           hx-post="{% url 'search_UnTube' %}"
+                           hx-trigger="keyup changed delay:500ms"
+                           hx-target="#untube-searchbar-results"
+                       hx-include="[id='searchbar-radio-form']"
+                           hx-indicator=".htmx-indicator" autofocus>
+                  <br>
+                  <div id="searchbar-radio-form">
+                    <div class="d-flex justify-content-center">
+                     <div class="form-check me-5">
+                      <input class="form-check-input" type="radio" name="search-settings" value="starts-with" id="starts-with-cb" checked>
+                      <label class="form-check-label" for="starts-with-cb">
+                        Starts with
+                      </label>
+                    </div>
+                     <div class="form-check">
+                      <input class="form-check-input" type="radio" name="search-settings" value="contains" id="contains-cb">
+                      <label class="form-check-label" for="contains-cb">
+                        Contains
+                      </label>
+                    </div>
+                  </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        </main>
+
+
+      </div>
+    </div>
+
+
+        <div class="offcanvas offcanvas-end text-white-50" style="background-color: #181A1B" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+            <div class="offcanvas-header text-white">
+                <h2 class="offcanvas-title" id="offcanvasExampleLabel">Settings</h2>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+
+            <div class="offcanvas-body">
+                <div id="settings-status-div" class="text-dark">
+
+                </div>
+                <div id="settings-form">
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" name="username" id="username" value="{{ user.username }}">
+                    </div>
+
+                    <fieldset disabled>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" aria-describedby="emailHelp" value="{{ user.email }}">
+                            <div id="emailHelp" class="form-text">This is the google account you logged in with.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fullname" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="fullname" value="{{ user.get_full_name }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ytchannelid" class="form-label">YouTube Channel ID</label>
+                            <input type="text" class="form-control" id="ytchannelid" aria-describedby="emailHelp" value="{{ user.profile.yt_channel_id }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="accesstoken" class="form-label">Access Token</label>
+                            <input type="text" class="form-control" id="accesstoken" value="{{ user.profile.access_token }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="refreshtoken" class="form-label">Refresh Token</label>
+                            <input type="text" class="form-control" id="refreshtoken" value="{{ user.profile.refresh_token }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="expiresat" class="form-label">Expires At</label>
+                            <input type="datetime-local" class="form-control" id="expiresat" value="{{ user.profile.expires_at }}">
+                        </div>
+                    </fieldset>
+
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="flexSwitchCheckDefault">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">Automatically refresh playlists on visit</label>
+                    </div>
+
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
+                        <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
+                    </div>
+
+
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" checked>
+                        <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
+                    </div>
+                </div>
+
+                    <button type="button" hx-post="{% url 'update_settings' %}" hx-include="[id='settings-form']" hx-target="#settings-status-div" class="btn btn-success">Save</button>
+
+                    <a class="btn btn-outline-danger" href="{% url 'delete_account' %}">Delete account</a>
+
+                <br>
+            </div>
+        </div>
+
+        <div class="offcanvas offcanvas-start" style="background-color: #181A1B" tabindex="-1" id="offcanvasForVideoNotes" aria-labelledby="offcanvasForVideoNotes">
+            <div id="video-notes">
+
+            </div>
+        </div>
+
+        <button
+        type="button"
+        class="btn btn-danger btn-floating btn-lg"
+        id="btn-back-to-top"
+        >
+            ▲
+        </button>
+
+        <br>
+
+        <script>
+            <!-- for htmx to send csrf_token with every post request -->
+            document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+          })
+
+
+                var clipboard = new ClipboardJS('.copy-btn');
+
+
+             // Get the input field
+            var input = document.getElementById("unTubeSearchBar");
+
+            // Execute a function when the user releases a key on the keyboard
+            input.addEventListener("click", function(event) {
+
+                document.getElementById("unTubeSearchBtn").click();
+
+            });
+
+            document.getElementById('select-all-btn').onclick = function() {
+                document.getElementById('select-all-btn').style.display = "none";
+                document.getElementById('deselect-all-btn').style.display = "block";
+
+                var checkboxes = document.getElementsByClassName('video-checkboxes');
+                for (var checkbox of checkboxes) {
+                    checkbox.checked = true;
+                }
+            }
+            document.getElementById('deselect-all-btn').onclick = function() {
+                document.getElementById('deselect-all-btn').style.display = "none";
+                document.getElementById('select-all-btn').style.display = "block";
+
+                var checkboxes = document.getElementsByClassName('video-checkboxes');
+                for (var checkbox of checkboxes) {
+                    checkbox.checked = false;
+                }
+            }
+
+             function row1_hide() {
+                 document.getElementById("row1").style.display = "none";
+                 var checkboxes = document.getElementsByClassName('video-checkboxes'); //Cache the collection here, so that even a new element added with the same class later we can avoid querying this again by using the cached collection.
+                 for(var i=0, len=checkboxes.length; i<len; i++)
+                {
+                    checkboxes[i].style.display = "block";
+                }
+                 document.getElementById("row2").style.display = "block";
+             }
+
+             function row1_show() {
+                 document.getElementById("row1").style.display = "block";
+                 var checkboxes = document.getElementsByClassName('video-checkboxes'); //Cache the collection here, so that even a new element added with the same class later we can avoid querying this again by using the cached collection.
+                 for(var i=0, len=checkboxes.length; i<len; i++)
+                {
+                    checkboxes[i].style.display = "none";
+                }
+                document.getElementById("row2").style.display = "none";
+             }
+
+             function select_all_checkboxes(source) {
+              checkboxes = document.getElementsByClassName('big-checkbox');
+              for(var i=0, n=checkboxes.length;i<n;i++) {
+                checkboxes[i].checked = source.checked;
+              }
+            }
+
+            //Get the button
+            let mybutton = document.getElementById("btn-back-to-top");
+
+            // When the user scrolls down 20px from the top of the document, show the button
+            window.onscroll = function () {
+              scrollFunction();
+            };
+
+            function scrollFunction() {
+              if (
+                document.body.scrollTop > 550 ||
+                document.documentElement.scrollTop > 550
+              ) {
+                mybutton.style.display = "block";
+              } else {
+                mybutton.style.display = "none";
+              }
+            }
+            // When the user clicks on the button, scroll to the top of the document
+            mybutton.addEventListener("click", backToTop);
+
+            function backToTop() {
+              document.body.scrollTop = 0;
+              document.documentElement.scrollTop = 0;
+            }
+
+        </script>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script><script src="dashboard.js"></script>
+    </body>
+</html>

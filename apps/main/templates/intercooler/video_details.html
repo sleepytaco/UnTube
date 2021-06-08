@@ -1,0 +1,22 @@
+    {% load humanize %}
+
+
+    <div class="offcanvas-header text-dark">
+    <h5 class="offcanvas-title" id="offcanvasWithBackdropLabel">
+        {{ video.name}}
+            <span class="badge bg-secondary">{{ video.duration }}</span>
+    {% if video.has_cc %}<span class="badge bg-secondary">CC</span>{% endif %}
+    {% if video.published_at %}<span class="badge bg-secondary">{{ video.published_at }}</span>{% endif %}
+  {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
+
+    {% if video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}<br>
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>  </div>
+  <div class="offcanvas-body text-dark">
+      <form>
+                <p>{{ video.description|linebreaksbr|urlize }}</p>
+    </form>
+      <br style="background-color: cadetblue">
+  </div>
+
+

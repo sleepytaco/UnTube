@@ -1,0 +1,97 @@
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+        <meta name="generator" content="Hugo 0.83.1">
+        <title>Import in progress</title>
+
+        <style type="text/css">
+            .progress {
+                height: 20px;
+                margin-bottom: 20px;
+                overflow: hidden;
+                background-color: #f5f5f5;
+                border-radius: 4px;
+                box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+            }
+            .progress-bar {
+                float: left;
+                width: 0%;
+                height: 100%;
+                font-size: 12px;
+                line-height: 20px;
+                color: #fff;
+                text-align: center;
+                background-color: #337ab7;
+                -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+                box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+                -webkit-transition: width .6s ease;
+                -o-transition: width .6s ease;
+                transition: width .6s ease;
+            }
+
+        </style>
+
+
+          <script src="https://unpkg.com/htmx.org@1.4.1"></script>
+        <script src="https://unpkg.com/htmx.org/dist/ext/class-tools.js"></script>
+
+
+        <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
+
+        <!-- Bootstrap core CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    </head>
+    <body class="bg-dark text-white"  style="font-family: 'Fredoka One'">
+
+        <div class="container-fluid">
+
+            <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
+                    <h1>UnTube</h1>
+            </div>
+            <br>
+            <br>
+
+            <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
+                <h3>{{ user.username|capfirst }}, click the button below to import your YouTube playlists into UnTube.</h3>
+            </div>
+
+            <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
+                <h3>It will take a few minutes depending on the number of playlists you have.</h3>
+            </div>
+            <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
+                <h3>You will be redirected automatically. Please be patient :)</h3>
+            </div>
+
+
+                <div hx-target="this" hx-swap="outerHTML">
+                    <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
+
+                      <button class="btn btn-lg btn-success" hx-post="{% url 'start' %}">
+                                Import
+                      </button>
+                    </div>
+                </div>
+
+
+
+
+        </div>
+
+    <script>
+                <!-- for htmx to send csrf_token with every post request -->
+            document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+          })
+
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script><script src="dashboard.js"></script>
+    </body>
+</html>

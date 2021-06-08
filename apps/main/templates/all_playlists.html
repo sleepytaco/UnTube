@@ -1,0 +1,124 @@
+
+{% extends 'base.html' %}
+{% block content %}
+    <div id="search-results">
+
+            {% if messages %}
+            {% for message in messages %}
+              <div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                  {{ message|safe }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+    {% endif %}
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">{{ playlist_type_display }} <span class="badge bg-primary rounded-pill">{{ playlists.count }}</span></h1>
+
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                    <button type="button" class="btn btn-outline-info">Grid</button>
+                    <button type="button" class="btn btn-outline-info">List</button>
+                </div>
+                <div class="btn-group">
+                  <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    Sort By
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'order_playlists_by' playlist_type 'playlist-duration-in-seconds' %}">Duration</a></li>
+                    <li><a class="dropdown-item" href="{% url 'order_playlists_by' playlist_type 'video-count' %}"># Videos</a></li>
+                    <li><a class="dropdown-item" href="#">Recently Accessed</a></li>
+                  </ul>
+                </div>
+
+            </div>
+
+        </div>
+
+        {% if playlists %}
+
+        <div class="">
+            <input class="form-control" type="text"
+       name="search" placeholder="Begin to search playlists..."
+       hx-post="{% url 'search_playlists' playlist_type %}"
+       hx-trigger="keyup changed delay:500ms"
+       hx-target="#search-results"
+       hx-indicator=".htmx-indicator">
+          <br>
+        </div>
+
+        <div id="search-results">
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for playlist in playlists %}
+                <div class="col">
+                    <div class="card h-100" style="background-color: #1A4464;">
+                        <a style="background-color: #9CC5E5;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+
+                            <div class="card-body">
+
+                                <h5 class="card-title">
+                                    {{ playlist.name }}
+
+                                    {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                                    {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+
+                                </h5>
+                                <p class="card-text">
+                                    {% if playlist.description %}
+                                        {{ playlist.description }}
+                                    {% else %}
+                                        No description
+                                    {% endif %}
+                                </p>
+                                <small>
+                                    <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
+                                    <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                                </small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% else %}
+                <h5 class="text-white align-content-center">Nothing to see here. Add something!</h5>
+            </div>
+        </div>
+                    {% endif %}
+
+    <br>
+
+        <!-- list view
+          <div class="table-responsive">
+              {% if playlists %}
+                <div class="list-group">
+                    {% for playlist in playlists %}
+
+                    <a style="background-color: #969291;" href="https://www.youtube.com/playlist?list={{ playlist.playlist_id }}" class="list-group-item list-group-item-action" aria-current="true">
+                    <div class="d-flex w-100 justify-content-between">
+                      <h5 class="mb-1">{{ playlist.name }}</h5>
+                      <small>3 days ago</small>
+                    </div>
+                    <p class="mb-1">
+                        {% if playlist.description %}
+                            {{ playlist.description }}
+                        {% else %}
+                            No description
+                        {% endif %}
+                    </p>
+                    <small>
+                        <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
+                        <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                    </small>
+                    </a>
+
+                    {% endfor %}
+                </div>
+
+                    {% else %}
+                  <h2 class="text-white align-content-center">Nothing to see here.</h2>
+                {% endif %}
+          </div>
+        -->
+
+    </div>
+{% endblock %}

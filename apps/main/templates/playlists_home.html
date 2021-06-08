@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block content %}
+    <br>
+
+<div class="row row-cols-1 row-cols-md-3 g-4" >
+    <div class="col">
+        <a href="{% url 'all_playlists' 'all' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #64381a;">
+            <div class="card-body">
+                <h4 class="card-title">All Playlists</h4>
+                    <p class="card-text">Everything.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'all_playlists' 'all' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #1A4464;">
+            <div class="card-body">
+                <h4 class="card-title">Your YouTube Playlists</h4>
+                    <p class="card-text">View a list of all the playlists you own on YouTube.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{% url 'all_playlists' 'all' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #1a645e;">
+            <div class="card-body">
+                <h4 class="card-title">Imported Playlists</h4>
+                <p class="card-text">View a list of all the external playlists you imported from YouTube.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'all_playlists' 'all' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #aa8c2e;">
+            <div class="card-body">
+                <h4 class="card-title">Favorite Playlists</h4>
+                <p class="card-text">All the playlists you've marked favorite.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'all_playlists' 'watching' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #541a64;">
+            <div class="card-body">
+                <h4 class="card-title">Watching Playlists</h4>
+                <p class="card-text">All the playlists you're currently watching.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'all_playlists' 'watching' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #641a29;">
+            <div class="card-body">
+                <h4 class="card-title">On-Hold</h4>
+                <p class="card-text">Stopped watching a playlist? Add it here.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'all_playlists' 'all' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #969291;">
+            <div class="card-body">
+                <h5 class="card-title">Your UnTube Playlists</h5>
+                <p class="card-text"><!--UnTube playlists are playlists can contain YouTube videos and YouTube playlists which can then be shared with other users via a link.--> Coming soon. Maybe.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'all_playlists' 'all' %}" class="text-decoration-none text-white">
+
+        <div class="card h-100" style="background-color: #d04623;">
+            <div class="card-body">
+                <h5 class="card-title">Open a Random Playlist</h5>
+                <p class="card-text mt-4">
+                    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                              From
+                    </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">All</a></li>
+                    <li><a class="dropdown-item" href="#">Watching</a></li>
+                    <li><a class="dropdown-item" href="#">Favorites</a></li>
+                  </ul>
+                </p>
+            </div>
+        </div>
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,246 @@
+
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+
+    {% if playlist.has_playlist_changed %}
+    <br>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Looks like this playlist changed on YouTube! <a href="#" class="link-success">Update!</a>
+        <a href="#" class="link-primary">Why tf aren't you doing this automatically?</a>
+
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% else %}
+    <br>
+    {% endif %}
+
+
+    <div class="list-group-item list-group-item-action active">
+        <div class="d-flex w-100 justify-content-between">
+            <span>
+                <h2 class="mb-1">{{ playlist.name }} <small><a><i class="fas fa-pen-square"></i></a></small> </h2>
+                <h6>by {{ playlist.channel_name }}</h6>
+            </span>
+            <h4><span class="badge bg-success text-white" id="notice-div">{{ playlist.marked_as|title }}</span></h4>
+        </div>
+        <p class="mb-1">
+            {% if playlist.description %}
+            <h5>{{ playlist.description }} {{ playlist. }}</h5>
+            {% else %}
+            <h5>No description</h5>
+            {% endif %}
+        </p>
+        <small>
+            <span class="badge bg-dark rounded-pill">{{ playlist.video_count }} videos</span>
+            <span class="badge bg-dark rounded-pill">{{ playlist.playlist_duration }} </span>
+            {% if playlist.is_private_on_yt %}<span class="badge bg-dark rounded-pill">private</span>{% endif %}
+            {% if playlist.has_unavailable_videos %}
+                    <span class="badge bg-dark rounded-pill">some videos are unavailable</span>
+            {% endif %}
+            {% if playlist.has_duplicate_videos %}
+                    <span class="badge bg-dark rounded-pill">duplicate videos</span>
+            {% endif %}
+        </small>
+    </div>
+
+    <br>
+
+    <div id="row1">
+        <div class="d-flex bd-highlight mb-1">
+            <div class="me-auto bd-highlight">
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn {% if playlist.view_in_grid_mode %}btn-info {% else %}btn-outline-info{% endif %}">Grid</button>
+                        <button type="button" class="btn {% if not playlist.view_in_grid_mode %}btn-info {% else %}btn-outline-info{% endif %}">List</button>
+                    </div>
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            Sort By
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'popularity' %}" hx-trigger="click" hx-target="#videos-div">Popularity</button></li>
+                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'date-published' %}" hx-trigger="click" hx-target="#videos-div">Date Published</button></li>
+                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'views' %}" hx-trigger="click" hx-target="#videos-div">Views</button></li>
+                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'has-cc' %}" hx-trigger="click" hx-target="#videos-div">Has CC</button></li>
+                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'duration' %}" hx-trigger="click" hx-target="#videos-div">Duration</button></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bd-highlight">
+                <div class="btn-toolbar mb-2 mb-md-0">
+
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-outline-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Mark As
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'watching' %}" hx-trigger="click" hx-target="#notice-div">Watching</button></li>
+                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'on-hold' %}" hx-trigger="click" hx-target="#notice-div">On-Hold</button></li>
+                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'plan-to-watch' %}" hx-trigger="click" hx-target="#notice-div">Plan to Watch</button></li>
+                            </ul>
+                        </div>
+
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-outline-light" onclick="row1_hide()">Manage</button>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="row2" style="display: none">
+        <div class="d-flex bd-highlight mb-1">
+            <div class="me-auto bd-highlight">
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div id="select-all-btn">
+                        <div class="btn-group me-2">
+                        <button type="button" class="btn btn-outline-info" id="select-all-btn">Select All</button>
+                    </div>
+                    </div>
+                    <div id="deselect-all-btn" style="display: none">
+                        <div class="btn-group me-2">
+                        <button type="button" class="btn btn-outline-info" id="select-all-btn">De-select All</button>
+                    </div>
+                    </div>
+                    <div class="btn-group me-2">
+                        <button type="submit" form="my-form" class="btn btn-outline-success" data-bs-toggle="dropdown" aria-expanded="false">
+                            Move
+                        </button>
+                    </div>
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="dropdown" aria-expanded="false">
+                            UnTube These
+                        </button>
+                    </div>
+                    <div class="btn-group me-2">
+                        <button type="button" hx-post="{% url 'delete_videos' %}" hx-include="[id='video-checkboxes']" class="btn btn-outline-danger" data-bs-toggle="dropdown" aria-expanded="false">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="bd-highlight">
+            <div class="btn-toolbar mb-2 mb-md-0">
+
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-light" onclick="row1_show()">Manage</button>
+                    </div>
+
+                </div>
+        </div>
+
+        </div>
+    </div>
+    <br>
+    <div class="table-responsive" id="videos-div">
+        <div class="list-group" id="video-checkboxes">
+          {% for video in videos %}
+
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: #40B3A2">
+
+        {% if video.is_unavailable_on_yt %}
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.video_id }}" name="video-id">
+                </div>
+                  <div class="ms-4" style="max-width: 115px; max-height: 100px;">
+                      <img src="https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg" class="img-fluid" alt="">
+                  </div>
+                    <div class="ms-4">
+                        <a class="link-dark" href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" target="_blank">
+                            {{ video.video_position }}. {{ video.name }}
+                        </a>
+                        <br><br>
+                    </div>
+            </div>
+          {% else %}
+
+            <div class="d-flex justify-content-between align-items-center" >
+                <div>
+                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.video_id }}" name="video-id">
+                </div>
+                  <div class="ms-4" style="max-width: 115px; max-height: 100px;">
+                      <img src="{% if video.thumbnail_url %}{{ video.thumbnail_url }}{% else %}https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg{% endif %}" class="img-fluid" alt="">
+                  </div>
+                    <div class="ms-4">
+                        <a class="link-dark" href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" target="_blank">{{ video.video_position }}. {{ video.name }}</a> <br>
+                        <span class="badge bg-secondary">{{ video.duration }}</span>
+                        {% if video.has_cc %}<span class="badge bg-secondary">CC</span>{% endif %}
+                        {% if video.published_at %}<span class="badge bg-secondary">{{ video.published_at }}</span>{% endif %}
+                      {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
+
+                        {% if video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}<br>
+                    </div>
+            </div>
+            <div class="ms-5">
+                <a class="btn btn-sm btn-info mb-1" type="button" href="https://www.youtube.com/watch?v={{ video.video_id }}" class="btn btn-info me-1" target="_blank"><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+                <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ video.video_id }}">
+                <button class="copy-btn btn btn-success mb-1" data-clipboard-target="#video-{{ video.video_id }}">
+                    <i class="far fa-copy" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-sm btn-primary mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasBottom" hx-get="{% url 'video_details' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-details">Details</button>
+                <button class="btn btn-sm btn-warning mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForVideoNotes" aria-controls="offcanvasBottom" hx-get="{% url 'video_notes' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-notes">Notes</button>
+                <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist.playlist_id video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
+                    <div id="video-{{ forloop.counter }}-fav">
+                        {% if video.is_favorite %}
+                            <i class="fas fa-heart"></i>
+                        {% else %}
+                            <i class="far fa-heart"></i>
+                        {% endif %}
+                    </div>
+                </button>
+                    {% if playlist.marked_as == "watching" %}
+                                        <button class="btn btn-sm btn-light mb-1" type="button">
+
+                        <i class="far fa-check-circle"></i>
+                                        </button>
+
+                    {% endif %}
+            </div>
+          {% endif %}
+
+            </li>
+
+        {% endfor %}
+       <!-- <form action="{% url 'home' %}" method="post" id="my-form">
+          {% for video in videos %}
+              <li class="d-flex align-items-center">
+                  <input class="form-check-input mx-3 big-checkbox" type="checkbox" value="{{ video.video_id }}" name="video ids" id="checkbox"> <br>
+
+          {% if video.is_unavailable_on_yt %}
+            <a style="background-color: #E73927;" href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" class="list-group-item list-group-item-dark">
+                    {{ video.video_position }}. {{ video.name }}
+                <span class="badge bg-secondary">{{ video.duration }}</span>
+            </a>
+          {% else %}
+                        {{ video.video_position }}. {{ video.name }}
+                        <span class="badge bg-secondary">{{ video.duration }}</span>
+                        {% if video.has_cc %}<span class="badge bg-secondary">CC</span>{% endif %}
+                        {% if video.published_at %}<span class="badge bg-secondary">{{ video.published_at }}</span>{% endif %}
+                      {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
+
+                        {% if video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}<br>
+                        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasBottom" hx-get="{% url 'video_details' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-details">Details</button>
+
+          {% endif %}
+          {% endfor %}
+        </li>
+        </form>
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasWithBackdrop" aria-labelledby="offcanvasWithBackdropLabel">
+    <div id="video-details">
+
+      </div>
+
+</div>
+        </div>
+    </div> -->
+
+{% endblock %}

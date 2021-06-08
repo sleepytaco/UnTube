@@ -1,0 +1,200 @@
+
+{% extends 'base.html' %}
+{% block content %}
+
+                {% for message in messages %}
+                  <div class="alert alert-success alert-dismissible fade show" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+
+    {% if user.profile.just_joined %}
+            {% if not channel_found %}
+                <br>
+
+                <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
+                    <h2>Uh-oh, we were not able to find any YouTube channel linked to this Google account. Please create a YouTube channel to be able to import/export playlists back and forth between YouTube and UnTube.</h2>
+                </div>
+
+                <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
+                    <a href="{% url 'home' %}" class="btn btn-lg btn-danger">Retry</a>
+                </div>
+            {% endif %}
+
+    {% else %}
+
+        {% if import_successful %}
+                            <br>
+                <br>
+                <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
+                    <h1>Welcome to UnTube, {{ user.username|capfirst }}</h1>
+                </div>
+                  <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
+                            <h2>{{ user.profile.playlists.all.count }} playlists from YouTube have been successfully imported.</h2>
+                  </div>
+
+                  <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
+                        <h3>You'll now be able to import/export playlists from YouTube and UnTube :)</h3>
+                  </div>
+
+
+                <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
+                    <a href="{% url 'home' %}" class="btn btn-lg btn-success">Go to Dashboard</a>
+                </div>
+
+            {% else %}
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+
+                <h1 class="h2">Dashboard</h1>
+
+                <!--
+                <div class="btn-toolbar mb-2 mb-md-0">
+              <div class="btn-group me-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+                <span data-feather="calendar"></span>
+                This week
+              </button>
+
+
+            </div>
+                -->
+                <span><small>Logged in as <b>{{ user.username }}</b></small></span>
+
+            </div>
+                        {% if watching %}
+                <div class="border border-5 rounded-3 border-primary p-3">
+            <h3>Continue Watching</h3>
+           <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
+                {% for playlist in watching|slice:"0:2" %}
+                <div class="col">
+                    <div class="card">
+                        <a style="background-color: #7e89c2;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+                            <div class="card-body">
+                        <h5 class="card-title">
+                           {{ playlist.name }}
+                            {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                            {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                        </h5>
+                        <p class="card-text">
+                            {% if playlist.description %}
+                                {{ playlist.description }}
+                            {% else %}
+                                No description
+                            {% endif %}
+                        </p>
+                        <small>
+                            <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
+                            <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                            <span class="badge bg-secondary rounded-pill">{{ playlist.num_of_accesses }} clicks </span>
+                            <span class="badge bg-info rounded-pill">2/23 viewed</span>
+
+                        </small>
+                        </div>
+                        </a>
+                    </div>
+                </div>
+                    {% if forloop.counter == 2 %}
+                        {% if watching.count|add:"-2" != 0 %}
+                        <div class="col">
+                            <div class="card">
+                                <a style="background-color: #7e89c2;" href="{% url 'all_playlists' 'watching' %}" class="list-group-item list-group-item-action" aria-current="true">
+                                    <div class="card-body">
+
+                                        <p class="card-text">
+                                            <h3>+ {{ watching.count|add:"-2" }} more</h3>
+                                        </p>
+                                     </div>
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+            </div>
+                {% endif %}
+
+            <br>
+            <h3>Most viewed playlists <a href="{% url 'all_playlists' 'all' %}" class="btn btn-sm btn-info">View All</a></h3>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
+                {% for playlist in user_playlists|slice:"0:3" %}
+                <div class="col">
+                    <div class="card">
+                        <a style="background-color: #35795b;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+                            <div class="card-body">
+                        <h5 class="card-title">
+                           #{{ forloop.counter }} <br><br>{{ playlist.name }}
+                            {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                            {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                        </h5>
+                        <p class="card-text">
+                            {% if playlist.description %}
+                                {{ playlist.description }}
+                            {% else %}
+                                No description
+                            {% endif %}
+                        </p>
+                        <small>
+                            <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
+                            <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                            <span class="badge bg-secondary rounded-pill">{{ playlist.num_of_accesses }} clicks </span>
+
+                        </small>
+                        </div>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+
+        <br>
+        <br>
+            <h3>Recently Added</h3>
+        <br>
+          <h2>Add a playlist</h2>
+        <br>
+          <div class="table-responsive">
+              <form class="form" role="form" method="post" action="{% url 'home' %}">
+                                          {% csrf_token %}
+
+                  <label for="pl">Enter playlist id:<br></label>
+                  <input name="playlist-id" type="text" id="pl">
+                  <button type="submit" class="btn btn-info">Submit</button>
+                    <div class="spinner-border text-light" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                                    <input class="form-check-input mx-3 big-checkbox" type="checkbox" value="a" name="s" id="checkbox"> <br>
+                                    <input class="form-check-input mx-3 big-checkbox" type="checkbox" value="b" name="s" id="checkbox"> <br>
+                                    <input class="form-check-input mx-3 big-checkbox" type="checkbox" value="c" name="s" id="checkbox"> <br>
+                                    <input class="form-check-input mx-3 big-checkbox" type="checkbox" value="d" name="s" id="checkbox"> <br>
+
+              </form>
+
+          <br>
+              <div class="list-group">
+                      <a href="https://www.youtube.com/playlist?list={{ playlist.playlist_id }}" class="list-group-item list-group-item-action active">
+                        <b>{{ playlist.name }}</b> by {{ playlist.channel_name }}
+                          <span class="badge badge-dark">{{ playlist.video_count }} videos</span>
+                          <span class="badge badge-dark">{{ playlist.playlist_duration }}</span>
+                          <span class="badge badge-dark">{% if playlist.has_unavailable_videos %}Some videos in the playlist are deleted{% endif %}</span>
+                      </a>
+                  {% for video in videos %}
+                    <a href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" class="list-group-item {% if not video.is_up %}list-group-item-dark{% else %}list-group-item-action{% endif %}">{{ video.video_position }}. {{ video.name }}</a>
+                  {% endfor %}
+            </div>
+
+
+          </div>
+
+
+        {% endif %}
+
+    {% endif %}
+
+{% endblock %}
