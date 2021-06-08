@@ -1,6 +1,8 @@
 /venv/
 /UnTube/client_secrets.json
 /db.sqlite3
+/apps/main/migrations/
+/apps/users/migrations/
 /modules/t.json
 /modules/you.py
 /modules/youtube-api.py
@@ -12,6 +14,4 @@ __pycache__/
 *.pyc
 /static/
 .env
-/apps/main/migrations/
-/apps/users/migrations/
 
