@@ -12,3 +12,6 @@ __pycache__/
 *.pyc
 /static/
 .env
+/apps/main/migrations/
+/apps/users/migrations/
+
