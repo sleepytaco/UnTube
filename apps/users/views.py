@@ -88,7 +88,7 @@ def start_import(request):
         print("User has no playlists on YT")
 
         return HttpResponse(loader.get_template('intercooler/progress_bar.html').render(
-            {"total_playlists": 0,
+            {"total_playlists": 'IMPORTED 0 PLAYLISTS lol',
              "playlists_imported": 0,
              "done": True,
              "progress": 100,
