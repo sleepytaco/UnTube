@@ -6,4 +6,8 @@
 /modules/youtube-api.py
 /modules/youtube-api-oauth.py
 /.idea/
+__pycache__/
+*.log
+*.pot
+*.pyc
 /static/

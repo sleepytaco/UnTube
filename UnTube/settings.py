@@ -12,11 +12,11 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from pathlib import Path
 
+import dj_database_url
 import django_heroku
 import psycopg2
 
 from UnTube.secrets import SECRETS
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
@@ -30,9 +30,9 @@ SECRET_KEY = SECRETS['SECRET_KEY']
 YOUTUBE_V3_API_KEY = SECRETS['YOUTUBE_V3_API_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['untube-django.herokuapp.com']
+ALLOWED_HOSTS = ['untube-django.herokuapp.com', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -54,6 +54,9 @@ INSTALLED_APPS = [
     'crispy_forms',
     'apps.users',  # has stuff related to user management in it (login, signup, show homepage, pass reset)
     'apps.main',  # main app, shows user their homepage
+
+    # added these while setting up heroku
+    'whitenoise.runserver_nostatic',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -106,13 +109,12 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-SITE_ID = 4
+SITE_ID = 3
 
 LOGIN_URL = '/'
 
 LOGIN_REDIRECT_URL = '/home/'
 LOGOUT_REDIRECT_URL = '/home/'
-
 
 WSGI_APPLICATION = 'UnTube.wsgi.application'
 
@@ -125,8 +127,11 @@ DATABASES = {
     }
 }
 
-DATABASE_URL = os.environ['DATABASE_URL']
-conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+db_from_env = dj_database_url.config(conn_max_age=600)
+DATABASES['default'].update(db_from_env)
+
+# DATABASE_URL = os.environ['DATABASE_URL']
+# conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -160,12 +165,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_ROOT = os.path.join(BASE_DIR, "static")  # location where django collect all static files
+# location where you will store your static files
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'apps/main/static')
+                    ]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-django_heroku.settings(locals())
-import dj_database_url
-DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+# django_heroku.settings(locals())
+# import dj_database_url
+# DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
