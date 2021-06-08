@@ -28,7 +28,7 @@ YOUTUBE_V3_API_KEY = SECRETS['YOUTUBE_V3_API_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['untube-django.herokuapp.com']
 
 # Application definition
 INSTALLED_APPS = [
