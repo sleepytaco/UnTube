@@ -1,6 +1,5 @@
 /venv/
 /UnTube/client_secrets.json
-/UnTube/secrets.py
 /db.sqlite3
 /modules/t.json
 /modules/you.py
