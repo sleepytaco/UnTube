@@ -6,6 +6,4 @@
 /modules/youtube-api.py
 /modules/youtube-api-oauth.py
 /.idea/
-/apps/main/migrations/
-/apps/users/migrations/
 /static/
