@@ -8,3 +8,4 @@
 /.idea/
 /apps/main/migrations/
 /apps/users/migrations/
+/static/
