@@ -9,21 +9,6 @@
                   </div>
                 {% endfor %}
 
-    {% if user.profile.just_joined %}
-            {% if not channel_found %}
-                <br>
-
-                <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
-                    <h2>Uh-oh, we were not able to find any YouTube channel linked to this Google account. Please create a YouTube channel to be able to import/export playlists back and forth between YouTube and UnTube.</h2>
-                </div>
-
-                <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
-                    <a href="{% url 'home' %}" class="btn btn-lg btn-danger">Retry</a>
-                </div>
-            {% endif %}
-
-    {% else %}
-
         {% if import_successful %}
                             <br>
                 <br>
@@ -154,47 +139,14 @@
 
 
         <br>
+            <h3>Recently Accessed</h3>
+
         <br>
             <h3>Recently Added</h3>
         <br>
-          <h2>Add a playlist</h2>
-        <br>
-          <div class="table-responsive">
-              <form class="form" role="form" method="post" action="{% url 'home' %}">
-                                          {% csrf_token %}
-
-                  <label for="pl">Enter playlist id:<br></label>
-                  <input name="playlist-id" type="text" id="pl">
-                  <button type="submit" class="btn btn-info">Submit</button>
-                    <div class="spinner-border text-light" role="status">
-                      <span class="visually-hidden">Loading...</span>
-                    </div>
-                                    <input class="form-check-input mx-3 big-checkbox" type="checkbox" value="a" name="s" id="checkbox"> <br>
-                                    <input class="form-check-input mx-3 big-checkbox" type="checkbox" value="b" name="s" id="checkbox"> <br>
-                                    <input class="form-check-input mx-3 big-checkbox" type="checkbox" value="c" name="s" id="checkbox"> <br>
-                                    <input class="form-check-input mx-3 big-checkbox" type="checkbox" value="d" name="s" id="checkbox"> <br>
-
-              </form>
-
-          <br>
-              <div class="list-group">
-                      <a href="https://www.youtube.com/playlist?list={{ playlist.playlist_id }}" class="list-group-item list-group-item-action active">
-                        <b>{{ playlist.name }}</b> by {{ playlist.channel_name }}
-                          <span class="badge badge-dark">{{ playlist.video_count }} videos</span>
-                          <span class="badge badge-dark">{{ playlist.playlist_duration }}</span>
-                          <span class="badge badge-dark">{% if playlist.has_unavailable_videos %}Some videos in the playlist are deleted{% endif %}</span>
-                      </a>
-                  {% for video in videos %}
-                    <a href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" class="list-group-item {% if not video.is_up %}list-group-item-dark{% else %}list-group-item-action{% endif %}">{{ video.video_position }}. {{ video.name }}</a>
-                  {% endfor %}
-            </div>
-
-
-          </div>
 
 
         {% endif %}
 
-    {% endif %}
 
 {% endblock %}

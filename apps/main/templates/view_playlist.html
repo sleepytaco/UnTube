@@ -23,11 +23,17 @@
                 <h2 class="mb-1">{{ playlist.name }} <small><a><i class="fas fa-pen-square"></i></a></small> </h2>
                 <h6>by {{ playlist.channel_name }}</h6>
             </span>
-            <h4><span class="badge bg-success text-white" id="notice-div">{{ playlist.marked_as|title }}</span></h4>
+            <h4>
+                <span id="notice-div">
+                    {% if playlist.marked_as != "none" %}
+                    <span class="badge bg-success text-white" >{{ playlist.marked_as|title }}</span>
+                    {% endif %}
+                </span>
+            </h4>
         </div>
         <p class="mb-1">
             {% if playlist.description %}
-            <h5>{{ playlist.description }} {{ playlist. }}</h5>
+            <h5>{{ playlist.description }}</h5>
             {% else %}
             <h5>No description</h5>
             {% endif %}
@@ -78,8 +84,8 @@
                                 Mark As
                             </button>
                             <ul class="dropdown-menu">
+                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'none' %}" hx-trigger="click" hx-target="#notice-div">None</button></li>
                                 <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'watching' %}" hx-trigger="click" hx-target="#notice-div">Watching</button></li>
-                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'on-hold' %}" hx-trigger="click" hx-target="#notice-div">On-Hold</button></li>
                                 <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'plan-to-watch' %}" hx-trigger="click" hx-target="#notice-div">Plan to Watch</button></li>
                             </ul>
                         </div>

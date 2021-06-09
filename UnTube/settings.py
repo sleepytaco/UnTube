@@ -29,7 +29,7 @@ YOUTUBE_V3_API_KEY = SECRETS['YOUTUBE_V3_API_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['untube-django.herokuapp.com', '127.0.0.1', 'bakaabu.pythonanywhere.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'bakaabu.pythonanywhere.com']
 
 # Application definition
 INSTALLED_APPS = [
@@ -71,8 +71,8 @@ ROOT_URLCONF = 'UnTube.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # 'DIRS': [BASE_DIR / 'templates'],
-        'DIRS': [os.path.join(BASE_DIR, "templates")],
+        'DIRS': [BASE_DIR / 'templates'],
+        # 'DIRS': [os.path.join(BASE_DIR, "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,8 +122,8 @@ DATABASES = {
     }
 }
 
-#DATABASES = {}
-#DATABASES['default'] = dj_database_url.config(conn_max_age=600)
+# DATABASES = {}
+# DATABASES['default'] = dj_database_url.config(conn_max_age=600)
 
 # DATABASE_URL = os.environ['DATABASE_URL']
 # conn = psycopg2.connect(DATABASE_URL, sslmode='require')

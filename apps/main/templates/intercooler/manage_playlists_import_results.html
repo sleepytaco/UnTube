@@ -1,0 +1,93 @@
+{% if new_playlists %}
+<h4 class="text-white align-content-center">Successfully imported the following {{ num_playlists_initialized_in_db }} playlists into your collection:</h4>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for playlist in new_playlists %}
+    <div class="col">
+        <div class="card h-100" style="background-color: #1A4464;">
+            <a style="background-color: #1A4464;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+
+                <div class="card-body text-white">
+
+                    <h5 class="card-title">
+                        {{ playlist.name }} <small>by {{ playlist.channel_name }}</small>
+                        {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                        {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                    </h5>
+                    <p class="card-text">
+                        {% if playlist.description %}
+                            {{ playlist.description }}
+                        {% else %}
+                            No description
+                        {% endif %}
+                    </p>
+                    <small>
+                        <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} views</span>
+                        <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                    </small>
+                </div>
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<br>
+
+{% endif %}
+{% if num_playlists_already_in_db != 0 %}
+    {% if num_playlists_already_in_db > 1 %}
+        <h4>These {{ num_playlists_already_in_db }} were already in your collection :)</h4>
+    {% else %}
+        <h4>This one playlist was already in your collection :)</h4>
+    {% endif %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for playlist in old_playlists %}
+        <div class="col">
+            <div class="card h-100" style="background-color: #1a643b;">
+                <a style="background-color: #1a643b;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+
+                    <div class="card-body text-white">
+
+                        <h5 class="card-title">
+                        {{ playlist.name }} <small>by {{ playlist.channel_name }}</small>
+
+                            {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                            {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                        </h5>
+                        <p class="card-text">
+                            Playlist ID: <small><span class="badge bg-dark text-white-50">{{ playlist.playlist_id }}</span></small>
+
+                        </p>
+                            <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
+                            <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <br>
+{% endif %}
+{% if num_playlists_not_found != 0 %}
+    {% if num_playlists_not_found > 1  %}
+        <h4>Could not find the following {{ num_playlists_not_found }} playlists links :(</h4>
+    {% else %}
+        <h4>Could not find the following playlist link :(</h4>
+    {% endif %}
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for playlist in not_found_playlists %}
+        <div class="col">
+            <div class="card" style="background-color: #b1235c;">
+
+                    <div class="card-body text-white">
+
+                        <h5 class="card-title">
+                            {{ playlist }}
+                        </h5>
+
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}

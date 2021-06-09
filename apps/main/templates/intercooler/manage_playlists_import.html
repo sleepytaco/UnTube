@@ -1,0 +1,35 @@
+<br>
+<hr>
+<br>
+
+  <div class="container-fluid">
+<h2>Enter a Playlist link or list multiple Playlist links line by line</h2>
+<br>
+    <div id="import-playlists-from">
+      <textarea name="import-playlist-textarea" class="form-control bg-dark text-white" id="video-notes-text-area" placeholder="Enter here" rows="5"
+                hx-post="{% url 'manage_save' 'manage_playlists_import_textarea' %}"
+                hx-trigger="keyup changed delay:500ms"
+                hx-indicator="#spinner">{{ manage_playlists_import_textarea }}</textarea>
+        <!--
+        <input class="form-check-input mx-3 big-checkbox" type="checkbox" name="e" id="checkbox"> <br>
+        <input class="form-check-input mx-3 big-checkbox" type="checkbox" name="f" id="checkbox"> <br>
+        <input class="form-check-input mx-3 big-checkbox" type="checkbox" name="g" id="checkbox"> <br>
+        <input class="form-check-input mx-3 big-checkbox" type="checkbox" name="h" id="checkbox"> <br>
+        -->
+    </div>
+      <br>
+      <button type="button" hx-post="{% url 'manage_import_playlists' %}" hx-include="[id='import-playlists-from']" hx-target="#import-playlists-results" hx-indicator="#spinner" class="btn btn-success">Import!</button>
+
+        <div id="spinner" class="htmx-indicator">
+            <div class="spinner-border text-light" role="status">
+            </div>
+        </div>
+    <div id="import-playlists-results">
+
+    </div>
+
+
+  <br>
+
+
+  </div>

@@ -22,14 +22,11 @@ def home(request):
         if user_profile.import_in_progress:
             return render(request, "import_in_progress.html")
         else:
-            if user_profile.access_token == "" or user_profile.refresh_token == "":
+            if user_profile.access_token.strip() == "" or user_profile.refresh_token.strip() == "":
                 user_social_token = SocialToken.objects.get(account__user=request.user)
-                print("refresh toekn", user_social_token.token_secret)
-                print("access token", user_social_token.token)
                 user_profile.access_token = user_social_token.token
                 user_profile.refresh_token = user_social_token.token_secret
                 user_profile.expires_at = user_social_token.expires_at
-
                 request.user.save()
 
             user_profile.just_joined = False
@@ -112,15 +109,27 @@ def view_playlist(request, playlist_id):
 
 @login_required
 def all_playlists(request, playlist_type):
-    if playlist_type == "" or playlist_type.lower() == "all":
+    """
+    Possible playlist types for marked_as attribute: (saved in database like this)
+    "none", "watching", "plan-to-watch"
+    """
+    playlist_type = playlist_type.lower()
+
+    if playlist_type == "" or playlist_type == "all":
         playlists = request.user.profile.playlists.all()
         playlist_type_display = "All Playlists"
-    elif playlist_type.lower() == "favorites":
-        playlists = request.user.profile.playlists.filter(marked_as="favorite")
+    elif playlist_type == "user-owned":  # YT playlists owned by user
+        playlists = request.user.profile.playlists.all().filter(is_user_owned=True)
+        playlist_type_display = "Your YouTube Playlists"
+    elif playlist_type == "imported":  # YT playlists (public) owned by others
+        playlists = request.user.profile.playlists.all().filter(is_user_owned=False)
+        playlist_type_display = "Imported playlists"
+    elif playlist_type == "favorites":  # YT playlists (public) owned by others
+        playlists = request.user.profile.playlists.all().filter(is_favorite=True)
         playlist_type_display = "Favorites"
-    elif playlist_type.lower() == "watching":
-        playlists = request.user.profile.playlists.filter(marked_as="watching")
-        playlist_type_display = "Watching"
+    elif playlist_type.lower() in ["watching", "plan-to-watch"]:
+        playlists = request.user.profile.playlists.filter(marked_as=playlist_type.lower())
+        playlist_type_display = playlist_type.lower().replace("-", " ")
     elif playlist_type.lower() == "home":  # displays cards of all playlist types
         return render(request, 'playlists_home.html')
     else:
@@ -172,14 +181,19 @@ def order_playlists_by(request, playlist_type, order_by):
 def mark_playlist_as(request, playlist_id, mark_as):
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
 
-    if mark_as in ["none", "watching", "on-hold", "plan-to-watch"]:
-        playlist.marked_as = mark_as.replace("-", " ")
+    marked_as_response = ""
+
+    if mark_as in ["watching", "on-hold", "plan-to-watch"]:
+        playlist.marked_as = mark_as
         playlist.save()
-        videos = playlist.videos.all()
+        marked_as_response = f'<span class="badge bg-success text-white" >{mark_as.replace("-", " ")}</span>'
+    elif mark_as == "none":
+        playlist.marked_as = mark_as
+        playlist.save()
     else:
         return render('home')
 
-    return HttpResponse(mark_as.replace("-", " "))
+    return HttpResponse(marked_as_response)
 
 
 @login_required
@@ -197,26 +211,41 @@ def delete_videos(request):
 @login_required
 @require_POST
 def search_playlists(request, playlist_type):
-    # TODO: make an AJAX call to /search to search for a name in user's playlists
     print(request.POST)  # prints <QueryDict: {'search': ['aa']}>
 
     search_query = request.POST["search"]
 
-    print(search_query)
-
     if playlist_type == "all":
         try:
-            playlists = request.user.profile.playlists.filter(name__startswith=search_query)
+            playlists = request.user.profile.playlists.all().filter(name__startswith=search_query)
         except:
             playlists = request.user.profile.playlists.all()
         playlist_type_display = "All Playlists"
-    elif playlist_type == "watching":
+    elif playlist_type == "user-owned":  # YT playlists owned by user
+        try:
+            playlists = request.user.profile.playlists.filter(Q(name__startswith=search_query) & Q(is_user_owned=True))
+        except:
+            playlists = request.user.profile.playlists.filter(is_user_owned=True)
+        playlist_type_display = "Your YouTube Playlists"
+    elif playlist_type == "imported":  # YT playlists (public) owned by others
+        try:
+            playlists = request.user.profile.playlists.filter(Q(name__startswith=search_query) & Q(is_user_owned=False))
+        except:
+            playlists = request.user.profile.playlists.filter(is_user_owned=False)
+        playlist_type_display = "Imported Playlists"
+    elif playlist_type == "favorites":  # YT playlists (public) owned by others
+        try:
+            playlists = request.user.profile.playlists.filter(Q(name__startswith=search_query) & Q(is_favorite=True))
+        except:
+            playlists = request.user.profile.playlists.filter(is_favorite=True)
+        playlist_type_display = "Your Favorites"
+    elif playlist_type in ["watching", "plan-to-watch"]:
         try:
             playlists = request.user.profile.playlists.filter(
                 Q(name__startswith=search_query) & Q(marked_as=playlist_type))
         except:
-            playlists = request.user.profile.playlists.all()
-        playlist_type_display = "Watching"
+            playlists = request.user.profile.playlists.all().filter(marked_as=playlist_type)
+        playlist_type_display = playlist_type.replace("-", " ")
 
     return HttpResponse(loader.get_template("intercooler/playlists.html")
                         .render({"playlists": playlists,
@@ -225,7 +254,7 @@ def search_playlists(request, playlist_type):
                                  "search_query": search_query}))
 
 
-#### MANAGE VIDEOS
+#### MANAGE VIDEOS #####
 def mark_video_favortie(request, playlist_id, video_id):
     video = request.user.profile.playlists.get(playlist_id=playlist_id).videos.get(video_id=video_id)
 
@@ -238,6 +267,8 @@ def mark_video_favortie(request, playlist_id, video_id):
         video.save()
         return HttpResponse('<i class="fas fa-heart"></i>')
 
+
+###########
 
 @login_required
 @require_POST
@@ -282,3 +313,78 @@ def search_UnTube(request):
                                  "search_query": search_query,
                                  "starts_with": starts_with,
                                  "contains": contains}))
+
+
+@login_required
+def manage_playlists(request):
+    return render(request, "manage_playlists.html")
+
+
+@login_required
+def manage_view_page(request, page):
+    if page == "import":
+        return HttpResponse(loader.get_template("intercooler/manage_playlists_import.html")
+            .render(
+            {"manage_playlists_import_textarea": request.user.profile.manage_playlists_import_textarea}))
+    elif page == "create":
+        return HttpResponse("<br><hr><br><h2>Working on this.</h2>")
+    elif page == "untube":
+        return HttpResponse("<br><hr><br><h2>Coming soon. Maybe.</h2>")
+    else:
+        return redirect('home')
+
+
+@login_required
+@require_POST
+def manage_save(request, what):
+    if what == "manage_playlists_import_textarea":
+        request.user.profile.manage_playlists_import_textarea = request.POST["import-playlist-textarea"]
+        request.user.save()
+
+    return HttpResponse("")
+
+
+@login_required
+@require_POST
+def manage_import_playlists(request):
+    playlist_links = request.POST["import-playlist-textarea"].replace(",", "").split("\n")
+
+    num_playlists_already_in_db = 0
+    num_playlists_initialized_in_db = 0
+    num_playlists_not_found = 0
+    new_playlists = []
+    old_playlists = []
+    not_found_playlists = []
+    for playlist_link in playlist_links:
+        if playlist_link != "":
+            pl_id = Playlist.objects.getPlaylistId(playlist_link)
+            if pl_id is None:
+                num_playlists_not_found += 1
+                continue
+            status = Playlist.objects.initPlaylist(request.user, pl_id)
+            if status == -1 or status == -2:
+                print("\nNo such playlist found:", pl_id)
+                num_playlists_not_found += 1
+                not_found_playlists.append(playlist_link)
+            elif status == -3:
+                num_playlists_already_in_db += 1
+                playlist = request.user.profile.playlists.get(playlist_id__exact=pl_id)
+                old_playlists.append(playlist)
+            else:
+                print(status)
+                playlist = request.user.profile.playlists.get(playlist_id__exact=pl_id)
+                new_playlists.append(playlist)
+                num_playlists_initialized_in_db += 1
+
+    request.user.profile.manage_playlists_import_textarea = ""
+    request.user.save()
+
+    return HttpResponse(loader.get_template("intercooler/manage_playlists_import_results.html")
+        .render(
+        {"new_playlists": new_playlists,
+         "old_playlists": old_playlists,
+         "not_found_playlists": not_found_playlists,
+         "num_playlists_already_in_db": num_playlists_already_in_db,
+         "num_playlists_initialized_in_db": num_playlists_initialized_in_db,
+         "num_playlists_not_found": num_playlists_not_found
+         }))

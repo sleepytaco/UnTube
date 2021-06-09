@@ -54,10 +54,6 @@ def log_out(request):
     return redirect('/')
 
 
-def test(request):
-    return render(request, 'test.html')
-
-
 def start_import(request):
     '''
     Initializes only the user's playlist data in the database. Returns the progress bar, which will
@@ -67,7 +63,7 @@ def start_import(request):
     '''
     user_profile = request.user.profile
 
-    if user_profile.access_token == "" or user_profile.refresh_token == "":
+    if user_profile.access_token.strip() == "" or user_profile.refresh_token.strip() == "":
         user_social_token = SocialToken.objects.get(account__user=request.user)
         user_profile.access_token = user_social_token.token
         user_profile.refresh_token = user_social_token.token_secret

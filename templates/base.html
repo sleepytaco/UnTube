@@ -65,16 +65,16 @@
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 <li><a class="dropdown-item" href="{% url 'all_playlists' 'favorites' %}">Favorites</a></li>
                                 <li><a class="dropdown-item" href="{% url 'all_playlists' 'watching' %}">Watching</a></li>
-                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'watching' %}">On Hold</a></li>
-                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'watching' %}">YouTube</a></li>
-                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'watching' %}">UnTube</a></li>
+                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'plan-to-watch' %}">Plan to Watch</a></li>
+                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'user-owned' %}">Your YT Playlists</a></li>
+                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'imported' %}">Imported</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'all_playlists' 'all' %}">View all</a></li>
                             </ul>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'all_playlists' 'home' %}">Manage</a>
+                            <a class="nav-link" href="{% url 'manage_playlists' %}">Manage</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="offcanvas" href="#offcanvasExample" role="button" aria-controls="offcanvasExample">

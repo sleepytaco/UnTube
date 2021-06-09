@@ -66,6 +66,13 @@ def getThumbnailURL(thumbnails):
 
 class PlaylistManager(models.Manager):
 
+    def getPlaylistId(self, video_link):
+        temp = video_link.split("?")[-1].split("&")
+
+        for el in temp:
+            if "list=" in el:
+                return el.split("list=")[-1]
+
     # Returns True if the video count for a playlist on UnTube and video count on same playlist on YouTube is different
     def checkIfPlaylistChangedOnYT(self, user, pl_id):
         credentials = Credentials(
@@ -172,6 +179,7 @@ class PlaylistManager(models.Manager):
     # Set pl_id as None to retrive all the playlists from authenticated user. Playlists already imported will be skipped by default.
     # Set pl_id = <valid playlist id>, to import that specific playlist into the user's account
     def initPlaylist(self, user, pl_id):  # takes in playlist id and saves all of the vids in user's db
+
         current_user = user.profile
 
         credentials = Credentials(
@@ -248,6 +256,8 @@ class PlaylistManager(models.Manager):
                 if playlist.video_count != item['contentDetails']['itemCount']:
                     playlist.has_playlist_changed = True
                     playlist.save()
+
+                return -3
             else:  # no such playlist in database
                 ### MAKE THE PLAYLIST AND LINK IT TO CURRENT_USER
                 playlist = Playlist(  # create the playlist and link it to current user
@@ -425,13 +435,15 @@ class PlaylistManager(models.Manager):
                     playlist.has_unavailable_videos = True
 
                 playlist.is_in_db = True
-
+                playlist.is_user_owned = False
                 playlist.save()
 
         if pl_id is None:
             user.profile.just_joined = False
             user.profile.import_in_progress = False
             user.save()
+
+        return 0
 
     def getAllPlaylistsFromYT(self, user):
         '''
@@ -751,12 +763,12 @@ class Playlist(models.Model):
 
     # manage playlist
     marked_as = models.CharField(default="",
-                                 max_length=100)  # can be set to "none", "watching", "on hold", "plan to watch"
+                                 max_length=100)  # can be set to "none", "watching", "on-hold", "plan-to-watch"
     is_favorite = models.BooleanField(default=False, blank=True)  # to mark playlist as fav
     num_of_accesses = models.IntegerField(default="0")  # tracks num of times this playlist was opened by user
     has_playlist_changed = models.BooleanField(default=False)  # determines whether playlist was modified online or not
     is_private_on_yt = models.BooleanField(default=False)
-    is_from_yt = models.BooleanField(default=True)
+    is_user_owned = models.BooleanField(default=True)  # represents YouTube playlist owned by user
     has_duplicate_videos = models.BooleanField(default=False)  # duplicate videos will not be shown on site
 
     # for UI

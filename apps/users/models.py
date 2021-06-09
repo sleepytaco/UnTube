@@ -31,6 +31,9 @@ class Profile(models.Model):
     refresh_token = models.TextField(default="")
     expires_at = models.DateTimeField(blank=True, null=True)
 
+    # website contexts
+    manage_playlists_import_textarea = models.CharField(max_length=420, default="")
+
 
 # as soon as one User object is created, create an associated profile object
 @receiver(post_save, sender=User)

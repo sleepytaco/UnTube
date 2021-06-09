@@ -27,4 +27,10 @@ urlpatterns = [
     path("search/playlists/<slug:playlist_type>", views.search_playlists, name="search_playlists"),
     path("playlists/<slug:playlist_type>", views.all_playlists, name='all_playlists'),
     path("playlists/<slug:playlist_type>/order-by/<slug:order_by>", views.order_playlists_by, name='order_playlists_by'),
+
+    ### STUFF RELATED TO MANAGING A PLAYLIST
+    path("manage", views.manage_playlists, name='manage_playlists'),
+    path("manage/save/<slug:what>", views.manage_save, name='manage_save'),  # to help auto save the input texts found in the below pages
+    path("manage/view/<slug:page>", views.manage_view_page, name='manage_view_page'),  # views the import pl, create pl, create untube pl pages
+    path("manage/import", views.manage_import_playlists, name="manage_import_playlists")
 ]
