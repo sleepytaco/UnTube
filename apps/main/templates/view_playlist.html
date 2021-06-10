@@ -5,10 +5,9 @@
 {% block content %}
 
     {% if playlist.has_playlist_changed %}
-    <br>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        Looks like this playlist changed on YouTube! <a href="#" class="link-success">Update!</a>
-        <a href="#" class="link-primary">Why tf aren't you doing this automatically?</a>
+        {{ playlist.playlist_changed_text }} <a href="#" class="link-success">Update!</a>
+        <a href="#" class="link-primary">Why aren't you doing this automatically?</a>
 
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>

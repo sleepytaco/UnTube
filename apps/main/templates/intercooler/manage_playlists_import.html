@@ -18,12 +18,15 @@
         -->
     </div>
       <br>
-      <button type="button" hx-post="{% url 'manage_import_playlists' %}" hx-include="[id='import-playlists-from']" hx-target="#import-playlists-results" hx-indicator="#spinner" class="btn btn-success">Import!</button>
+      <div class="d-flex justify-content-start">
+          <button type="button" hx-post="{% url 'manage_import_playlists' %}" hx-include="[id='import-playlists-from']" hx-target="#import-playlists-results" hx-indicator="#spinner" class="btn btn-success">Import!</button>
 
-        <div id="spinner" class="htmx-indicator">
-            <div class="spinner-border text-light" role="status">
+            <div id="spinner" class="htmx-indicator ms-3 mt-2">
+                <div class="spinner-border text-light" role="status">
+                </div>
             </div>
-        </div>
+      </div>
+      <br>
     <div id="import-playlists-results">
 
     </div>

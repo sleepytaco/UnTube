@@ -9,14 +9,15 @@ from apps.users.models import Profile
 import re
 from datetime import timedelta
 from googleapiclient.discovery import build
-from UnTube import settings
+from UnTube.secrets import SECRETS
 
 import pytz
-
 
 # Create your models here.
 
 input = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+
+
 def getVideoIdsStrings(video_ids):
     output = []
 
@@ -66,23 +67,15 @@ def getThumbnailURL(thumbnails):
 
 class PlaylistManager(models.Manager):
 
-    def getPlaylistId(self, video_link):
-        temp = video_link.split("?")[-1].split("&")
-
-        for el in temp:
-            if "list=" in el:
-                return el.split("list=")[-1]
-
-    # Returns True if the video count for a playlist on UnTube and video count on same playlist on YouTube is different
-    def checkIfPlaylistChangedOnYT(self, user, pl_id):
+    def getCredentials(self, user):
         credentials = Credentials(
             user.profile.access_token,
             refresh_token=user.profile.refresh_token,
             # id_token=session.token.get("id_token"),
             token_uri="https://oauth2.googleapis.com/token",
-            client_id="901333803283-1lscbdmukcjj3qp0t3relmla63h6l9k6.apps.googleusercontent.com",
-            client_secret="ekdBniL-_mAnNPwCmugfIL2q",
-            scopes=['https://www.googleapis.com/auth/youtube']
+            client_id=SECRETS["GOOGLE_OAUTH_CLIENT_ID"],
+            client_secret=SECRETS["GOOGLE_OAUTH_CLIENT_SECRET"],
+            scopes=SECRETS["GOOGLE_OAUTH_SCOPES"]
         )
 
         credentials.expiry = user.profile.expires_at.replace(tzinfo=None)
@@ -94,6 +87,20 @@ class PlaylistManager(models.Manager):
             user.profile.access_token = credentials.token
             user.profile.refresh_token = credentials.refresh_token
             user.save()
+
+        return credentials
+
+    def getPlaylistId(self, video_link):
+        temp = video_link.split("?")[-1].split("&")
+
+        for el in temp:
+            if "list=" in el:
+                return el.split("list=")[-1]
+
+    # Returns True if the video count for a playlist on UnTube and video count on same playlist on YouTube is different
+    def checkIfPlaylistChangedOnYT(self, user, pl_id):
+
+        credentials = self.getCredentials(user)
 
         with build('youtube', 'v3', credentials=credentials) as youtube:
             pl_request = youtube.playlists().list(
@@ -137,27 +144,14 @@ class PlaylistManager(models.Manager):
 
                 # check if playlist count changed on youtube
                 if playlist.video_count != item['contentDetails']['itemCount']:
-                    playlist.has_playlist_changed = True
-                    playlist.save()
+                    return [-1, item['contentDetails']['itemCount']]
+
+        return [0, "no change"]
 
     # Used to check if the user has a vaild YouTube channel
     # Will return -1 if user does not have a YouTube channel
     def getUserYTChannelID(self, user):
-        credentials = Credentials(
-            user.profile.access_token,
-            refresh_token=user.profile.refresh_token,
-            # id_token=session.token.get("id_token"),
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id="901333803283-1lscbdmukcjj3qp0t3relmla63h6l9k6.apps.googleusercontent.com",
-            client_secret="ekdBniL-_mAnNPwCmugfIL2q",
-            scopes=['https://www.googleapis.com/auth/youtube']
-        )
-
-        credentials.expiry = user.profile.expires_at.replace(tzinfo=None)
-
-        if not credentials.valid:
-            # if credentials and credentials.expired and credentials.refresh_token:
-            credentials.refresh(Request())
+        credentials = self.getCredentials(user)
 
         with build('youtube', 'v3', credentials=credentials) as youtube:
             pl_request = youtube.channels().list(
@@ -182,25 +176,7 @@ class PlaylistManager(models.Manager):
 
         current_user = user.profile
 
-        credentials = Credentials(
-            user.profile.access_token,
-            refresh_token=user.profile.refresh_token,
-            # id_token=session.token.get("id_token"),
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id="901333803283-1lscbdmukcjj3qp0t3relmla63h6l9k6.apps.googleusercontent.com",
-            client_secret="ekdBniL-_mAnNPwCmugfIL2q",
-            scopes=['https://www.googleapis.com/auth/youtube']
-        )
-
-        credentials.expiry = user.profile.expires_at.replace(tzinfo=None)
-
-        if not credentials.valid:
-            # if credentials and credentials.expired and credentials.refresh_token:
-            credentials.refresh(Request())
-            user.profile.expires_at = credentials.expiry
-            user.profile.access_token = credentials.token
-            user.profile.refresh_token = credentials.refresh_token
-            user.save()
+        credentials = self.getCredentials(user)
 
         with build('youtube', 'v3', credentials=credentials) as youtube:
             if pl_id is not None:
@@ -457,25 +433,7 @@ class PlaylistManager(models.Manager):
 
         current_user = user.profile
 
-        credentials = Credentials(
-            user.profile.access_token,
-            refresh_token=user.profile.refresh_token,
-            # id_token=session.token.get("id_token"),
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id="901333803283-1lscbdmukcjj3qp0t3relmla63h6l9k6.apps.googleusercontent.com",
-            client_secret="ekdBniL-_mAnNPwCmugfIL2q",
-            scopes=['https://www.googleapis.com/auth/youtube']
-        )
-
-        credentials.expiry = user.profile.expires_at.replace(tzinfo=None)
-
-        if not credentials.valid:
-            # if credentials and credentials.expired and credentials.refresh_token:
-            credentials.refresh(Request())
-            user.profile.expires_at = credentials.expiry
-            user.profile.access_token = credentials.token
-            user.profile.refresh_token = credentials.refresh_token
-            user.save()
+        credentials = self.getCredentials(user)
 
         with build('youtube', 'v3', credentials=credentials) as youtube:
             pl_request = youtube.playlists().list(
@@ -555,25 +513,7 @@ class PlaylistManager(models.Manager):
 
         current_user = user.profile
 
-        credentials = Credentials(
-            user.profile.access_token,
-            refresh_token=user.profile.refresh_token,
-            # id_token=session.token.get("id_token"),
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id="901333803283-1lscbdmukcjj3qp0t3relmla63h6l9k6.apps.googleusercontent.com",
-            client_secret="ekdBniL-_mAnNPwCmugfIL2q",
-            scopes=['https://www.googleapis.com/auth/youtube']
-        )
-
-        credentials.expiry = user.profile.expires_at.replace(tzinfo=None)
-
-        if not credentials.valid:
-            # if credentials and credentials.expired and credentials.refresh_token:
-            credentials.refresh(Request())
-            user.profile.expires_at = credentials.expiry
-            user.profile.access_token = credentials.token
-            user.profile.refresh_token = credentials.refresh_token
-            user.save()
+        credentials = self.getCredentials(user)
 
         playlist = current_user.playlists.get(playlist_id__exact=playlist_id)
 
@@ -766,10 +706,12 @@ class Playlist(models.Model):
                                  max_length=100)  # can be set to "none", "watching", "on-hold", "plan-to-watch"
     is_favorite = models.BooleanField(default=False, blank=True)  # to mark playlist as fav
     num_of_accesses = models.IntegerField(default="0")  # tracks num of times this playlist was opened by user
-    has_playlist_changed = models.BooleanField(default=False)  # determines whether playlist was modified online or not
     is_private_on_yt = models.BooleanField(default=False)
     is_user_owned = models.BooleanField(default=True)  # represents YouTube playlist owned by user
     has_duplicate_videos = models.BooleanField(default=False)  # duplicate videos will not be shown on site
+
+    has_playlist_changed = models.BooleanField(default=False)  # determines whether playlist was modified online or not
+    playlist_changed_text = models.CharField(max_length=420, default="")  # user friendly text to display what changed and how much changed
 
     # for UI
     view_in_grid_mode = models.BooleanField(default=False)  # if False, videso will be showed in a list

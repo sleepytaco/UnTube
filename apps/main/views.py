@@ -100,7 +100,26 @@ def view_playlist(request, playlist_id):
     videos = playlist.videos.all()
 
     if not playlist.has_playlist_changed:
-        Playlist.objects.checkIfPlaylistChangedOnYT(request.user, playlist_id)
+        print("Checking if playlist changed...")
+        result = Playlist.objects.checkIfPlaylistChangedOnYT(request.user, playlist_id)
+
+        if result[0] == -1:  # playlist changed
+            print("!!!Playlist changed")
+
+            current_playlist_vid_count = playlist.video_count
+            new_playlist_vid_count = result[1]
+
+            print(current_playlist_vid_count)
+            print(new_playlist_vid_count)
+
+            if current_playlist_vid_count > new_playlist_vid_count:
+                playlist.playlist_changed_text = f"Looks like {current_playlist_vid_count - new_playlist_vid_count} video(s) were deleted from this playlist on YouTube!"
+            else:
+                playlist.playlist_changed_text = f"Looks like {new_playlist_vid_count - current_playlist_vid_count} video(s) were added to this playlist on YouTube!"
+
+            playlist.has_playlist_changed = True
+            playlist.save()
+            print(playlist.playlist_changed_text)
 
     return render(request, 'view_playlist.html', {"playlist": playlist,
                                                   "videos": videos,

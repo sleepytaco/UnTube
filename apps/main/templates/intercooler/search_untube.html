@@ -4,7 +4,7 @@
        name="search" placeholder="Search UnTube"
                    value="{{ search_query }}"
        hx-post="{% url 'search_UnTube' %}"
-       hx-trigger="keyup changed delay:200ms"
+       hx-trigger="keyup changed delay:1s"
        hx-target="#untube-searchbar-results"
                    hx-include="[id='searchbar-radio-form']"
        hx-indicator=".htmx-indicator" autofocus onfocus="this.setSelectionRange(this.value.length,this.value.length);">
@@ -87,7 +87,11 @@
                                 <h5 class="card-title text-light">
                                     {{ video.name }}<br>
 
-                                    <small><span class="badge bg-dark text-white-50">{{ video.duration }}</span></small>
+                                    <small>
+                                        <a class="badge bg-white text-black-50" href="{% url 'playlist' video.playlist.playlist_id %}">{{ video.playlist.name }}</a>
+
+                                        <span class="badge bg-dark text-white-50">{{ video.duration }}</span>
+                                    </small>
                                     {% if video.is_unavailable_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
                                     {% if video.has_cc %}<small><span class="badge bg-danger text-dark">CC</span></small> {% endif %}
                                 </h5>
