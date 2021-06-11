@@ -1,27 +1,12 @@
 
-{% extends 'base.html' %}
 {% load humanize %}
 {% load static %}
 
-{% block content %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ playlist_changed_text|linebreaksbr }}
 
-
-
-    {% if playlist.has_playlist_changed %}
-
-        <div hx-get="{% url 'update_playlist' playlist.playlist_id %}" hx-trigger="load" hx-swap="outerHTML">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ playlist.playlist_changed_text|linebreaksbr|default:"Looks like the playlist on YouTube was modified!" }}
-
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <div class="d-flex justify-content-center mt-4 mb-3" id="loading-sign">
-                <img src="{% static 'svg-loaders/circles.svg' %}" width="40" height="40">
-                <h5 class="mt-2 ms-2">Updating playlist '{{ playlist.name }}', please wait!</h5>
-            </div>
-        </div>
-    {% else %}
-    <br>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 
     <div class="list-group-item list-group-item-action active">
         <div class="d-flex w-100 justify-content-between">
@@ -86,19 +71,6 @@
 
             <div class="bd-highlight">
                 <div class="btn-toolbar mb-2 mb-md-0">
-
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-secondary">
-                                <i class="fas fa-sync"></i>
-                            </button>
-                        </div>
-
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-danger">
-                                <i class="fas fa-dumpster-fire"></i>
-                            </button>
-                        </div>
-
 
                         <div class="btn-group me-2">
                             <button type="button" class="btn btn-outline-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -201,11 +173,9 @@
                         <span class="badge bg-secondary">{{ video.duration }}</span>
                         {% if video.has_cc %}<span class="badge bg-secondary">CC</span>{% endif %}
                         {% if video.published_at %}<span class="badge bg-secondary">{{ video.published_at }}</span>{% endif %}
-                      {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
-
+                        {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
                         {% if video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}
                         {% if video.video_details_modified %}<span class="badge bg-danger">UPDATED - {% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}NEWLY ADDED{% endif %}</span>{% endif %}<br>
-                        <br>
                     </div>
             </div>
             <div class="ms-5">
@@ -238,8 +208,3 @@
             </li>
 
         {% endfor %}
-
-    {% endif %}
-        </div>
-    </div>
-{% endblock %}

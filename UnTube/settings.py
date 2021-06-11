@@ -104,7 +104,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-SITE_ID = 3
+SITE_ID = 6
 
 LOGIN_URL = '/'
 

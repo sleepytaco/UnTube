@@ -11,5 +11,4 @@ urlpatterns = [
 
     path("import/start", views.start_import, name='start'),
     path("import/continue", views.continue_import, name='continue'),
-
 ]

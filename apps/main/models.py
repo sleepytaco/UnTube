@@ -1,3 +1,5 @@
+import datetime
+
 import googleapiclient.errors
 from django.db import models
 from django.db.models import Q
@@ -99,8 +101,17 @@ class PlaylistManager(models.Manager):
 
     # Returns True if the video count for a playlist on UnTube and video count on same playlist on YouTube is different
     def checkIfPlaylistChangedOnYT(self, user, pl_id):
+        """
+        If full_scan is true, the whole playlist (i.e each and every video from the PL on YT and PL on UT, is scanned and compared)
+        is scanned to see if there are any missing/deleted/newly added videos. This will be only be done
+        weekly by looking at the playlist.last_full_scan_at
 
+        If full_scan is False, only the playlist count difference on YT and UT is checked on every visit
+        to the playlist page. This is done everytime.
+        """
         credentials = self.getCredentials(user)
+
+        playlist = user.profile.playlists.get(playlist_id=pl_id)
 
         with build('youtube', 'v3', credentials=credentials) as youtube:
             pl_request = youtube.playlists().list(
@@ -142,10 +153,84 @@ class PlaylistManager(models.Manager):
                 # POSSIBLE CASES:
                 # 1. PLAYLIST HAS DUPLICATE VIDEOS, DELETED VIDS, UNAVAILABLE VIDS
 
-                # check if playlist count changed on youtube
+                # check if playlist changed on youtube
                 if playlist.video_count != item['contentDetails']['itemCount']:
                     return [-1, item['contentDetails']['itemCount']]
 
+        # if its been a week since the last full scan, do a full playlist scan
+        # basically checks all the playlist video for any updates
+        if playlist.last_full_scan_at + datetime.timedelta(days=7) < datetime.datetime.now(pytz.utc):
+            print("DOING A FULL SCAN")
+            current_video_ids = [video.video_id for video in playlist.videos.all()]
+
+            deleted_videos, unavailable_videos, added_videos = 0, 0, 0
+
+            ### GET ALL VIDEO IDS FROM THE PLAYLIST
+            video_ids = []  # stores list of all video ids for a given playlist
+            with build('youtube', 'v3', credentials=credentials) as youtube:
+                pl_request = youtube.playlistItems().list(
+                    part='contentDetails, snippet, status',
+                    playlistId=playlist_id,  # get all playlist videos details for this playlist id
+                    maxResults=50
+                )
+
+                # execute the above request, and store the response
+                pl_response = pl_request.execute()
+
+                for item in pl_response['items']:
+                    video_id = item['contentDetails']['videoId']
+
+                    if playlist.videos.filter(video_id=video_id).count() == 0:  # video DNE in playlist, its a new vid
+                        added_videos += 1
+                        video_ids.append(video_id)
+                    else:  # video found in db
+                        if video_id in current_video_ids:
+                            video_ids.append(video_id)
+                            current_video_ids.remove(video_id)
+
+                        video = playlist.videos.get(video_id=video_id)
+                        # check if the video became unavailable on youtube
+                        if not video.is_unavailable_on_yt:
+                            if (item['snippet']['title'] == "Deleted video" and
+                                item['snippet']['description'] == "This video is unavailable.") or (
+                                    item['snippet']['title'] == "Private video" and item['snippet'][
+                                'description'] == "This video is private."):
+                                unavailable_videos += 1
+
+                while True:
+                    try:
+                        pl_request = youtube.playlistItems().list_next(pl_request, pl_response)
+                        pl_response = pl_request.execute()
+                        for item in pl_response['items']:
+                            video_id = item['contentDetails']['videoId']
+
+                            if playlist.videos.filter(video_id=video_id).count() == 0:  # video DNE
+                                added_videos += 1
+                                video_ids.append(video_id)
+                            else:  # video found in db
+                                if video_id in current_video_ids:
+                                    video_ids.append(video_id)
+                                    current_video_ids.remove(video_id)
+
+                                video = playlist.videos.get(video_id=video_id)
+                                # check if the video became unavailable on youtube
+                                if not video.is_unavailable_on_yt:
+                                    if (item['snippet']['title'] == "Deleted video" and
+                                        item['snippet']['description'] == "This video is unavailable.") or (
+                                            item['snippet']['title'] == "Private video" and item['snippet'][
+                                        'description'] == "This video is private."):
+                                        unavailable_videos += 1
+
+                    except AttributeError:
+                        break
+
+            playlist.last_full_scan_at = datetime.datetime.now(pytz.utc)
+
+            playlist.save()
+
+            deleted_videos = len(current_video_ids)  # left out video ids
+
+            return [1, deleted_videos, unavailable_videos, added_videos]
         return [0, "no change"]
 
     # Used to check if the user has a vaild YouTube channel
@@ -225,6 +310,7 @@ class PlaylistManager(models.Manager):
                 playlist = current_user.playlists.get(playlist_id__exact=playlist_id)
                 print(f"PLAYLIST {playlist.name} ALREADY EXISTS IN DB")
 
+
                 # POSSIBLE CASES:
                 # 1. PLAYLIST HAS DUPLICATE VIDEOS, DELETED VIDS, UNAVAILABLE VIDS
 
@@ -277,6 +363,7 @@ class PlaylistManager(models.Manager):
                                     item['snippet']['title'] == "Private video" and item['snippet'][
                                 'description'] == "This video is private."):
                                 video = Video(
+                                    playlist_item_id=item["id"],
                                     video_id=video_id,
                                     name=item['snippet']['title'],
                                     is_unavailable_on_yt=True,
@@ -286,6 +373,7 @@ class PlaylistManager(models.Manager):
                                 video.save()
                             else:
                                 video = Video(
+                                    playlist_item_id=item["id"],
                                     video_id=video_id,
                                     published_at=item['contentDetails']['videoPublishedAt'] if 'videoPublishedAt' in
                                                                                                item[
@@ -328,6 +416,7 @@ class PlaylistManager(models.Manager):
                                             item['snippet']['description'] == "This video is private."):
 
                                         video = Video(
+                                            playlist_item_id=item["id"],
                                             video_id=video_id,
                                             published_at=item['contentDetails'][
                                                 'videoPublishedAt'] if 'videoPublishedAt' in item[
@@ -340,6 +429,7 @@ class PlaylistManager(models.Manager):
                                         video.save()
                                     else:
                                         video = Video(
+                                            playlist_item_id=item["id"],
                                             video_id=video_id,
                                             published_at=item['contentDetails'][
                                                 'videoPublishedAt'] if 'videoPublishedAt' in item[
@@ -510,7 +600,6 @@ class PlaylistManager(models.Manager):
         return result
 
     def getAllVideosForPlaylist(self, user, playlist_id):
-
         current_user = user.profile
 
         credentials = self.getCredentials(user)
@@ -538,6 +627,7 @@ class PlaylistManager(models.Manager):
                             item['snippet']['title'] == "Private video" and item['snippet'][
                         'description'] == "This video is private."):
                         video = Video(
+                            playlist_item_id=item["id"],
                             video_id=video_id,
                             name=item['snippet']['title'],
                             is_unavailable_on_yt=True,
@@ -547,6 +637,7 @@ class PlaylistManager(models.Manager):
                         video.save()
                     else:
                         video = Video(
+                            playlist_item_id=item["id"],
                             video_id=video_id,
                             published_at=item['contentDetails']['videoPublishedAt'] if 'videoPublishedAt' in
                                                                                        item[
@@ -589,6 +680,7 @@ class PlaylistManager(models.Manager):
                                 'description'] == "This video is private."):
 
                                 video = Video(
+                                    playlist_item_id=item["id"],
                                     video_id=video_id,
                                     published_at=item['contentDetails'][
                                         'videoPublishedAt'] if 'videoPublishedAt' in item[
@@ -601,6 +693,7 @@ class PlaylistManager(models.Manager):
                                 video.save()
                             else:
                                 video = Video(
+                                    playlist_item_id=item["id"],
                                     video_id=video_id,
                                     published_at=item['contentDetails'][
                                         'videoPublishedAt'] if 'videoPublishedAt' in item[
@@ -675,6 +768,219 @@ class PlaylistManager(models.Manager):
 
         playlist.save()
 
+    def updatePlaylist(self, user, playlist_id):
+        current_user = user.profile
+
+        credentials = self.getCredentials(user)
+
+        playlist = current_user.playlists.get(playlist_id__exact=playlist_id)
+        playlist.has_duplicate_videos = False  # reset this to false for now
+
+        current_video_ids = [video.video_id for video in playlist.videos.all()]
+
+        updated_playlist_video_count = 0
+
+        deleted_videos, unavailable_videos, added_videos = [], [], []
+
+        ### GET ALL VIDEO IDS FROM THE PLAYLIST
+        video_ids = []  # stores list of all video ids for a given playlist
+        with build('youtube', 'v3', credentials=credentials) as youtube:
+            pl_request = youtube.playlistItems().list(
+                part='contentDetails, snippet, status',
+                playlistId=playlist_id,  # get all playlist videos details for this playlist id
+                maxResults=50
+            )
+
+            # execute the above request, and store the response
+            pl_response = pl_request.execute()
+
+            print("ESTIMATED VIDEO IDS FROM RESPONSE", len(pl_response["items"]))
+            updated_playlist_video_count += len(pl_response["items"])
+            for item in pl_response['items']:
+                video_id = item['contentDetails']['videoId']
+
+                if playlist.videos.filter(video_id=video_id).count() == 0:  # video DNE in playlist, add it
+                    if (item['snippet']['title'] == "Deleted video" and
+                        item['snippet']['description'] == "This video is unavailable.") or (
+                            item['snippet']['title'] == "Private video" and item['snippet'][
+                        'description'] == "This video is private."):
+                        video = Video(
+                            playlist_item_id=item["id"],
+                            video_id=video_id,
+                            name=item['snippet']['title'],
+                            is_unavailable_on_yt=True,
+                            playlist=playlist,
+                            video_position=item['snippet']['position'] + 1
+                        )
+                    else:
+                        video = Video(
+                            playlist_item_id=item["id"],
+                            video_id=video_id,
+                            published_at=item['contentDetails']['videoPublishedAt'] if 'videoPublishedAt' in
+                                                                                       item[
+                                                                                           'contentDetails'] else None,
+                            name=item['snippet']['title'],
+                            thumbnail_url=getThumbnailURL(item['snippet']['thumbnails']),
+                            channel_id=item['snippet']['channelId'],
+                            channel_name=item['snippet']['channelTitle'],
+                            description=item['snippet']['description'],
+                            video_position=item['snippet']['position'] + 1,
+                            playlist=playlist
+                        )
+
+                    video.video_details_modified = True
+                    video.video_details_modified_at = datetime.datetime.now(tz=pytz.utc)
+                    video.save()
+                    added_videos.append(video)
+                    video_ids.append(video_id)
+                else:  # video found in db
+                    video = playlist.videos.get(video_id=video_id)
+
+                    if video_id in current_video_ids:
+                        video.video_position = item['snippet']['position'] + 1  # update video position to the one on YT
+                        video_ids.append(video_id)
+                        current_video_ids.remove(video_id)
+                    else:
+                        video.is_duplicate = True
+                        playlist.has_duplicate_videos = True
+
+                    # check if the video became unavailable on youtube
+                    if not video.is_unavailable_on_yt:
+                        if (item['snippet']['title'] == "Deleted video" and
+                            item['snippet']['description'] == "This video is unavailable.") or (
+                                item['snippet']['title'] == "Private video" and item['snippet'][
+                            'description'] == "This video is private."):
+                            video.was_deleted_on_yt = True  # video went private on YouTube
+                            video.video_details_modified = True
+                            video.video_details_modified_at = datetime.datetime.now(tz=pytz.utc)
+                            unavailable_videos.append(video)
+
+                    video.save()
+
+            while True:
+                try:
+                    pl_request = youtube.playlistItems().list_next(pl_request, pl_response)
+                    pl_response = pl_request.execute()
+                    updated_playlist_video_count += len(pl_response["items"])
+                    for item in pl_response['items']:
+                        video_id = item['contentDetails']['videoId']
+
+                        if playlist.videos.filter(video_id=video_id).count() == 0:  # video DNE
+                            if (item['snippet']['title'] == "Deleted video" and
+                                item['snippet']['description'] == "This video is unavailable.") or (
+                                    item['snippet']['title'] == "Private video" and item['snippet'][
+                                'description'] == "This video is private."):
+
+                                video = Video(
+                                    playlist_item_id=item["id"],
+                                    video_id=video_id,
+                                    published_at=item['contentDetails'][
+                                        'videoPublishedAt'] if 'videoPublishedAt' in item[
+                                        'contentDetails'] else None,
+                                    name=item['snippet']['title'],
+                                    is_unavailable_on_yt=True,
+                                    playlist=playlist,
+                                    video_position=item['snippet']['position'] + 1
+                                )
+                            else:
+                                video = Video(
+                                    playlist_item_id=item["id"],
+                                    video_id=video_id,
+                                    published_at=item['contentDetails'][
+                                        'videoPublishedAt'] if 'videoPublishedAt' in item[
+                                        'contentDetails'] else None,
+                                    name=item['snippet']['title'],
+                                    thumbnail_url=getThumbnailURL(item['snippet']['thumbnails']),
+                                    channel_id=item['snippet']['channelId'],
+                                    channel_name=item['snippet']['channelTitle'],
+                                    video_position=item['snippet']['position'] + 1,
+                                    playlist=playlist
+                                )
+
+                            video.video_details_modified = True
+                            video.video_details_modified_at = datetime.datetime.now(tz=pytz.utc)
+                            video.save()
+
+                            added_videos.append(video)
+                            video_ids.append(video_id)
+                        else:  # video found in db
+                            video = playlist.videos.get(video_id=video_id)
+
+                            video.video_position = item['snippet']['position'] + 1  # update video position
+
+                            if video_id in current_video_ids:
+                                video.is_duplicate = False
+                                current_video_ids.remove(video_id)
+                            else:
+                                video.is_duplicate = True
+                                playlist.has_duplicate_videos = True
+
+                            # check if the video became unavailable on youtube
+                            if not video.is_unavailable_on_yt:
+                                if (item['snippet']['title'] == "Deleted video" and
+                                    item['snippet']['description'] == "This video is unavailable.") or (
+                                        item['snippet']['title'] == "Private video" and item['snippet'][
+                                    'description'] == "This video is private."):
+                                    video.was_deleted_on_yt = True
+                                    video.video_details_modified = True
+                                    video.video_details_modified_at = datetime.datetime.now(tz=pytz.utc)
+                                    unavailable_videos.append(video)
+                            video.save()
+                except AttributeError:
+                    break
+
+            # API expects the video ids to be a string of comma seperated values, not a python list
+            video_ids_strings = getVideoIdsStrings(video_ids)
+
+            # store duration of all the videos in the playlist
+            vid_durations = []
+
+            for video_ids_string in video_ids_strings:
+                # query the videos resource using API with the string above
+                vid_request = youtube.videos().list(
+                    part="contentDetails,player,snippet,statistics",  # get details of eac video
+                    id=video_ids_string,
+                    maxResults=50
+                )
+
+                vid_response = vid_request.execute()
+
+                for item in vid_response['items']:
+                    duration = item['contentDetails']['duration']
+                    vid = playlist.videos.get(video_id=item['id'])
+
+                    vid.duration = duration.replace("PT", "")
+                    vid.duration_in_seconds = calculateDuration([duration])
+                    vid.has_cc = True if item['contentDetails']['caption'].lower() == 'true' else False
+                    vid.view_count = item['statistics']['viewCount'] if 'viewCount' in item[
+                        'statistics'] else -1
+                    vid.like_count = item['statistics']['likeCount'] if 'likeCount' in item[
+                        'statistics'] else -1
+                    vid.dislike_count = item['statistics']['dislikeCount'] if 'dislikeCount' in item[
+                        'statistics'] else -1
+                    vid.yt_player_HTML = item['player']['embedHtml'] if 'embedHtml' in item['player'] else ''
+                    vid.save()
+
+                    vid_durations.append(duration)
+
+        playlist_duration_in_seconds = calculateDuration(vid_durations)
+
+        playlist.playlist_duration_in_seconds = playlist_duration_in_seconds
+        playlist.playlist_duration = str(timedelta(seconds=playlist_duration_in_seconds))
+
+        if len(video_ids) != len(vid_durations) or len(
+                unavailable_videos) != 0:  # that means some videos in the playlist became private/deleted
+            playlist.has_unavailable_videos = True
+
+        playlist.has_playlist_changed = False
+        playlist.video_count = updated_playlist_video_count
+        playlist.has_new_updates = True
+        playlist.save()
+
+        deleted_videos = current_video_ids  # left out video ids
+
+        return [deleted_videos, unavailable_videos, added_videos]
+
 
 class Playlist(models.Model):
     # playlist details
@@ -683,7 +989,7 @@ class Playlist(models.Model):
     thumbnail_url = models.CharField(max_length=420, blank=True)
     description = models.CharField(max_length=420, default="No description")
     video_count = models.IntegerField(default=0)
-    published_at = models.DateTimeField(blank=True, null=True)
+    published_at = models.DateTimeField(blank=True)
 
     # eg. "<iframe width=\"640\" height=\"360\" src=\"http://www.youtube.com/embed/videoseries?list=PLFuZstFnF1jFwMDffUhV81h0xeff0TXzm\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe>"
     playlist_yt_player_HTML = models.CharField(max_length=420, blank=True)
@@ -711,7 +1017,8 @@ class Playlist(models.Model):
     has_duplicate_videos = models.BooleanField(default=False)  # duplicate videos will not be shown on site
 
     has_playlist_changed = models.BooleanField(default=False)  # determines whether playlist was modified online or not
-    playlist_changed_text = models.CharField(max_length=420, default="")  # user friendly text to display what changed and how much changed
+    playlist_changed_text = models.CharField(max_length=420,
+                                             default="")  # user friendly text to display what changed and how much changed
 
     # for UI
     view_in_grid_mode = models.BooleanField(default=False)  # if False, videso will be showed in a list
@@ -724,11 +1031,17 @@ class Playlist(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # for updates
+    last_full_scan_at = models.DateTimeField(auto_now_add=True)
+    has_new_updates = models.BooleanField(default=False)
+
     def __str__(self):
         return "Playlist Len " + str(self.video_count)
 
 
 class Video(models.Model):
+    playlist_item_id = models.CharField(max_length=100)  # the item id of the playlist this video beo
+
     # video details
     video_id = models.CharField(max_length=100)
     name = models.CharField(max_length=100, blank=True)
@@ -766,3 +1079,11 @@ class Video(models.Model):
     num_of_accesses = models.CharField(max_length=69,
                                        default="0")  # tracks num of times this video was clicked on by user
     user_label = models.CharField(max_length=100, default="")  # custom user given name for this video
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # for new videos added/modified/deleted in the playlist
+    video_details_modified = models.BooleanField(
+        default=False)  # is true for videos whose details changed after playlist update
+    video_details_modified_at = models.DateTimeField(auto_now_add=True)  # to set the above false after a day

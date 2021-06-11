@@ -22,6 +22,7 @@ urlpatterns = [
          name='order_playlist_by'),
     path("playlist/<slug:playlist_id>/mark-as/<slug:mark_as>", views.mark_playlist_as,
          name='mark_playlist_as'),
+    path("playlist/<slug:playlist_id>/update", views.update_playlist, name="update_playlist"),
 
     ### STUFF RELATED TO PLAYLISTS IN BULK
     path("search/playlists/<slug:playlist_type>", views.search_playlists, name="search_playlists"),

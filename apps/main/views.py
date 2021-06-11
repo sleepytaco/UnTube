@@ -1,3 +1,6 @@
+import datetime
+
+import pytz
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -103,7 +106,25 @@ def view_playlist(request, playlist_id):
         print("Checking if playlist changed...")
         result = Playlist.objects.checkIfPlaylistChangedOnYT(request.user, playlist_id)
 
-        if result[0] == -1:  # playlist changed
+        if result[0] == 1:  # full scan was done (full scan is done for a playlist if a week has passed)
+            deleted_videos, unavailable_videos, added_videos = result[1:]
+
+            print("CHANGES", deleted_videos, unavailable_videos, added_videos)
+
+            playlist_changed_text = ["The following modifications happened to this playlist on YouTube:"]
+            if deleted_videos != 0 or unavailable_videos != 0 or added_videos != 0:
+                if added_videos > 0:
+                    playlist_changed_text.append(f"{added_videos} new video(s) were added")
+                if deleted_videos > 0:
+                    playlist_changed_text.append(f"{deleted_videos} video(s) were deleted")
+                if unavailable_videos > 0:
+                    playlist_changed_text.append(f"{unavailable_videos} video(s) went private/unavailable")
+
+                playlist.playlist_changed_text = "\n".join(playlist_changed_text)
+                playlist.has_playlist_changed = True
+                playlist.save()
+
+        elif result[0] == -1:  # playlist changed
             print("!!!Playlist changed")
 
             current_playlist_vid_count = playlist.video_count
@@ -163,6 +184,8 @@ def all_playlists(request, playlist_type):
 def order_playlist_by(request, playlist_id, order_by):
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
 
+    display_text = ""  # what to display when requested order/filter has no videws
+
     if order_by == "popularity":
         videos = playlist.videos.order_by("-like_count")
     elif order_by == "date-published":
@@ -171,12 +194,32 @@ def order_playlist_by(request, playlist_id, order_by):
         videos = playlist.videos.order_by("-view_count")
     elif order_by == "has-cc":
         videos = playlist.videos.filter(has_cc=True)
+        display_text = "No videos in this playlist have CC"
     elif order_by == "duration":
         videos = playlist.videos.order_by("-duration_in_seconds")
+    elif order_by == 'new-updates':
+        videos = []
+        display_text = "No new updates! Note that deleted videos will not show up here."
+        if playlist.has_new_updates:
+            recently_updated_videos = playlist.videos.filter(video_details_modified=True)
+
+            for video in recently_updated_videos:
+                if video.video_details_modified_at + datetime.timedelta(hours=12) < datetime.datetime.now(
+                        pytz.utc):  # expired
+                    video.video_details_modified = False
+                    video.save()
+
+            if playlist.videos.filter(video_details_modified=True).count() == 0:
+                playlist.has_new_updates = False
+                playlist.save()
+            else:
+                videos = playlist.videos.filter(video_details_modified=True)
     else:
         return redirect('home')
 
-    return HttpResponse(loader.get_template("intercooler/videos.html").render({"playlist": playlist, "videos": videos}))
+    return HttpResponse(loader.get_template("intercooler/videos.html").render({"playlist": playlist,
+                                                                               "videos": videos,
+                                                                               "display_text": display_text}))
 
 
 @login_required
@@ -407,3 +450,44 @@ def manage_import_playlists(request):
          "num_playlists_initialized_in_db": num_playlists_initialized_in_db,
          "num_playlists_not_found": num_playlists_not_found
          }))
+
+
+@login_required
+def update_playlist(request, playlist_id):
+    deleted_video_ids, unavailable_videos, added_videos = Playlist.objects.updatePlaylist(request.user, playlist_id)
+
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+    playlist_changed_text = ["Updates:"]
+
+    if len(added_videos) != 0:
+        playlist_changed_text.append(f"{len(added_videos)} added")
+        for video in added_videos:
+            playlist_changed_text.append(f"--> {video.name}")
+    if len(unavailable_videos) != 0:
+        if len(playlist_changed_text) == 1:
+            playlist_changed_text.append(f"{len(unavailable_videos)} went unavailable")
+        else:
+            playlist_changed_text.append(f"\n{len(unavailable_videos)} went unavailable")
+        for video in unavailable_videos:
+            playlist_changed_text.append(f"--> {video.name}")
+    if len(deleted_video_ids) != 0:
+        if len(playlist_changed_text) == 1:
+            playlist_changed_text.append(f"{len(deleted_video_ids)} deleted")
+        else:
+            playlist_changed_text.append(f"\n{len(deleted_video_ids)} deleted")
+
+        for video_id in deleted_video_ids:
+            video = playlist.videos.get(video_id=video_id)
+            playlist_changed_text.append(f"--> {video.name}")
+            video.delete()
+
+    if len(playlist_changed_text) == 1:
+        playlist_changed_text = ["Successfully refreshed playlist! No new changes found!"]
+    else:
+        playlist_changed_text.append("\nTip: Sort By Updates to see what changed in this playlist.")
+
+    return HttpResponse(loader.get_template("intercooler/updated_playlist.html")
+        .render(
+        {"playlist_changed_text": "\n".join(playlist_changed_text),
+         "playlist": playlist,
+         "videos": playlist.videos.all()}))
