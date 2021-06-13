@@ -1,11 +1,14 @@
 
 {% load humanize %}
 {% load static %}
-
+    <div id="view_playlist">
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ playlist_changed_text|linebreaksbr }}
-
+      <h4 class="alert-heading">Updates</h4>
+      <p>{{ playlist_changed_text|linebreaksbr }}</p>
+      <hr>
+      <p class="mb-0">Tip: Sort By Updates to see what changed in this playlist. Deleted videos will not show up there. Updates can be seen for 12 hrs.</p>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
     </div>
 
     <div class="list-group-item list-group-item-action active">
@@ -72,6 +75,19 @@
             <div class="bd-highlight">
                 <div class="btn-toolbar mb-2 mb-md-0">
 
+                    <div class="btn-group me-2">
+                            <a hx-get="{% url 'update_playlist' playlist.playlist_id 'manual' %}" hx-target="#view_playlist" class="btn btn-secondary">
+                                <i class="fas fa-sync"></i>
+                            </a>
+                        </div>
+
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-danger">
+                                <i class="fas fa-dumpster-fire"></i>
+                            </button>
+                        </div>
+
+
                         <div class="btn-group me-2">
                             <button type="button" class="btn btn-outline-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                 Mark As
@@ -102,21 +118,27 @@
                     <div id="deselect-all-btn" style="display: none">
                         <div class="btn-group me-2">
                         <button type="button" class="btn btn-outline-info" id="select-all-btn">De-select All</button>
-                    </div>
+                        </div>
                     </div>
                     <div class="btn-group me-2">
-                        <button type="submit" form="my-form" class="btn btn-outline-success" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- <button type="submit" form="my-form" class="btn btn-outline-success" data-bs-toggle="dropdown" aria-expanded="false">
                             Move
+                        </button> -->
+                           <button class="btn btn-outline-success" id="move-copy-vids-btn" type="button" data-bs-toggle="collapse" data-bs-target="#moveItemsToCollapse" aria-expanded="false" aria-controls="moveItemsToCollapse">
+                                Move/Copy Videos
+                           </button>
+                    </div>
+
+
+
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-outline-warning" data-bs-toggle="dropdown" aria-expanded="false">
+                            Mark/Unmark Favorite
                         </button>
                     </div>
                     <div class="btn-group me-2">
-                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="dropdown" aria-expanded="false">
-                            UnTube These
-                        </button>
-                    </div>
-                    <div class="btn-group me-2">
-                        <button type="button" hx-post="{% url 'delete_videos' %}" hx-include="[id='video-checkboxes']" class="btn btn-outline-danger" data-bs-toggle="dropdown" aria-expanded="false">
-                            Delete
+                        <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" id="delete-vids-btn" class="btn btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#deleteItemsCollapse" aria-expanded="false" aria-controls="deleteItemsCollapse">
+                            Delete Selected
                         </button>
                     </div>
                 </div>
@@ -136,6 +158,57 @@
 
         </div>
     </div>
+    <div id="row3" style="background-color: #0f5132">
+      <div class="collapse border-danger" id="moveItemsToCollapse">
+          <div class="card card-body bg-dark text-white-50">
+
+              <h5>Move or Copy videos to another playlist!</h5>
+
+              <div class="d-flex justify-content-start">
+                  <input class="form-control w-50 bg-dark text-white border border-secondary" placeholder="Enter playlist ID here">
+                  <div class="btn-group ms-2">
+                    <button type="button" class="btn btn-info" id="select-all-btn">Move!</button>
+                  </div>
+                  <div class="btn-group ms-2">
+                    <button type="button" class="btn btn-info" id="select-all-btn">Copy!</button>
+                  </div>
+              </div>
+
+              <div class="d-flex justify-content-start mt-3">
+                  <div class="btn-group">
+                      <a href="{% url 'all_playlists' 'all' %}" target="_blank" class="btn btn-sm btn-success" id="select-all-btn">Search for Playlists <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+                  </div>
+              </div>
+
+          </div>
+        </div>
+    </div>
+
+    <div id="row4" style="background-color: #0f5132">
+          <div class="collapse border-danger" id="deleteItemsCollapse">
+          <div class="card card-body bg-dark text-white-50">
+
+              <div id="delete-videos-confirm-box">
+              <h5>Are you sure you want to delete these 40 items from your YouTube playlist? This cannot be undone.</h5>
+            </div>
+              <div class="d-flex justify-content-start">
+                  <div class="btn-group ms-2">
+                    <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirmed' %}" hx-include="[id='video-checkboxes']" type="button" class="btn btn-danger" id="select-all-btn">Yes!</button>
+                  </div>
+                  <div class="btn-group ms-2">
+                    <button type="button" class="btn btn-secondary" id="select-all-btn">Nvm</button>
+                  </div>
+                  <div class="btn-group ms-2">
+                    <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-primary">
+                        <i class="fas fa-sync"></i>
+                    </button>
+                </div>
+              </div>
+
+          </div>
+        </div>
+    </div>
+
     <br>
     <div class="table-responsive" id="videos-div">
         <div class="list-group" id="video-checkboxes">
@@ -208,3 +281,7 @@
             </li>
 
         {% endfor %}
+        </div>
+    </div>
+
+    </div>

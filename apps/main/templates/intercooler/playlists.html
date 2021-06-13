@@ -34,7 +34,7 @@
        name="search" placeholder="Begin to search playlists..."
                    value="{{ search_query }}"
        hx-post="{% url 'search_playlists' playlist_type %}"
-       hx-trigger="keyup changed delay:200ms"
+       hx-trigger="keyup changed delay:1s"
        hx-target="#search-results"
        hx-indicator=".htmx-indicator" autofocus onfocus="this.setSelectionRange(this.value.length,this.value.length);">
             <br>

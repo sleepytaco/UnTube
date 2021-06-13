@@ -10,11 +10,11 @@ urlpatterns = [
     ### STUFF RELATED TO WHOLE SITE
     path("search/UnTube/", views.search_UnTube, name="search_UnTube"),
 
-    ### STUFF RELATED TO ONE VIDEO
+    ### STUFF RELATED TO VIDEO(S)
     path("<slug:playlist_id>/<slug:video_id>/video-details", views.view_video, name='video_details'),
     path("<slug:playlist_id>/<slug:video_id>/video-details/notes", views.video_notes, name='video_notes'),
     path("<slug:playlist_id>/<slug:video_id>/video-details/favorite", views.mark_video_favortie, name='mark_video_favorite'),
-    path("delete-videos", views.delete_videos, name='delete_videos'),
+    path("from/<slug:playlist_id>/delete-videos/<slug:command>", views.delete_videos, name='delete_videos'),
 
     ### STUFF RELATED TO ONE PLAYLIST
     path("playlist/<slug:playlist_id>", views.view_playlist, name='playlist'),
@@ -22,7 +22,7 @@ urlpatterns = [
          name='order_playlist_by'),
     path("playlist/<slug:playlist_id>/mark-as/<slug:mark_as>", views.mark_playlist_as,
          name='mark_playlist_as'),
-    path("playlist/<slug:playlist_id>/update", views.update_playlist, name="update_playlist"),
+    path("playlist/<slug:playlist_id>/update/<slug:type>", views.update_playlist, name="update_playlist"),
 
     ### STUFF RELATED TO PLAYLISTS IN BULK
     path("search/playlists/<slug:playlist_type>", views.search_playlists, name="search_playlists"),
@@ -33,5 +33,7 @@ urlpatterns = [
     path("manage", views.manage_playlists, name='manage_playlists'),
     path("manage/save/<slug:what>", views.manage_save, name='manage_save'),  # to help auto save the input texts found in the below pages
     path("manage/view/<slug:page>", views.manage_view_page, name='manage_view_page'),  # views the import pl, create pl, create untube pl pages
-    path("manage/import", views.manage_import_playlists, name="manage_import_playlists")
+    path("manage/import", views.manage_import_playlists, name="manage_import_playlists"),
+    path("manage/create", views.manage_create_playlist, name="manage_create_playlist")
+
 ]

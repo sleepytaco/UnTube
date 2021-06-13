@@ -39,7 +39,9 @@
                           {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
 
                             {% if video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}
-                            {% if video.video_details_modified %}<span class="badge bg-danger">UPDATED - {% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}NEWLY ADDED{% endif %}</span>{% endif %}<br>
+                            {% if video.video_details_modified %}
+                                <span class="badge bg-danger">UPDATED - {% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}NEWLY ADDED{% endif %}</span>
+                            {% endif %}<br>
                             <br>
                         </div>
                 </div>

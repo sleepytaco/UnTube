@@ -3,13 +3,87 @@
 <br>
 
 <div class="container-fluid">
-<h2>Enter a Playlist link or list multiple Playlist links line by line</h2>
+<h2>Create a new YouTube Playlist</h2>
 <br>
     <div id="import-playlists-from">
-      <textarea name="import-playlist-textarea" class="form-control bg-dark text-white" id="video-notes-text-area" placeholder="Enter here" rows="5"
-                hx-post="{% url 'manage_save' 'manage_playlists_import_textarea' %}"
-                hx-trigger="keyup changed delay:500ms"
-                hx-indicator="#spinner">{{ manage_playlists_import_textarea }}</textarea>
+      <div class="mb-3">
+        <h4 for="playlistName" class="form-label">Playlist Name</h4>
+        <input type="email" class="form-control bg-dark text-white" placeholder="Enter playlist name" id="playlistName" name="playlistName" describedby="playlistNameHelp">
+        <div id="playlistNameHelp" class="form-text">Make sure the playlist name is unique!</div>
+      </div>
+
+
+        <div class="mb-3">
+          <h4 for="playlist-desc-text-area" class="form-label">Playlist Description</h4>
+          <textarea name="playlistDescription" class="form-control bg-dark text-white" id="playlist-desc-text-area" placeholder="Enter playlist description here" rows="5"
+            hx-post="{% url 'manage_save' 'manage_playlists_import_textarea' %}"
+            hx-trigger="keyup changed delay:500ms"
+            hx-indicator="#spinner"></textarea>
+        </div>
+
+      <h4 class="form-label">Playlist Type</h4>
+
+    <div class="mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="playlistType" value="public" id="public" checked>
+          <h6 class="form-check-label" for="public">
+            Public
+          </h6>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="playlistType" value="private" id="private">
+          <h6 class="form-check-label" for="private">
+            Private
+          </h6>
+        </div>
+    </div>
+
+              <h4 class="form-label">Add videos from your collection</h4>
+
+        <div class="d-flex justify-content-evenly mb-3">
+            <div class="container-fluid">
+                <input class="form-control bg-dark text-black-50 mb-2" type="text"
+                   name="searchForVideosToAddBar" placeholder="Begin to search your video collection..."
+                   hx-post="#"
+                   hx-trigger="keyup changed delay:500ms"
+                   hx-target="#search-results"
+                   hx-indicator=".htmx-indicator">
+                <select class="form-select bg-dark text-white" name="videoIdsFromSearch" multiple aria-label="multiple select example" size="10">
+                  <option selected>Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                </select>
+            </div>
+            <div class="btn-group-vertical">
+                <button class="btn btn-danger"> < </button>
+                <button class="btn btn-success"> > </button>
+            </div>
+
+            <div class="container-fluid">
+                <h5 class="d-flex justify-content-start">
+                    All these will be added to the playlist
+                </h5>
+                <select class="form-select bg-dark text-white" name="videoIdsToBeAdded" multiple aria-label="multiple select example" size="10">
+                  <div id="videosToBeAddedBox">
+                    <option value="1" selected>One</option>
+                  <option value="2" selected>Two</option>
+                  <option value="3" selected>Three</option>
+                    </div>
+                </select>
+            </div>
+        </div>
+
+
+
+        <div class="mb-3">
+          <h4 for="playlist-video-links-text-area" class="form-label">Or add videos via video links</h4>
+          <textarea name="externalVideoLinks" class="form-control bg-dark text-white" id="playlist-video-links-text-area" placeholder="Enter video links line by line" rows="5"
+            hx-post="{% url 'manage_save' 'manage_playlists_import_textarea' %}"
+            hx-trigger="keyup changed delay:500ms"
+            hx-indicator="#spinner">{{ manage_playlists_import_textarea }}</textarea>
+        </div>
+
         <!--
         <input class="form-check-input mx-3 big-checkbox" type="checkbox" name="e" id="checkbox"> <br>
         <input class="form-check-input mx-3 big-checkbox" type="checkbox" name="f" id="checkbox"> <br>
@@ -17,9 +91,10 @@
         <input class="form-check-input mx-3 big-checkbox" type="checkbox" name="h" id="checkbox"> <br>
         -->
     </div>
-      <br>
       <div class="d-flex justify-content-start">
-          <button type="button" hx-post="{% url 'manage_import_playlists' %}" hx-include="[id='import-playlists-from']" hx-target="#import-playlists-results" hx-indicator="#spinner" class="btn btn-success">Import!</button>
+          <button type="button" hx-post="{% url 'manage_create_playlist' %}" hx-include="[id='import-playlists-from']" hx-target="#import-playlists-results" hx-indicator="#spinner" class="btn btn-success">
+              Create Playlist!
+          </button>
 
             <div id="spinner" class="htmx-indicator ms-3 mt-2">
                 <div class="spinner-border text-light" role="status">

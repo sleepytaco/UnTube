@@ -37,7 +37,7 @@
         {% if playlists %}
 
         <div class="">
-            <input class="form-control" type="text"
+            <input   class="form-control border border-secondary bg-dark text-white-50" type="text"
        name="search" placeholder="Begin to search playlists..."
        hx-post="{% url 'search_playlists' playlist_type %}"
        hx-trigger="keyup changed delay:500ms"
@@ -50,16 +50,16 @@
             <div class="row row-cols-1 row-cols-md-3 g-4">
                 {% for playlist in playlists %}
                 <div class="col">
-                    <div class="card h-100" style="background-color: #1A4464;">
-                        <a style="background-color: #9CC5E5;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+                    <div class="card" style="background-color: #515355;">
+                        <a style="background-color: #1A4464;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action text-white-50" aria-current="true">
 
                             <div class="card-body">
 
-                                <h5 class="card-title">
+                                <h5 class="card-title text-white">
                                     {{ playlist.name }}
 
-                                    {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
-                                    {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                                    {% if playlist.is_private_on_yt %}<small><span class="badge bg-secondary text-black-50">Private</span></small> {% endif %}
+                                    {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-black-50">YT</span></small> {% endif %}
 
                                 </h5>
                                 <p class="card-text">

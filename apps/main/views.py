@@ -96,11 +96,15 @@ def view_playlist(request, playlist_id):
     user_playlists = user_profile.playlists.all()
 
     # specific playlist requested
-    playlist = user_profile.playlists.get(playlist_id__exact=playlist_id)
-    playlist.num_of_accesses += 1
-    playlist.save()
+    if user_profile.playlists.filter(playlist_id=playlist_id).count() != 0:
+        playlist = user_profile.playlists.get(playlist_id__exact=playlist_id)
+        playlist.num_of_accesses += 1
+        playlist.save()
+    else:
+        messages.error(request, "No such playlist found!")
+        return redirect('home')
 
-    videos = playlist.videos.all()
+    videos = playlist.videos.order_by("video_position")
 
     if not playlist.has_playlist_changed:
         print("Checking if playlist changed...")
@@ -265,8 +269,27 @@ def playlists_home(request):
 
 @login_required
 @require_POST
-def delete_videos(request):
-    print(request.POST)
+def delete_videos(request, playlist_id, command):
+    video_ids = request.POST.getlist("video-id", default=[])
+
+    if command == "confirm":
+        num_vids = len(video_ids)
+        extra_text = " "
+        if num_vids == 0:
+            return HttpResponse("<h5>Select some videos first!</h5>")
+        elif num_vids == request.user.profile.playlists.get(playlist_id=playlist_id).videos.all().count():
+            delete_text = "ALL VIDEOS"
+            extra_text = " This will not delete the playlist itself, will only make the playlist empty. "
+        else:
+            delete_text = f"{num_vids} videos"
+        return HttpResponse(f"<h5>Are you sure you want to delete {delete_text} from your YouTube playlist?{extra_text}This cannot be undone.</h5>")
+    elif command == "confirmed":
+        return HttpResponse(f'<div class="spinner-border text-light" role="status" hx-post="/from/{playlist_id}/delete-videos/start" hx-trigger="load" hx-swap="outerHTML"></div>')
+    elif command == "start":
+        for i in range(1000):
+            print(i)
+        return HttpResponse('DONE!')
+    print(len(video_ids), request.POST)
     return HttpResponse("Worked!")
 
 
@@ -389,9 +412,9 @@ def manage_view_page(request, page):
             .render(
             {"manage_playlists_import_textarea": request.user.profile.manage_playlists_import_textarea}))
     elif page == "create":
-        return HttpResponse("<br><hr><br><h2>Working on this.</h2>")
-    elif page == "untube":
-        return HttpResponse("<br><hr><br><h2>Coming soon. Maybe.</h2>")
+        return HttpResponse(loader.get_template("intercooler/manage_playlists_create.html")
+            .render(
+            {}))
     else:
         return redirect('home')
 
@@ -417,9 +440,11 @@ def manage_import_playlists(request):
     new_playlists = []
     old_playlists = []
     not_found_playlists = []
+
+    done = []
     for playlist_link in playlist_links:
-        if playlist_link != "":
-            pl_id = Playlist.objects.getPlaylistId(playlist_link)
+        if playlist_link.strip() != "" and playlist_link.strip() not in done:
+            pl_id = Playlist.objects.getPlaylistId(playlist_link.strip())
             if pl_id is None:
                 num_playlists_not_found += 1
                 continue
@@ -437,6 +462,7 @@ def manage_import_playlists(request):
                 playlist = request.user.profile.playlists.get(playlist_id__exact=pl_id)
                 new_playlists.append(playlist)
                 num_playlists_initialized_in_db += 1
+            done.append(playlist_link.strip())
 
     request.user.profile.manage_playlists_import_textarea = ""
     request.user.save()
@@ -453,25 +479,50 @@ def manage_import_playlists(request):
 
 
 @login_required
-def update_playlist(request, playlist_id):
-    deleted_video_ids, unavailable_videos, added_videos = Playlist.objects.updatePlaylist(request.user, playlist_id)
+@require_POST
+def manage_create_playlist(request):
+    print(request.POST)
+    return HttpResponse("")
+
+
+@login_required
+def update_playlist(request, playlist_id, type):
 
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
-    playlist_changed_text = ["Updates:"]
+
+    if type == "manual":
+        print("MANUAL")
+        return HttpResponse(
+            f"""<div hx-get="/playlist/{playlist_id}/update/auto" hx-trigger="load" hx-swap="outerHTML">
+                    <div class="d-flex justify-content-center mt-4 mb-3" id="loading-sign">
+                        <img src="/static/svg-loaders/circles.svg" width="40" height="40">
+                        <h5 class="mt-2 ms-2">Refreshing playlist '{ playlist.name }', please wait!</h5>
+                    </div>
+                </div>""")
+
+    print("Attempting to update playlist")
+    deleted_video_ids, unavailable_videos, added_videos = Playlist.objects.updatePlaylist(request.user, playlist_id)
+    print("Updated playlist")
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+    playlist_changed_text = []
 
     if len(added_videos) != 0:
         playlist_changed_text.append(f"{len(added_videos)} added")
-        for video in added_videos:
+        for video in added_videos[:3]:
             playlist_changed_text.append(f"--> {video.name}")
+
+        if len(added_videos) > 3:
+            playlist_changed_text.append(f"+ {len(added_videos) - 3} more")
+
     if len(unavailable_videos) != 0:
-        if len(playlist_changed_text) == 1:
+        if len(playlist_changed_text) == 0:
             playlist_changed_text.append(f"{len(unavailable_videos)} went unavailable")
         else:
             playlist_changed_text.append(f"\n{len(unavailable_videos)} went unavailable")
         for video in unavailable_videos:
             playlist_changed_text.append(f"--> {video.name}")
     if len(deleted_video_ids) != 0:
-        if len(playlist_changed_text) == 1:
+        if len(playlist_changed_text) == 0:
             playlist_changed_text.append(f"{len(deleted_video_ids)} deleted")
         else:
             playlist_changed_text.append(f"\n{len(deleted_video_ids)} deleted")
@@ -481,10 +532,8 @@ def update_playlist(request, playlist_id):
             playlist_changed_text.append(f"--> {video.name}")
             video.delete()
 
-    if len(playlist_changed_text) == 1:
+    if len(playlist_changed_text) == 0:
         playlist_changed_text = ["Successfully refreshed playlist! No new changes found!"]
-    else:
-        playlist_changed_text.append("\nTip: Sort By Updates to see what changed in this playlist.")
 
     return HttpResponse(loader.get_template("intercooler/updated_playlist.html")
         .render(

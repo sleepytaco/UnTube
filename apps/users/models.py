@@ -31,8 +31,16 @@ class Profile(models.Model):
     refresh_token = models.TextField(default="")
     expires_at = models.DateTimeField(blank=True, null=True)
 
-    # website contexts
+    # import playlist page
     manage_playlists_import_textarea = models.CharField(max_length=420, default="")
+
+    # create playlist page
+    create_playlist_name = models.CharField(max_length=50, default="")
+    create_playlist_desc = models.CharField(max_length=50, default="")
+    create_playlist_type = models.CharField(max_length=50, default="")
+    create_playlist_add_vids_from_collection = models.CharField(max_length=50, default="")
+    create_playlist_add_vids_from_links = models.CharField(max_length=50, default="")
+
 
 
 # as soon as one User object is created, create an associated profile object

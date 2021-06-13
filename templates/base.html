@@ -31,7 +31,6 @@
 
         <script src="{% static 'clipboard.js/clipboard.min.js' %}"></script>
 
-
         <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
 
         <script src="https://kit.fontawesome.com/5baac7e9b7.js" crossorigin="anonymous"></script>
@@ -85,9 +84,9 @@
 
                     <div class="navbar-nav justify-content-end">
                         <input class="form-control me-lg-2 bg-dark mb-1" id="unTubeSearchBar" type="text" placeholder="Search UnTube">
-                                <button type="button" class="btn btn-primary visually-hidden" id="unTubeSearchBtn" data-bs-toggle="modal" data-bs-target="#unTubeSearchBarResultsModal">
-                                  Launches search model
-                                </button>
+                        <button type="button" class="btn btn-outline-secondary" id="unTubeSearchBtn" data-bs-toggle="modal" data-bs-target="#unTubeSearchBarResultsModal">
+                          <i class="fas fa-search"></i>
+                        </button>
                     </div>
                     <a class="btn btn-outline-danger mb-1" href="{% url 'log_out' %}">
                       Log out
@@ -111,13 +110,13 @@
             <div class="modal-content bg-dark">
               <div class="modal-body bg-dark">
               <div id="untube-searchbar-results">
-                <input class="form-control me-lg-2 bg-dark text-white" id="unTubeSearchBar" type="text"
+                <input class="form-control me-lg-2 bg-dark text-white" id="unTubeSearchBarModal" type="text"
                            name="search" placeholder="Search UnTube"
                            hx-post="{% url 'search_UnTube' %}"
-                           hx-trigger="keyup changed delay:500ms"
+                           hx-trigger="keyup changed delay:1s"
                            hx-target="#untube-searchbar-results"
                        hx-include="[id='searchbar-radio-form']"
-                           hx-indicator=".htmx-indicator" autofocus>
+                           hx-indicator=".htmx-indicator">
                   <br>
                   <div id="searchbar-radio-form">
                     <div class="d-flex justify-content-center">
@@ -244,6 +243,11 @@
 
         <br>
 
+        <script src="{% static 'htmx/htmx.min.js' %}"></script>
+        <script src="{% static 'htmx/extensions/class-tools.js' %}"></script>
+        <script src="{% static 'jquery3.6.0/js/jquery-3.6.0.min.js' %}"></script>
+        <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.js' %}"></script>
+
         <script>
 
 
@@ -253,7 +257,43 @@
           })
 
 
+
             var clipboard = new ClipboardJS('.copy-btn');
+
+            <!-- for view_playlist.html -->
+            var moveCopyBtn = document.getElementById('move-copy-vids-btn');
+            var moveCopyCollapse = document.getElementById('moveItemsToCollapse');
+            var bsMoveCopyCollapse = new bootstrap.Collapse(moveCopyCollapse, {
+                toggle: false
+            });
+            var deleteBtn = document.getElementById('delete-vids-btn');
+            var deleteCollapse = document.getElementById('deleteItemsCollapse');
+            var bsDeleteCollapse = new bootstrap.Collapse(deleteCollapse, {
+                toggle: false
+            });
+
+
+            document.getElementById('manageBtn').addEventListener('click', function () {
+                bsMoveCopyCollapse.hide();
+                bsDeleteCollapse.hide();
+            });
+            moveCopyCollapse.addEventListener('show.bs.collapse', function () {
+                    moveCopyBtn.classList = "btn btn-success";
+                    bsDeleteCollapse.hide();
+
+            });
+            moveCopyCollapse.addEventListener('hide.bs.collapse', function () {
+                    moveCopyBtn.classList = "btn btn-outline-success";
+            });
+            deleteCollapse.addEventListener('show.bs.collapse', function () {
+                    deleteBtn.classList = "btn btn-danger";
+                    bsMoveCopyCollapse.hide();
+            });
+            deleteCollapse.addEventListener('hide.bs.collapse', function () {
+                    deleteBtn.classList = "btn btn-outline-danger";
+            });
+
+            <!-- end -->
 
 
              // Get the input field
@@ -263,6 +303,7 @@
             input.addEventListener("click", function(event) {
 
                 document.getElementById("unTubeSearchBtn").click();
+                document.getElementById("unTubeSearchBarModal").focus();
 
             });
 
@@ -339,11 +380,6 @@
             }
 
         </script>
-
-        <script src="{% static 'htmx/htmx.min.js' %}"></script>
-        <script src="{% static 'htmx/extensions/class-tools.js' %}"></script>
-        <script src="{% static 'jquery3.6.0/js/jquery-3.6.0.min.js' %}"></script>
-        <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.js' %}"></script>
 
         <!--
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
