@@ -155,6 +155,8 @@ class PlaylistManager(models.Manager):
 
                 # check if playlist changed on youtube
                 if playlist.video_count != item['contentDetails']['itemCount']:
+                    playlist.has_playlist_changed = True
+                    playlist.save()
                     return [-1, item['contentDetails']['itemCount']]
 
         # if its been a week since the last full scan, do a full playlist scan
@@ -1067,7 +1069,7 @@ class Video(models.Model):
 
     # which playlist this video belongs to, and position of that video in the playlist (i.e ALL videos belong to some pl)
     playlist = models.ForeignKey(Playlist, related_name="videos", on_delete=models.CASCADE)
-    video_position = models.CharField(max_length=69, blank=True)
+    video_position = models.IntegerField(blank=True)
 
     # manage video
     is_duplicate = models.BooleanField(default=False)  # True if the same video exists more than once in the playlist

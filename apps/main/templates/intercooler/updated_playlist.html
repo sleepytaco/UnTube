@@ -2,6 +2,7 @@
 {% load humanize %}
 {% load static %}
     <div id="view_playlist">
+    <br>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
       <h4 class="alert-heading">Updates</h4>
       <p>{{ playlist_changed_text|linebreaksbr }}</p>
@@ -60,6 +61,8 @@
                             Sort By
                         </button>
                         <ul class="dropdown-menu">
+                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'all' %}" hx-trigger="click" hx-target="#videos-div">All</button></li>
+                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'favorites' %}" hx-trigger="click" hx-target="#videos-div">Favorites</button></li>
                             <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'popularity' %}" hx-trigger="click" hx-target="#videos-div">Popularity</button></li>
                             <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'date-published' %}" hx-trigger="click" hx-target="#videos-div">Date Published</button></li>
                             <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'views' %}" hx-trigger="click" hx-target="#videos-div">Views</button></li>
@@ -130,12 +133,13 @@
                     </div>
 
 
-
+                    <!--
                     <div class="btn-group me-2">
                         <button type="button" class="btn btn-outline-warning" data-bs-toggle="dropdown" aria-expanded="false">
                             Mark/Unmark Favorite
                         </button>
                     </div>
+                    -->
                     <div class="btn-group me-2">
                         <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" id="delete-vids-btn" class="btn btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#deleteItemsCollapse" aria-expanded="false" aria-controls="deleteItemsCollapse">
                             Delete Selected
@@ -220,7 +224,7 @@
 
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.video_id }}" name="video-id">
+                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.playlist_item_id }}" name="video-id">
                 </div>
                   <div class="ms-4" style="max-width: 115px; max-height: 100px;">
                       <img src="https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg" class="img-fluid" alt="">
@@ -236,13 +240,13 @@
 
             <div class="d-flex justify-content-between align-items-center" >
                 <div>
-                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.video_id }}" name="video-id">
+                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.playlist_item_id }}" name="video-id">
                 </div>
                   <div class="ms-4" style="max-width: 115px; max-height: 100px;">
                       <img src="{% if video.thumbnail_url %}{{ video.thumbnail_url }}{% else %}https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg{% endif %}" class="img-fluid" alt="">
                   </div>
                     <div class="ms-4">
-                        <a class="link-dark" href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" target="_blank">{{ video.video_position }}. {{ video.name }}</a> <br>
+                        <a class="link-dark" href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" target="_blank">{{ video.video_position }}. {{ video.name|truncatewords:"7" }}</a> <br>
                         <span class="badge bg-secondary">{{ video.duration }}</span>
                         {% if video.has_cc %}<span class="badge bg-secondary">CC</span>{% endif %}
                         {% if video.published_at %}<span class="badge bg-secondary">{{ video.published_at }}</span>{% endif %}

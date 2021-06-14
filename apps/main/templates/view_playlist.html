@@ -8,6 +8,10 @@
 
     <div id="view_playlist">
 
+    <div hx-get="{% url 'update_playlist' playlist.playlist_id 'checkforupdates' %}" hx-trigger="load" hx-swap="outerHTML">
+
+    </div>
+
     {% if playlist.has_playlist_changed %}
 
         <div hx-get="{% url 'update_playlist' playlist.playlist_id 'auto' %}" hx-trigger="load" hx-swap="outerHTML">
@@ -27,7 +31,14 @@
     <div class="list-group-item list-group-item-action active">
         <div class="d-flex w-100 justify-content-between">
             <span>
-                <h2 class="mb-1">{{ playlist.name }} <small><a><i class="fas fa-pen-square"></i></a></small> </h2>
+                <h2 class="mb-1">{{ playlist.name }}
+                    <small>
+
+                        <input class="form-control me-1 visually-hidden" id="pl-{{ playlist.playlist_id }}" value="{{ playlist.playlist_id }}">
+                        <button class="copy-btn btn  btn-light mb-1" data-clipboard-target="#pl-{{ playlist.playlist_id }}">
+                            <i class="far fa-copy" aria-hidden="true"></i>
+                        </button>
+                    </small> </h2>
                 <h6>by {{ playlist.channel_name }}</h6>
             </span>
             <h4>
@@ -40,7 +51,7 @@
         </div>
         <p class="mb-1">
             {% if playlist.description %}
-            <h5>{{ playlist.description }}</h5>
+            <h5>{{ playlist.description|truncatewords:"50" }}</h5>
             {% else %}
             <h5>No description</h5>
             {% endif %}
@@ -64,15 +75,19 @@
         <div class="d-flex bd-highlight mb-1">
             <div class="me-auto bd-highlight">
                 <div class="btn-toolbar mb-2 mb-md-0">
+                    <!--
                     <div class="btn-group me-2">
                         <button type="button" class="btn {% if playlist.view_in_grid_mode %}btn-info {% else %}btn-outline-info{% endif %}">Grid</button>
                         <button type="button" class="btn {% if not playlist.view_in_grid_mode %}btn-info {% else %}btn-outline-info{% endif %}">List</button>
                     </div>
+                    -->
                     <div class="btn-group me-2">
                         <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             Sort By
                         </button>
                         <ul class="dropdown-menu">
+                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'all' %}" hx-trigger="click" hx-target="#videos-div">All</button></li>
+                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'favorites' %}" hx-trigger="click" hx-target="#videos-div">Favorites</button></li>
                             <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'popularity' %}" hx-trigger="click" hx-target="#videos-div">Popularity</button></li>
                             <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'date-published' %}" hx-trigger="click" hx-target="#videos-div">Date Published</button></li>
                             <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'views' %}" hx-trigger="click" hx-target="#videos-div">Views</button></li>
@@ -82,6 +97,18 @@
                             <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'new-updates' %}" hx-trigger="click" hx-target="#videos-div">Updates</button></li>
                         </ul>
                     </div>
+
+
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-outline-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Mark As
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'none' %}" hx-trigger="click" hx-target="#notice-div">None</button></li>
+                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'watching' %}" hx-trigger="click" hx-target="#notice-div">Watching</button></li>
+                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'plan-to-watch' %}" hx-trigger="click" hx-target="#notice-div">Plan to Watch</button></li>
+                            </ul>
+                        </div>
                 </div>
             </div>
 
@@ -100,17 +127,26 @@
                             </button>
                         </div>
 
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
 
                         <div class="btn-group me-2">
-                            <button type="button" class="btn btn-outline-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                Mark As
+
+                            <button class="btn btn-warning" type="button" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'favorite' %}" hx-target="#playlist-fav">
+                                <div id="playlist-fav">
+                                    {% if playlist.is_favorite %}
+                                        <i class="fas fa-star"></i>
+                                    {% else %}
+                                        <i class="far fa-star"></i>
+                                    {% endif %}
+                                </div>
                             </button>
-                            <ul class="dropdown-menu">
-                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'none' %}" hx-trigger="click" hx-target="#notice-div">None</button></li>
-                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'watching' %}" hx-trigger="click" hx-target="#notice-div">Watching</button></li>
-                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'plan-to-watch' %}" hx-trigger="click" hx-target="#notice-div">Plan to Watch</button></li>
-                            </ul>
                         </div>
+
+
 
                         <div class="btn-group me-2">
                             <button type="button" class="btn btn-outline-light" onclick="row1_hide()">Manage</button>
@@ -144,12 +180,13 @@
                     </div>
 
 
-
+                    <!--
                     <div class="btn-group me-2">
                         <button type="button" class="btn btn-outline-warning" data-bs-toggle="dropdown" aria-expanded="false">
                             Mark/Unmark Favorite
                         </button>
                     </div>
+                    -->
                     <div class="btn-group me-2">
                         <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" id="delete-vids-btn" class="btn btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#deleteItemsCollapse" aria-expanded="false" aria-controls="deleteItemsCollapse">
                             Delete Selected
@@ -234,7 +271,7 @@
 
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.video_id }}" name="video-id">
+                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.playlist_item_id }}" name="video-id">
                 </div>
                   <div class="ms-4" style="max-width: 115px; max-height: 100px;">
                       <img src="https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg" class="img-fluid" alt="">
@@ -250,7 +287,7 @@
 
             <div class="d-flex justify-content-between align-items-center" >
                 <div>
-                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.video_id }}" name="video-id">
+                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.playlist_item_id }}" name="video-id">
                 </div>
                   <div class="ms-4" style="max-width: 115px; max-height: 100px;">
                       <img src="{% if video.thumbnail_url %}{{ video.thumbnail_url }}{% else %}https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg{% endif %}" class="img-fluid" alt="">
@@ -272,11 +309,11 @@
             <div class="ms-5">
                 <a class="btn btn-sm btn-info mb-1" type="button" href="https://www.youtube.com/watch?v={{ video.video_id }}" class="btn btn-info me-1" target="_blank"><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
                 <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ video.video_id }}">
-                <button class="copy-btn btn btn-success mb-1" data-clipboard-target="#video-{{ video.video_id }}">
+                <button class="copy-btn btn btn-sm  btn-success mb-1" data-clipboard-target="#video-{{ video.video_id }}">
                     <i class="far fa-copy" aria-hidden="true"></i>
                 </button>
-                <button class="btn btn-sm btn-primary mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasBottom" hx-get="{% url 'video_details' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-details">Details</button>
-                <button class="btn btn-sm btn-warning mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForVideoNotes" aria-controls="offcanvasBottom" hx-get="{% url 'video_notes' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-notes">Notes</button>
+                <button class="btn btn-sm  btn-primary mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasBottom" hx-get="{% url 'video_details' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-details"><i class="fas fa-info"></i></button>
+                <button class="btn btn-sm  btn-warning mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForVideoNotes" aria-controls="offcanvasBottom" hx-get="{% url 'video_notes' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-notes">Notes</button>
                 <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist.playlist_id video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
                     <div id="video-{{ forloop.counter }}-fav">
                         {% if video.is_favorite %}

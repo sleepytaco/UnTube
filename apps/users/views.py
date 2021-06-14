@@ -48,12 +48,13 @@ def delete_account(request):
     return redirect('index')
 
 
+@login_required
 def log_out(request):
     request.session.flush()  # delete all stored session keys
     logout(request)  # log out authenticated user
     return redirect('/')
 
-
+@login_required
 def start_import(request):
     '''
     Initializes only the user's playlist data in the database. Returns the progress bar, which will
@@ -98,7 +99,11 @@ def start_import(request):
              "channel_found": channel_found}
         ))
 
+@login_required
+def settings(request):
+    return render(request, 'settings.html')
 
+@login_required
 def continue_import(request):
     if request.user.profile.import_in_progress is False:
         return redirect('home')

@@ -8,6 +8,7 @@ urlpatterns = [
     path("update/settings", views.update_settings, name='update_settings'),
     path('accounts/', include('allauth.urls')),
     path("delete/account", views.delete_account, name='delete_account'),
+    path('settings/', views.settings, name="settings"),
 
     path("import/start", views.start_import, name='start'),
     path("import/continue", views.continue_import, name='continue'),

@@ -1,5 +1,11 @@
 {% load humanize %}
+
         <div class="bg-dark">
+                <div class="d-flex justify-content-center">
+                   <h1> Search all of UnTube                     <h6>Press <code>Esc</code> to close.</h6>
+</h1>
+                </div>
+
             <input class="form-control me-lg-2 bg-dark text-white" type="text"
        name="search" placeholder="Search UnTube"
                    value="{{ search_query }}"
@@ -39,19 +45,19 @@
                 {% if playlists %}
                 {% for playlist in playlists %}
                 <div class="col">
-                    <div class="card h-100" style="background-color: #1A4464;">
+                    <div class="card" style="background-color: #1A4464;">
                         <a style="background-color: #1A4464;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
 
                             <div class="card-body text-white">
 
                                 <h5 class="card-title">
-                                    {{ playlist.name }}
+                                    {{ playlist.name|truncatewords:"15" }}
                                     {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
                                     {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
                                 </h5>
                                 <p class="card-text">
                                     {% if playlist.description %}
-                                        {{ playlist.description }}
+                                        {{ playlist.description|truncatewords:"15" }}
                                     {% else %}
                                         No description
                                     {% endif %}
@@ -85,7 +91,7 @@
 
                             <div class="card-body">
                                 <h5 class="card-title text-light">
-                                    {{ video.name }}<br>
+                                    {{ video.name|truncatewords:"15" }}<br>
 
                                     <small>
                                         <a class="badge bg-white text-black-50" href="{% url 'playlist' video.playlist.playlist_id %}">{{ video.playlist.name }}</a>

@@ -18,6 +18,8 @@ def home(request):
     user_profile = request.user.profile
     user_playlists = user_profile.playlists.order_by("-num_of_accesses")
     watching = user_profile.playlists.filter(marked_as="watching").order_by("-num_of_accesses")
+    recently_accessed_playlists = user_profile.playlists.order_by("-updated_at")[:6]
+    recently_added_playlists = user_profile.playlists.order_by("-created_at")[:6]
 
     #### FOR NEWLY JOINED USERS ######
     channel_found = True
@@ -63,7 +65,9 @@ def home(request):
                                          "playlist": playlist,
                                          "videos": videos,
                                          "user_playlists": user_playlists,
-                                         "watching": watching})
+                                         "watching": watching,
+                                         "recently_accessed_playlists": recently_accessed_playlists,
+                                         "recently_added_playlists": recently_added_playlists})
 
 
 @login_required
@@ -93,7 +97,6 @@ def video_notes(request, playlist_id, video_id):
 @login_required
 def view_playlist(request, playlist_id):
     user_profile = request.user.profile
-    user_playlists = user_profile.playlists.all()
 
     # specific playlist requested
     if user_profile.playlists.filter(playlist_id=playlist_id).count() != 0:
@@ -106,49 +109,8 @@ def view_playlist(request, playlist_id):
 
     videos = playlist.videos.order_by("video_position")
 
-    if not playlist.has_playlist_changed:
-        print("Checking if playlist changed...")
-        result = Playlist.objects.checkIfPlaylistChangedOnYT(request.user, playlist_id)
-
-        if result[0] == 1:  # full scan was done (full scan is done for a playlist if a week has passed)
-            deleted_videos, unavailable_videos, added_videos = result[1:]
-
-            print("CHANGES", deleted_videos, unavailable_videos, added_videos)
-
-            playlist_changed_text = ["The following modifications happened to this playlist on YouTube:"]
-            if deleted_videos != 0 or unavailable_videos != 0 or added_videos != 0:
-                if added_videos > 0:
-                    playlist_changed_text.append(f"{added_videos} new video(s) were added")
-                if deleted_videos > 0:
-                    playlist_changed_text.append(f"{deleted_videos} video(s) were deleted")
-                if unavailable_videos > 0:
-                    playlist_changed_text.append(f"{unavailable_videos} video(s) went private/unavailable")
-
-                playlist.playlist_changed_text = "\n".join(playlist_changed_text)
-                playlist.has_playlist_changed = True
-                playlist.save()
-
-        elif result[0] == -1:  # playlist changed
-            print("!!!Playlist changed")
-
-            current_playlist_vid_count = playlist.video_count
-            new_playlist_vid_count = result[1]
-
-            print(current_playlist_vid_count)
-            print(new_playlist_vid_count)
-
-            if current_playlist_vid_count > new_playlist_vid_count:
-                playlist.playlist_changed_text = f"Looks like {current_playlist_vid_count - new_playlist_vid_count} video(s) were deleted from this playlist on YouTube!"
-            else:
-                playlist.playlist_changed_text = f"Looks like {new_playlist_vid_count - current_playlist_vid_count} video(s) were added to this playlist on YouTube!"
-
-            playlist.has_playlist_changed = True
-            playlist.save()
-            print(playlist.playlist_changed_text)
-
     return render(request, 'view_playlist.html', {"playlist": playlist,
-                                                  "videos": videos,
-                                                  "user_playlists": user_playlists})
+                                                  "videos": videos})
 
 
 @login_required
@@ -188,17 +150,22 @@ def all_playlists(request, playlist_type):
 def order_playlist_by(request, playlist_id, order_by):
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
 
-    display_text = ""  # what to display when requested order/filter has no videws
+    display_text = "Nothing in this playlist! Add something!"  # what to display when requested order/filter has no videws
 
-    if order_by == "popularity":
+    if order_by == "all":
+        videos = playlist.videos.order_by("video_position")
+    elif order_by == "favorites":
+        videos = playlist.videos.filter(is_favorite=True).order_by("video_position")
+        display_text = "No favorites yet!"
+    elif order_by == "popularity":
         videos = playlist.videos.order_by("-like_count")
     elif order_by == "date-published":
         videos = playlist.videos.order_by("-published_at")
     elif order_by == "views":
         videos = playlist.videos.order_by("-view_count")
     elif order_by == "has-cc":
-        videos = playlist.videos.filter(has_cc=True)
-        display_text = "No videos in this playlist have CC"
+        videos = playlist.videos.filter(has_cc=True).order_by("video_position")
+        display_text = "No videos in this playlist have CC :("
     elif order_by == "duration":
         videos = playlist.videos.order_by("-duration_in_seconds")
     elif order_by == 'new-updates':
@@ -217,7 +184,7 @@ def order_playlist_by(request, playlist_id, order_by):
                 playlist.has_new_updates = False
                 playlist.save()
             else:
-                videos = playlist.videos.filter(video_details_modified=True)
+                videos = playlist.videos.filter(video_details_modified=True).order_by("video_position")
     else:
         return redirect('home')
 
@@ -229,18 +196,28 @@ def order_playlist_by(request, playlist_id, order_by):
 @login_required
 def order_playlists_by(request, playlist_type, order_by):
     if playlist_type == "" or playlist_type.lower() == "all":
-        playlists = request.user.profile.playlists.all().order_by(f"-{order_by.replace('-', '_')}")
-        playlist_type = "All Playlists"
+        playlists = request.user.profile.playlists.all()
+        playlist_type_display = "All Playlists"
     elif playlist_type.lower() == "favorites":
-        playlists = request.user.profile.playlists.filter(is_favorite=True).order_by(f"-{order_by.replace('-', '_')}")
-        playlist_type = "Favorites"
-    elif playlist_type.lower() == "watching":
-        playlists = request.user.profile.playlists.filter(on_watch=True).order_by(f"-{order_by.replace('-', '_')}")
-        playlist_type = "Watching"
+        playlists = request.user.profile.playlists.filter(is_favorite=True)
+        playlist_type_display = "Favorites"
+    elif playlist_type.lower() in ["watching", "plan-to-watch"]:
+        playlists = request.user.profile.playlists.filter(marked_as=playlist_type.lower())
+        playlist_type_display = "Watching"
     else:
         return redirect('home')
 
-    return render(request, 'all_playlists.html', {"playlists": playlists, "playlist_type": playlist_type})
+    if order_by == 'recently-accessed':
+        playlists = playlists.order_by("-updated_at")
+    elif order_by == 'playlist-duration-in-seconds':
+        playlists = playlists.order_by("-playlist_duration_in_seconds")
+    elif order_by == 'video-count':
+        playlists = playlists.order_by("-video_count")
+
+    return HttpResponse(loader.get_template("intercooler/playlists.html")
+                        .render({"playlists": playlists,
+                                 "playlist_type_display": playlist_type_display,
+                                 "playlist_type": playlist_type}))
 
 
 @login_required
@@ -256,6 +233,15 @@ def mark_playlist_as(request, playlist_id, mark_as):
     elif mark_as == "none":
         playlist.marked_as = mark_as
         playlist.save()
+    elif mark_as == "favorite":
+        if playlist.is_favorite:
+            playlist.is_favorite = False
+            playlist.save()
+            return HttpResponse('<i class="far fa-star"></i>')
+        else:
+            playlist.is_favorite = True
+            playlist.save()
+            return HttpResponse('<i class="fas fa-star"></i>')
     else:
         return render('home')
 
@@ -273,6 +259,7 @@ def delete_videos(request, playlist_id, command):
     video_ids = request.POST.getlist("video-id", default=[])
 
     if command == "confirm":
+        print(video_ids)
         num_vids = len(video_ids)
         extra_text = " "
         if num_vids == 0:
@@ -282,12 +269,14 @@ def delete_videos(request, playlist_id, command):
             extra_text = " This will not delete the playlist itself, will only make the playlist empty. "
         else:
             delete_text = f"{num_vids} videos"
-        return HttpResponse(f"<h5>Are you sure you want to delete {delete_text} from your YouTube playlist?{extra_text}This cannot be undone.</h5>")
+        return HttpResponse(
+            f"<h5>Are you sure you want to delete {delete_text} from your YouTube playlist?{extra_text}This cannot be undone.</h5>")
     elif command == "confirmed":
-        return HttpResponse(f'<div class="spinner-border text-light" role="status" hx-post="/from/{playlist_id}/delete-videos/start" hx-trigger="load" hx-swap="outerHTML"></div>')
+        return HttpResponse(
+            f'<div class="spinner-border text-light" role="status" hx-post="/from/{playlist_id}/delete-videos/start" hx-trigger="load" hx-swap="outerHTML"></div>')
     elif command == "start":
         for i in range(1000):
-            print(i)
+            pass
         return HttpResponse('DONE!')
     print(len(video_ids), request.POST)
     return HttpResponse("Worked!")
@@ -487,8 +476,66 @@ def manage_create_playlist(request):
 
 @login_required
 def update_playlist(request, playlist_id, type):
-
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+
+    if type == "checkforupdates":
+        print("Checking if playlist changed...")
+        result = Playlist.objects.checkIfPlaylistChangedOnYT(request.user, playlist_id)
+
+        if result[0] == 1:  # full scan was done (full scan is done for a playlist if a week has passed)
+            deleted_videos, unavailable_videos, added_videos = result[1:]
+
+            print("CHANGES", deleted_videos, unavailable_videos, added_videos)
+
+            playlist_changed_text = ["The following modifications happened to this playlist on YouTube:"]
+            if deleted_videos != 0 or unavailable_videos != 0 or added_videos != 0:
+                if added_videos > 0:
+                    playlist_changed_text.append(f"{added_videos} new video(s) were added")
+                if deleted_videos > 0:
+                    playlist_changed_text.append(f"{deleted_videos} video(s) were deleted")
+                if unavailable_videos > 0:
+                    playlist_changed_text.append(f"{unavailable_videos} video(s) went private/unavailable")
+
+                playlist.playlist_changed_text = "\n".join(playlist_changed_text)
+                playlist.has_playlist_changed = True
+                playlist.save()
+
+        elif result[0] == -1:  # playlist changed
+            print("!!!Playlist changed")
+
+            current_playlist_vid_count = playlist.video_count
+            new_playlist_vid_count = result[1]
+
+            print(current_playlist_vid_count)
+            print(new_playlist_vid_count)
+
+            if current_playlist_vid_count > new_playlist_vid_count:
+                playlist.playlist_changed_text = f"Looks like {current_playlist_vid_count - new_playlist_vid_count} video(s) were deleted from this playlist on YouTube!"
+            else:
+                playlist.playlist_changed_text = f"Looks like {new_playlist_vid_count - current_playlist_vid_count} video(s) were added to this playlist on YouTube!"
+
+            playlist.has_playlist_changed = True
+            playlist.save()
+            print(playlist.playlist_changed_text)
+        else:  # no updates found
+            return HttpResponse("""
+            <div class="alert alert-success alert-dismissible fade show visually-hidden" role="alert">
+                No new updates!
+            </div>
+            """)
+
+        return HttpResponse(f"""
+        <div hx-get="/playlist/{playlist_id}/update/auto" hx-trigger="load" hx-target="#view_playlist">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {playlist.playlist_changed_text}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div class="d-flex justify-content-center mt-4 mb-3" id="loading-sign">
+                <img src="/static/svg-loaders/circles.svg" width="40" height="40">
+                <h5 class="mt-2 ms-2">Updating playlist '{playlist.name}', please wait!</h5>
+            </div>
+        </div>
+        """)
 
     if type == "manual":
         print("MANUAL")
@@ -496,7 +543,7 @@ def update_playlist(request, playlist_id, type):
             f"""<div hx-get="/playlist/{playlist_id}/update/auto" hx-trigger="load" hx-swap="outerHTML">
                     <div class="d-flex justify-content-center mt-4 mb-3" id="loading-sign">
                         <img src="/static/svg-loaders/circles.svg" width="40" height="40">
-                        <h5 class="mt-2 ms-2">Refreshing playlist '{ playlist.name }', please wait!</h5>
+                        <h5 class="mt-2 ms-2">Refreshing playlist '{playlist.name}', please wait!</h5>
                     </div>
                 </div>""")
 
@@ -539,4 +586,4 @@ def update_playlist(request, playlist_id, type):
         .render(
         {"playlist_changed_text": "\n".join(playlist_changed_text),
          "playlist": playlist,
-         "videos": playlist.videos.all()}))
+         "videos": playlist.videos.order_by("video_position")}))

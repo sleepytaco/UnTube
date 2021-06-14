@@ -29,19 +29,13 @@
 
           -->
 
-        <script src="{% static 'clipboard.js/clipboard.min.js' %}"></script>
-
         <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
 
-        <script src="https://kit.fontawesome.com/5baac7e9b7.js" crossorigin="anonymous"></script>
-
-        <!-- Bootstrap core CSS
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
-        -->
+        <link href="{% static 'fontawesome-free-5.15.3-web/css/all.min.css' %}" rel="stylesheet">
         <link href="{% static 'bootstrap5.0.1/css/bootstrap.min.css' %}" rel="stylesheet">
 
     </head>
-    <body class="bg-dark text-white"  style="font-family: 'Fredoka One'">
+    <body class="bg-dark text-white"  style="font-family: 'Fredoka One',fantasy; filter: contrast(80%);">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{% url 'home' %}"><h3>UnTube</h3></a>
@@ -75,20 +69,23 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'manage_playlists' %}">Manage</a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link" data-bs-toggle="offcanvas" href="#offcanvasExample" role="button" aria-controls="offcanvasExample">
-                        Settings </a>
+                            <a class="nav-link" href="{% url 'settings' %}">Settings</a>
                         </li>
                     </ul>
 
 
                     <div class="navbar-nav justify-content-end">
-                        <input class="form-control me-lg-2 bg-dark mb-1" id="unTubeSearchBar" type="text" placeholder="Search UnTube">
-                        <button type="button" class="btn btn-outline-secondary" id="unTubeSearchBtn" data-bs-toggle="modal" data-bs-target="#unTubeSearchBarResultsModal">
-                          <i class="fas fa-search"></i>
-                        </button>
+                        <!--
+                        <input class="form-control border border-secondary bg-dark text-white-50 me-lg-2 bg-dark mb-1" id="unTubeSearchBar" type="text" placeholder="Search UnTube">
+                        -->
+                        <a id="unTubeSearchBtn" class="nav-link btn-lg me-2" data-bs-toggle="modal" data-bs-target="#unTubeSearchBarResultsModal">
+                            <i class="fas fa-search"></i>
+                        </a>
+
                     </div>
-                    <a class="btn btn-outline-danger mb-1" href="{% url 'log_out' %}">
+                    <a class="btn btn-outline-danger" href="{% url 'log_out' %}">
                       Log out
                     </a>
                 </div>
@@ -101,22 +98,44 @@
     {% block content %}
     {% endblock %}
 
-            <!-- Button trigger modal -->
 
+        </main>
+
+      </div>
+
+    </div>
+
+
+        <button
+        type="button"
+        class="btn btn-danger btn-floating btn-lg"
+        id="btn-back-to-top"
+        >
+            ▲
+        </button>
+
+        <br>
+
+                    <!-- Button trigger modal -->
 
         <!-- Modal -->
         <div class="modal fade bg-dark" id="unTubeSearchBarResultsModal" tabindex="-1" aria-labelledby="unTubeSearchBarResultsModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-xl modal-dialog-scrollable bg-dark">
+          <div class="modal-dialog modal-fullscreen modal-dialog-scrollable bg-dark">
             <div class="modal-content bg-dark">
               <div class="modal-body bg-dark">
               <div id="untube-searchbar-results">
+
+                <div class="d-flex justify-content-center">
+                   <h1> Search all of UnTube                     <h6>Press <code>Esc</code> to close.</h6>
+</h1>
+                </div>
                 <input class="form-control me-lg-2 bg-dark text-white" id="unTubeSearchBarModal" type="text"
-                           name="search" placeholder="Search UnTube"
-                           hx-post="{% url 'search_UnTube' %}"
-                           hx-trigger="keyup changed delay:1s"
-                           hx-target="#untube-searchbar-results"
+                       name="search" placeholder="Search UnTube"
+                       hx-post="{% url 'search_UnTube' %}"
+                       hx-trigger="keyup changed delay:1s"
+                       hx-target="#untube-searchbar-results"
                        hx-include="[id='searchbar-radio-form']"
-                           hx-indicator=".htmx-indicator">
+                       hx-indicator=".htmx-indicator">
                   <br>
                   <div id="searchbar-radio-form">
                     <div class="d-flex justify-content-center">
@@ -145,113 +164,16 @@
           </div>
         </div>
 
-        </main>
-
-
-      </div>
-    </div>
-
-
-        <div class="offcanvas offcanvas-end text-white-50" style="background-color: #181A1B" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
-            <div class="offcanvas-header text-white">
-                <h2 class="offcanvas-title" id="offcanvasExampleLabel">Settings</h2>
-                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-
-            <div class="offcanvas-body">
-                <div id="settings-status-div" class="text-dark">
-
-                </div>
-                <div id="settings-form">
-
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" name="username" id="username" value="{{ user.username }}">
-                    </div>
-
-                    <fieldset disabled>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="email" aria-describedby="emailHelp" value="{{ user.email }}">
-                            <div id="emailHelp" class="form-text">This is the google account you logged in with.</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="fullname" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="fullname" value="{{ user.get_full_name }}">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="ytchannelid" class="form-label">YouTube Channel ID</label>
-                            <input type="text" class="form-control" id="ytchannelid" aria-describedby="emailHelp" value="{{ user.profile.yt_channel_id }}">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="accesstoken" class="form-label">Access Token</label>
-                            <input type="text" class="form-control" id="accesstoken" value="{{ user.profile.access_token }}">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="refreshtoken" class="form-label">Refresh Token</label>
-                            <input type="text" class="form-control" id="refreshtoken" value="{{ user.profile.refresh_token }}">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="expiresat" class="form-label">Expires At</label>
-                            <input type="datetime-local" class="form-control" id="expiresat" value="{{ user.profile.expires_at }}">
-                        </div>
-                    </fieldset>
-
-                    <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="flexSwitchCheckDefault">
-                        <label class="form-check-label" for="flexSwitchCheckDefault">Automatically refresh playlists on visit</label>
-                    </div>
-
-                    <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
-                        <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
-                    </div>
-
-
-                    <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" checked>
-                        <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
-                    </div>
-                </div>
-
-                    <button type="button" hx-post="{% url 'update_settings' %}" hx-include="[id='settings-form']" hx-target="#settings-status-div" class="btn btn-success">Save</button>
-
-                    <a class="btn btn-outline-danger" href="{% url 'delete_account' %}">Delete account</a>
-
-                <br>
-            </div>
-        </div>
-
-        <div class="offcanvas offcanvas-start" style="background-color: #181A1B" tabindex="-1" id="offcanvasForVideoNotes" aria-labelledby="offcanvasForVideoNotes">
-            <div id="video-notes">
-
-            </div>
-        </div>
-
-        <button
-        type="button"
-        class="btn btn-danger btn-floating btn-lg"
-        id="btn-back-to-top"
-        >
-            ▲
-        </button>
-
-        <br>
 
         <script src="{% static 'htmx/htmx.min.js' %}"></script>
-        <script src="{% static 'htmx/extensions/class-tools.js' %}"></script>
+        <script src="{% static 'clipboard.js/clipboard.min.js' %}"></script>
         <script src="{% static 'jquery3.6.0/js/jquery-3.6.0.min.js' %}"></script>
         <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.js' %}"></script>
+        <script src="{% static 'htmx/extensions/class-tools.js' %}"></script>
+
 
         <script>
 
-
-            <!-- for htmx to send csrf_token with every post request -->
             document.body.addEventListener('htmx:configRequest', (event) => {
             event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
           })
