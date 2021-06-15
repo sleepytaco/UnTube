@@ -2,6 +2,9 @@
 {% extends 'base.html' %}
 {% block content %}
     <br>
+<div hx-get="{% url 'user_playlists_updates' 'check-for-updates' %}" hx-trigger="load" hx-swap="outerHTML">
+
+</div>
 
 <div class="row row-cols-1 row-cols-md-3 g-4" >
     <div id="manage-import-playlists-btn" class="col">

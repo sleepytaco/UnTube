@@ -2,13 +2,15 @@
 {% extends 'base.html' %}
 {% block content %}
 
+            {% if messages %}
+                <br>
                 {% for message in messages %}
                   <div class="alert alert-success alert-dismissible fade show" role="alert">
                       {{ message }}
                       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
                 {% endfor %}
-
+            {% endif %}
         {% if import_successful %}
             <br>
                 <br>
@@ -33,23 +35,16 @@
 
                 <h1 class="h2">Dashboard</h1>
 
-                <!--
-                <div class="btn-toolbar mb-2 mb-md-0">
-              <div class="btn-group me-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
-              </div>
-              <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-                <span data-feather="calendar"></span>
-                This week
-              </button>
-
-
-            </div>
-                -->
                 <span><small>Logged in as <b>{{ user.username }}</b></small></span>
 
             </div>
+
+            <div hx-get="{% url 'user_playlists_updates' 'check-for-updates' %}" hx-trigger="load" hx-swap="outerHTML">
+
+            </div>
+
+
+
 
             <div class="accordion" id="accordionExample">
                 <div class="accordion-item bg-dark text-white">
@@ -111,8 +106,8 @@
                     </div>
                   </div>
             </div>
-            <br>
-                        {% if watching %}
+            {% if watching %}
+                <br>
                 <div class="border border-5 rounded-3 border-primary p-3">
             <h3>Continue Watching</h3>
            <div class="row row-cols-1 row-cols-md-4 g-4 text-dark mt-0">
@@ -164,7 +159,7 @@
 
             <br>
             <h3>Most viewed playlists <a href="{% url 'all_playlists' 'all' %}" class="btn btn-sm btn-info">View All</a></h3>
-
+            {% if user_playlists %}
             <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
                 {% for playlist in user_playlists|slice:"0:3" %}
                 <div class="col">
@@ -194,12 +189,18 @@
                     </div>
                 </div>
                 {% endfor %}
+
             </div>
+
+            {% else %}
+            <h5>You have no playlists ;-;</h5>
+            {% endif %}
 
 
         <br>
             <h3>Recently Accessed</h3>
 
+            {% if recently_accessed_playlists %}
             <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
                 {% for playlist in recently_accessed_playlists %}
                 <div class="col">
@@ -230,10 +231,13 @@
                 </div>
                 {% endfor %}
             </div>
-
+            {% else %}
+            <h5>You have no playlists ;-;</h5>
+            {% endif %}
 
         <br>
             <h3>Recently Added</h3>
+            {% if recently_added_playlists %}
             <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
                 {% for playlist in recently_added_playlists %}
                 <div class="col">
@@ -264,6 +268,9 @@
                 </div>
                 {% endfor %}
             </div>
+             {% else %}
+            <h5>You have no playlists ;-;</h5>
+            {% endif %}
         <br>
 
 

@@ -56,17 +56,19 @@
             <h5>No description</h5>
             {% endif %}
         </p>
-        <small>
-            <span class="badge bg-dark rounded-pill">{{ playlist.video_count }} videos</span>
-            <span class="badge bg-dark rounded-pill">{{ playlist.playlist_duration }} </span>
-            {% if playlist.is_private_on_yt %}<span class="badge bg-dark rounded-pill">private</span>{% endif %}
+        <h6 class="">
+            <span class="badge bg-light text-black-50">{% if playlist.is_user_owned %}OWNED{% else %}IMPORTED{% endif %}</span>
+
+            <span class="badge bg-light text-black-50">{{ playlist.video_count }} VIDEOS</span>
+            <span class="badge bg-light text-black-50">{{ playlist.playlist_duration }} </span>
+            <span class="badge bg-light text-black-50">{% if playlist.is_private_on_yt %}PRIVATE{% else %}PUBLIC{% endif %}</span>
             {% if playlist.has_unavailable_videos %}
-                    <span class="badge bg-dark rounded-pill">some videos are unavailable</span>
+                    <span class="badge bg-light text-black-50">SOME VIDEOS ARE UNAVAILABLE</span>
             {% endif %}
             {% if playlist.has_duplicate_videos %}
-                    <span class="badge bg-dark rounded-pill">duplicate videos</span>
+                    <span class="badge bg-light text-black-50">DUPLICATE VIDEOS</span>
             {% endif %}
-        </small>
+        </h6>
     </div>
 
     <br>

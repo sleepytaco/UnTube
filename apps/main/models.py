@@ -340,6 +340,10 @@ class PlaylistManager(models.Manager):
                     playlist_yt_player_HTML=item['player']['embedHtml'],
                     user=current_user
                 )
+
+                if user.profile.yt_channel_id.strip() != playlist.channel_id.strip():
+                    playlist.is_user_owned = False
+
                 playlist.save()
 
                 playlist = current_user.playlists.get(playlist_id__exact=playlist_id)
@@ -503,7 +507,7 @@ class PlaylistManager(models.Manager):
                     playlist.has_unavailable_videos = True
 
                 playlist.is_in_db = True
-                playlist.is_user_owned = False
+                # playlist.is_user_owned = False
                 playlist.save()
 
         if pl_id is None:
@@ -521,12 +525,16 @@ class PlaylistManager(models.Manager):
         :param user:
         :return:
         '''
-        result = {"status": 0, "num_of_playlists": 0, "first_playlist_name": "N/A"}
+        result = {"status": 0,
+                  "num_of_playlists": 0,
+                  "first_playlist_name": "N/A",
+                  "playlist_ids": []}
 
         current_user = user.profile
 
         credentials = self.getCredentials(user)
 
+        playlist_ids = []
         with build('youtube', 'v3', credentials=credentials) as youtube:
             pl_request = youtube.playlists().list(
                 part='contentDetails, snippet, id, player, status',
@@ -566,7 +574,7 @@ class PlaylistManager(models.Manager):
 
         for item in playlist_items:
             playlist_id = item["id"]
-
+            playlist_ids.append(playlist_id)
             # check if this playlist already exists in database
             if current_user.playlists.filter(playlist_id=playlist_id).count() != 0:
                 playlist = current_user.playlists.get(playlist_id__exact=playlist_id)
@@ -576,9 +584,9 @@ class PlaylistManager(models.Manager):
                 # 1. PLAYLIST HAS DUPLICATE VIDEOS, DELETED VIDS, UNAVAILABLE VIDS
 
                 # check if playlist count changed on youtube
-                if playlist.video_count != item['contentDetails']['itemCount']:
-                    playlist.has_playlist_changed = True
-                    playlist.save()
+                #if playlist.video_count != item['contentDetails']['itemCount']:
+                #    playlist.has_playlist_changed = True
+                #    playlist.save()
             else:  # no such playlist in database
                 ### MAKE THE PLAYLIST AND LINK IT TO CURRENT_USER
                 playlist = Playlist(  # create the playlist and link it to current user
@@ -598,6 +606,8 @@ class PlaylistManager(models.Manager):
                     user=current_user
                 )
                 playlist.save()
+
+        result["playlist_ids"] = playlist_ids
 
         return result
 
@@ -794,7 +804,11 @@ class PlaylistManager(models.Manager):
             )
 
             # execute the above request, and store the response
-            pl_response = pl_request.execute()
+            try:
+                pl_response = pl_request.execute()
+            except googleapiclient.errors.HttpError:
+                print("Playist was deleted on YouTube")
+                return [-1, [], [], []]
 
             print("ESTIMATED VIDEO IDS FROM RESPONSE", len(pl_response["items"]))
             updated_playlist_video_count += len(pl_response["items"])
@@ -981,13 +995,13 @@ class PlaylistManager(models.Manager):
 
         deleted_videos = current_video_ids  # left out video ids
 
-        return [deleted_videos, unavailable_videos, added_videos]
+        return [0, deleted_videos, unavailable_videos, added_videos]
 
 
 class Playlist(models.Model):
     # playlist details
     playlist_id = models.CharField(max_length=150)
-    name = models.CharField(max_length=150, blank=True)
+    name = models.CharField(max_length=150, blank=True)  # YT PLAYLIST NAMES CAN ONLY HAVE MAX OF 150 CHARS
     thumbnail_url = models.CharField(max_length=420, blank=True)
     description = models.CharField(max_length=420, default="No description")
     video_count = models.IntegerField(default=0)

@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.views.decorators.http import require_POST
@@ -54,6 +55,7 @@ def log_out(request):
     logout(request)  # log out authenticated user
     return redirect('/')
 
+
 @login_required
 def start_import(request):
     '''
@@ -63,6 +65,9 @@ def start_import(request):
     :return:
     '''
     user_profile = request.user.profile
+
+    if user_profile.yt_channel_id == "":
+        Playlist.objects.getUserYTChannelID(request.user)
 
     if user_profile.access_token.strip() == "" or user_profile.refresh_token.strip() == "":
         user_social_token = SocialToken.objects.get(account__user=request.user)
@@ -82,6 +87,9 @@ def start_import(request):
             {"channel_found": channel_found}
         ))
     elif result["status"] == -2:
+        request.user.profile.import_in_progress = False
+        request.user.save()
+
         print("User has no playlists on YT")
 
         return HttpResponse(loader.get_template('intercooler/progress_bar.html').render(
@@ -99,16 +107,22 @@ def start_import(request):
              "channel_found": channel_found}
         ))
 
+
 @login_required
 def settings(request):
+
+    if request.user.profile.yt_channel_id == "":
+        Playlist.objects.getUserYTChannelID(request.user)
+
     return render(request, 'settings.html')
+
 
 @login_required
 def continue_import(request):
     if request.user.profile.import_in_progress is False:
         return redirect('home')
 
-    num_of_playlists = request.user.profile.playlists.count()
+    num_of_playlists = request.user.profile.playlists.all().count()
 
     try:
         remaining_playlists = request.user.profile.playlists.filter(is_in_db=False)
@@ -138,3 +152,63 @@ def continue_import(request):
              "done": True,
              "progress": 100,
              "channel_found": True}))
+
+
+@login_required
+def user_playlists_updates(request, action):
+    if action == 'check-for-updates':
+        user_playlists_on_UnTube = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
+
+        result = Playlist.objects.getAllPlaylistsFromYT(request.user)
+
+        youtube_playlist_ids = result["playlist_ids"]
+        untube_playlist_ids = []
+        for playlist in user_playlists_on_UnTube:
+            untube_playlist_ids.append(playlist.playlist_id)
+
+        deleted_playlist_ids = []
+        deleted_playlist_names = []
+        for pl_id in untube_playlist_ids:
+            if pl_id not in youtube_playlist_ids:  # ie this playlist was deleted on youtube
+                deleted_playlist_ids.append(pl_id)
+                pl = request.user.profile.playlists.get(playlist_id__exact=pl_id)
+                deleted_playlist_names.append(f"{pl.name} (had {pl.video_count} videos)")
+                pl.delete()
+
+        if result["num_of_playlists"] == user_playlists_on_UnTube.count() and len(deleted_playlist_ids) == 0:
+            print("No new updates")
+            playlists = []
+        else:
+            playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False))
+            print(f"New updates found! {playlists.count()} newly added and {len(deleted_playlist_ids)} playlists deleted!")
+            print(deleted_playlist_names)
+
+        return HttpResponse(loader.get_template('intercooler/user_playlist_updates.html').render(
+            {"playlists": playlists,
+             "deleted_playlist_names": deleted_playlist_names}))
+    elif action == 'init-update':
+        unimported_playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).count()
+
+        return HttpResponse(f"""
+        <div hx-get="/updates/user-playlists/start-update" hx-trigger="load" hx-target="#user-pl-updates">
+            <div class="alert alert-dismissible fade show" role="alert" style="background-color: cadetblue">
+                <div class="d-flex justify-content-center mt-4 mb-3 ms-2" id="loading-sign" >
+                    <img src="/static/svg-loaders/spinning-circles.svg" width="40" height="40">
+                    <h5 class="mt-2 ms-2 text-black">Importing {unimported_playlists} new playlists into UnTube, please wait!</h5>
+                </div>
+            </div>
+        </div>
+        """)
+    elif action == 'start-update':
+        unimported_playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False))
+
+        for playlist in unimported_playlists:
+            Playlist.objects.getAllVideosForPlaylist(request.user, playlist.playlist_id)
+
+        return HttpResponse("""
+        <div class="alert alert-success alert-dismissible fade show d-flex justify-content-center" role="alert">
+          <h4 class="">Successfully imported new playlists into UnTube! Refresh :)</h4>
+
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-la bel="Close"></button>
+        </div>
+        """)

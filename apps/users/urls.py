@@ -12,4 +12,6 @@ urlpatterns = [
 
     path("import/start", views.start_import, name='start'),
     path("import/continue", views.continue_import, name='continue'),
+
+    path("updates/user-playlists/<slug:action>", views.user_playlists_updates, name='user_playlists_updates'),
 ]

@@ -1,0 +1,43 @@
+{% load static %}
+{% if playlists or deleted_playlist_names %}
+<div id="user-pl-updates">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <h4 class="alert-heading">Updates</h4>
+
+      <p>
+          {% if playlists %}
+          The following new playlists were detected on your YouTube channel and are not on UnTube:
+          <ul>
+                {% for playlist in playlists %}
+                    <li>
+                    <a href="https://www.youtube.com/playlist?list={{ playlist.playlist_id }}" class="text-decoration-none" target="_blank">
+                        {{ playlist.name }}
+                    </a>
+                    {% if playlist.video_count == 1 %}
+                        ({{ playlist.video_count }} video)
+                    {% else %}
+                        ({{ playlist.video_count }} videos)
+                    {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+          {% endif %}
+        {% if deleted_playlist_names %}
+        The following playlists were deleted on YouTube (and have also been removed from UnTube):
+            <ul>
+                {% for playlist in deleted_playlist_names %}
+                    <li>
+                        {{ playlist }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+            <button class="btn btn-success" hx-get="{% url 'user_playlists_updates' 'init-update' %}" hx-trigger="click" hx-target="#user-pl-updates">Import</button>
+            </p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+    </div>
+</div>
+
+
+{% endif %}
