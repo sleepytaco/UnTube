@@ -97,6 +97,8 @@
                             <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'duration' %}" hx-trigger="click" hx-target="#videos-div">Duration</button></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'new-updates' %}" hx-trigger="click" hx-target="#videos-div">Updates</button></li>
+                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'unavailable-videos' %}" hx-trigger="click" hx-target="#videos-div">Unavailable</button></li>
+
                         </ul>
                     </div>
 
@@ -262,14 +264,14 @@
             </div>
         </div>
 
-    <br>
     <div class="table-responsive" id="videos-div">
+        <br>
         <div class="list-group" id="video-checkboxes">
           {% for video in videos %}
 
             <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: #40B3A2">
 
-        {% if video.is_unavailable_on_yt %}
+        {% if video.is_unavailable_on_yt and not video.was_deleted_on_yt %}
 
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -292,18 +294,22 @@
                     <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.playlist_item_id }}" name="video-id">
                 </div>
                   <div class="ms-4" style="max-width: 115px; max-height: 100px;">
+
+
                       <img src="{% if video.thumbnail_url %}{{ video.thumbnail_url }}{% else %}https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg{% endif %}" class="img-fluid" alt="">
-                  </div>
+                   </div>
                     <div class="ms-4">
+                        {{ video.video_position }}.
                         <a class="link-dark" href="https://www.youtube.com/watch?v={{ video.videoid }}&list={{ video.playlist.playlist_id }}" target="_blank">
-                            {{ video.video_position }}. {{ video.name|truncatewords:"16" }}
-                        </a> <br>
+                            {{ video.name|truncatewords:"16" }}
+                        </a> by {{ video.channel_name }} <br>
                         <span class="badge bg-secondary">{{ video.duration }}</span>
                         {% if video.has_cc %}<span class="badge bg-secondary">CC</span>{% endif %}
                         {% if video.published_at %}<span class="badge bg-secondary">{{ video.published_at }}</span>{% endif %}
                       {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
 
                         {% if video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}
+                        {% if video.is_unavailable_on_yt and video.was_deleted_on_yt %}<span class="badge bg-dark">UNAVAILABLE</span>{% endif %}
                         {% if video.video_details_modified %}<span class="badge bg-danger">UPDATED - {% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}NEWLY ADDED{% endif %}</span>{% endif %}<br>
                         <br>
                     </div>
@@ -342,5 +348,13 @@
     {% endif %}
         </div>
     </div>
+
+
+
     </div>
+
+    <!--
+      <script src="{% static 'youtube-audio-player/iframe-api.js' %}"></script>
+  <script src="{% static 'youtube-audio-player/yt.min.js' %}"></script>
+        -->
 {% endblock %}

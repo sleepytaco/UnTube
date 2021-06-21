@@ -66,9 +66,6 @@ def start_import(request):
     '''
     user_profile = request.user.profile
 
-    if user_profile.yt_channel_id == "":
-        Playlist.objects.getUserYTChannelID(request.user)
-
     if user_profile.access_token.strip() == "" or user_profile.refresh_token.strip() == "":
         user_social_token = SocialToken.objects.get(account__user=request.user)
         user_profile.access_token = user_social_token.token
@@ -92,6 +89,9 @@ def start_import(request):
 
         print("User has no playlists on YT")
 
+        if request.user.profile.yt_channel_id == "":
+            Playlist.objects.getUserYTChannelID(request.user)
+
         return HttpResponse(loader.get_template('intercooler/progress_bar.html').render(
             {"total_playlists": 0,
              "playlists_imported": 0,
@@ -99,6 +99,9 @@ def start_import(request):
              "progress": 100,
              "channel_found": channel_found}))
     else:
+        if request.user.profile.yt_channel_id == "":
+            Playlist.objects.getUserYTChannelID(request.user)
+
         return HttpResponse(loader.get_template('intercooler/progress_bar.html').render(
             {"total_playlists": result["num_of_playlists"],
              "playlist_name": result["first_playlist_name"],
@@ -110,10 +113,6 @@ def start_import(request):
 
 @login_required
 def settings(request):
-
-    if request.user.profile.yt_channel_id == "":
-        Playlist.objects.getUserYTChannelID(request.user)
-
     return render(request, 'settings.html')
 
 

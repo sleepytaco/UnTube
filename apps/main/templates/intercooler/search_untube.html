@@ -1,21 +1,23 @@
 {% load humanize %}
 
-        <div class="bg-dark">
-                <div class="d-flex justify-content-center">
-                   <h1> Search all of UnTube                     <h6>Press <code>Esc</code> to close.</h6>
-</h1>
-                </div>
+        <div>
+            <div class="d-flex justify-content-center">
+               <h1> Search all of UnTube
+                   <h6>Press <code>Esc</code> to close.</h6>
+                </h1>
+            </div>
 
             <input class="form-control me-lg-2 bg-dark text-white" type="text"
-       name="search" placeholder="Search UnTube"
-                   value="{{ search_query }}"
-       hx-post="{% url 'search_UnTube' %}"
-       hx-trigger="keyup changed delay:1s"
-       hx-target="#untube-searchbar-results"
-                   hx-include="[id='searchbar-radio-form']"
-       hx-indicator=".htmx-indicator" autofocus onfocus="this.setSelectionRange(this.value.length,this.value.length);">
+                name="search" placeholder="Search UnTube"
+                value="{{ search_query }}"
+                hx-post="{% url 'search_UnTube' %}"
+                hx-trigger="keyup changed delay:750ms"
+                hx-target="#untube-searchbar-results"
+                hx-include="[id='searchbar-radio-form']"
+                hx-indicator=".htmx-indicator" autofocus onfocus="this.setSelectionRange(this.value.length,this.value.length);">
             <br>
-                          <div id="searchbar-radio-form">
+
+              <div id="searchbar-radio-form">
 
                   <div class="d-flex justify-content-center">
 
@@ -89,28 +91,37 @@
                 <div class="col">
                     <div class="card" style="background-color: #1A4464;">
 
-                            <div class="card-body">
-                                <h5 class="card-title text-light">
-                                    {{ video.name|truncatewords:"15" }}<br>
+                    <div class="card-body">
+                        <h5 class="card-title text-light">
+                            {{ video.name|truncatewords:"15" }}<br>
 
-                                    <small>
-                                        <a class="badge bg-white text-black-50" href="{% url 'playlist' video.playlist.playlist_id %}">{{ video.playlist.name }}</a>
+                            <small>
+                                <a class="badge bg-white text-black-50" href="{% url 'playlist' video.playlist.playlist_id %}">{{ video.playlist.name }}</a>
 
-                                        <span class="badge bg-dark text-white-50">{{ video.duration }}</span>
-                                    </small>
-                                    {% if video.is_unavailable_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
-                                    {% if video.has_cc %}<small><span class="badge bg-danger text-dark">CC</span></small> {% endif %}
-                                </h5>
-                                                                <br>
+                                <span class="badge bg-dark text-white-50">{{ video.duration }}</span>
+                            </small>
+                            {% if video.is_unavailable_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                            {% if video.has_cc %}<small><span class="badge bg-danger text-dark">CC</span></small> {% endif %}
+                        </h5>
+                                                        <br>
 
-                                <span class="d-flex justify-content-center">
-                                    <a href="https://www.youtube.com/watch?v={{ video.video_id }}" class="btn btn-info me-1" target="_blank" id="share_link" style=""><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
-                                    <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ video.video_id }}">
-                                    <button class="copy-btn btn btn-success" data-clipboard-target="#video-{{ video.video_id }}">
-                                        <i class="far fa-copy" aria-hidden="true"></i>
-                                    </button>
-                                </span>
-                            </div>
+                        <span class="d-flex justify-content-center">
+                            <a href="https://www.youtube.com/watch?v={{ video.video_id }}" class="btn btn-info me-1" target="_blank" id="share_link" style=""><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+                            <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ video.video_id }}">
+                            <button class="copy-btn btn btn-success  me-1" data-clipboard-target="#video-{{ video.video_id }}">
+                                <i class="far fa-copy" aria-hidden="true"></i>
+                            </button>
+                            <button class="btn btn-dark" type="button" hx-get="{% url 'mark_video_favorite' video.playlist.playlist_id video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
+                                <div id="video-{{ forloop.counter }}-fav">
+                                    {% if video.is_favorite %}
+                                        <i class="fas fa-heart"></i>
+                                    {% else %}
+                                        <i class="far fa-heart"></i>
+                                    {% endif %}
+                                </div>
+                            </button>
+                        </span>
+                    </div>
                     </div>
                 </div>
                 {% endfor %}

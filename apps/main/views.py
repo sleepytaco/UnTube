@@ -151,25 +151,33 @@ def order_playlist_by(request, playlist_id, order_by):
     playlist = request.user.profile.playlists.get(Q(playlist_id=playlist_id) & Q(is_in_db=True))
 
     display_text = "Nothing in this playlist! Add something!"  # what to display when requested order/filter has no videws
+    videos_details = ""
 
     if order_by == "all":
         videos = playlist.videos.order_by("video_position")
     elif order_by == "favorites":
         videos = playlist.videos.filter(is_favorite=True).order_by("video_position")
+        videos_details = "Sorted by Favorites"
         display_text = "No favorites yet!"
     elif order_by == "popularity":
+        videos_details = "Sorted by Popularity"
         videos = playlist.videos.order_by("-like_count")
     elif order_by == "date-published":
+        videos_details = "Sorted by Date Published"
         videos = playlist.videos.order_by("-published_at")
     elif order_by == "views":
+        videos_details = "Sorted by View Count"
         videos = playlist.videos.order_by("-view_count")
     elif order_by == "has-cc":
+        videos_details = "Filtered by Has CC"
         videos = playlist.videos.filter(has_cc=True).order_by("video_position")
         display_text = "No videos in this playlist have CC :("
     elif order_by == "duration":
+        videos_details = "Sorted by Video Duration"
         videos = playlist.videos.order_by("-duration_in_seconds")
     elif order_by == 'new-updates':
         videos = []
+        videos_details = "Sorted by New Updates"
         display_text = "No new updates! Note that deleted videos will not show up here."
         if playlist.has_new_updates:
             recently_updated_videos = playlist.videos.filter(video_details_modified=True)
@@ -185,11 +193,16 @@ def order_playlist_by(request, playlist_id, order_by):
                 playlist.save()
             else:
                 videos = recently_updated_videos.order_by("video_position")
+    elif order_by == 'unavailable-videos':
+        videos = playlist.videos.filter(Q(is_unavailable_on_yt=True) & Q(was_deleted_on_yt=True))
+        videos_details = "Sorted by Unavailable Videos"
+        display_text = "None of the videos in this playlist have gone unavailable... yet."
     else:
         return redirect('home')
 
     return HttpResponse(loader.get_template("intercooler/videos.html").render({"playlist": playlist,
                                                                                "videos": videos,
+                                                                               "videos_details": videos_details,
                                                                                "display_text": display_text}))
 
 
@@ -343,6 +356,13 @@ def mark_video_favortie(request, playlist_id, video_id):
 
 
 ###########
+@login_required
+def search(request):
+    if request.method == "GET":
+        return render(request, 'search_untube_page.html')
+    else:
+        return render('home')
+
 
 @login_required
 @require_POST
@@ -373,7 +393,7 @@ def search_UnTube(request):
 
         if search_query != "":
             for playlist in all_playlists:
-                pl_videos = playlist.videos.filter(Q(name__contains=search_query) & Q(is_in_db=True))
+                pl_videos = playlist.videos.filter(name__contains=search_query)
 
                 if pl_videos.count() != 0:
                     for v in pl_videos.all():

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+    <br>
+    <script>
+    window.onkeydown = function( event ) {
+        if ( event.keyCode === 27 ) {
+            window.close(); // closes current tab
+        }
+    };
+    </script>
+<div id="untube-searchbar-results">
+
+    <div class="d-flex justify-content-center">
+        <h1> Search all of UnTube
+            <h6>Press <code>Esc</code> to close.</h6>
+        </h1>
+    </div>
+<input class="form-control me-lg-2 bg-dark text-white" type="text"
+       id="untubeSearchBar"
+        name="search" placeholder="Search UnTube"
+        hx-post="{% url 'search_UnTube' %}"
+        hx-trigger="keyup changed delay:700ms"
+        hx-target="#untube-searchbar-results"
+        hx-include="[id='searchbar-radio-form']"
+        hx-indicator=".htmx-indicator" autofocus>
+
+<br>
+
+<div id="searchbar-radio-form">
+    <div class="d-flex justify-content-center">
+        <div class="form-check me-5">
+            <input class="form-check-input" type="radio" name="search-settings" value="starts-with" id="starts-with-cb" checked>
+            <label class="form-check-label" for="starts-with-cb">
+                    Starts with
+            </label>
+        </div>
+         <div class="form-check">
+            <input class="form-check-input" type="radio" name="search-settings" value="contains" id="contains-cb">
+                  <label class="form-check-label" for="contains-cb">
+                    Contains
+                  </label>
+        </div>
+    </div>
+</div>
+</div>
+<div id="spinner" class="htmx-indicator d-flex justify-content-center">
+                <div class="spinner-border text-light" role="status">
+                </div>
+                </div>
+
+{% endblock %}

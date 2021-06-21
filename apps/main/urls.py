@@ -8,6 +8,7 @@ urlpatterns = [
     # path("login/", views.log_in, name='log_in'),
 
     ### STUFF RELATED TO WHOLE SITE
+    path("search", views.search, name="search"),
     path("search/UnTube/", views.search_UnTube, name="search_UnTube"),
 
     ### STUFF RELATED TO VIDEO(S)

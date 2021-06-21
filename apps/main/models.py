@@ -25,8 +25,8 @@ def getVideoIdsStrings(video_ids):
 
     i = 0
     while i < len(video_ids):
-        output.append(",".join(video_ids[i:i + 10]))
-        i += 10
+        output.append(",".join(video_ids[i:i + 50]))
+        i += 50
 
     return output
 
@@ -286,6 +286,8 @@ class PlaylistManager(models.Manager):
                 print("YouTube playlist not found if id=playlist_id")
                 return -1
 
+            print("Playlist", pl_response)
+
             if pl_response["pageInfo"]["totalResults"] == 0:
                 print("No playlists created yet on youtube.")
                 return -2
@@ -330,19 +332,11 @@ class PlaylistManager(models.Manager):
                     description=item['snippet']['description'],
                     published_at=item['snippet']['publishedAt'],
                     thumbnail_url=getThumbnailURL(item['snippet']['thumbnails']),
-                    channel_id=item['snippet']['channelId'] if 'channelId' in
-                                                               item['snippet'] else '',
-                    channel_name=item['snippet']['channelTitle'] if 'channelTitle' in
-                                                                    item[
-                                                                        'snippet'] else '',
                     video_count=item['contentDetails']['itemCount'],
                     is_private_on_yt=True if item['status']['privacyStatus'] == 'private' else False,
                     playlist_yt_player_HTML=item['player']['embedHtml'],
                     user=current_user
                 )
-
-                if user.profile.yt_channel_id.strip() != playlist.channel_id.strip():
-                    playlist.is_user_owned = False
 
                 playlist.save()
 
@@ -360,8 +354,19 @@ class PlaylistManager(models.Manager):
                     # execute the above request, and store the response
                     pl_response = pl_request.execute()
 
+                    print("Playlist Items", pl_response)
+
                     for item in pl_response['items']:
                         video_id = item['contentDetails']['videoId']
+
+                        if playlist.channel_id == "":
+                            playlist.channel_id = item['snippet']['channelId']
+                            playlist.channel_name = item['snippet']['channelTitle']
+
+                            if user.profile.yt_channel_id.strip() != item['snippet']['channelId']:
+                                playlist.is_user_owned = False
+
+                            playlist.save()
 
                         if playlist.videos.filter(video_id=video_id).count() == 0:  # video DNE
                             if (item['snippet']['title'] == "Deleted video" and
@@ -386,8 +391,8 @@ class PlaylistManager(models.Manager):
                                                                                                    'contentDetails'] else None,
                                     name=item['snippet']['title'],
                                     thumbnail_url=getThumbnailURL(item['snippet']['thumbnails']),
-                                    channel_id=item['snippet']['channelId'],
-                                    channel_name=item['snippet']['channelTitle'],
+                                    channel_id=item['snippet']['videoOwnerChannelId'],
+                                    channel_name=item['snippet']['videoOwnerChannelTitle'],
                                     description=item['snippet']['description'],
                                     video_position=item['snippet']['position'] + 1,
                                     playlist=playlist
@@ -442,8 +447,8 @@ class PlaylistManager(models.Manager):
                                                 'contentDetails'] else None,
                                             name=item['snippet']['title'],
                                             thumbnail_url=getThumbnailURL(item['snippet']['thumbnails']),
-                                            channel_id=item['snippet']['channelId'],
-                                            channel_name=item['snippet']['channelTitle'],
+                                            channel_id=item['snippet']['videoOwnerChannelId'],
+                                            channel_name=item['snippet']['videoOwnerChannelTitle'],
                                             video_position=item['snippet']['position'] + 1,
                                             playlist=playlist
                                         )
@@ -468,6 +473,9 @@ class PlaylistManager(models.Manager):
                     # API expects the video ids to be a string of comma seperated values, not a python list
                     video_ids_strings = getVideoIdsStrings(video_ids)
 
+                    print(video_ids)
+                    print(video_ids_strings)
+
                     # store duration of all the videos in the playlist
                     vid_durations = []
 
@@ -480,6 +488,8 @@ class PlaylistManager(models.Manager):
                         )
 
                         vid_response = vid_request.execute()
+
+                        print("Videos()", pl_response)
 
                         for item in vid_response['items']:
                             duration = item['contentDetails']['duration']
@@ -656,8 +666,8 @@ class PlaylistManager(models.Manager):
                                                                                            'contentDetails'] else None,
                             name=item['snippet']['title'],
                             thumbnail_url=getThumbnailURL(item['snippet']['thumbnails']),
-                            channel_id=item['snippet']['channelId'],
-                            channel_name=item['snippet']['channelTitle'],
+                            channel_id=item['snippet']['videoOwnerChannelId'],
+                            channel_name=item['snippet']['videoOwnerChannelTitle'],
                             description=item['snippet']['description'],
                             video_position=item['snippet']['position'] + 1,
                             playlist=playlist
@@ -712,8 +722,8 @@ class PlaylistManager(models.Manager):
                                         'contentDetails'] else None,
                                     name=item['snippet']['title'],
                                     thumbnail_url=getThumbnailURL(item['snippet']['thumbnails']),
-                                    channel_id=item['snippet']['channelId'],
-                                    channel_name=item['snippet']['channelTitle'],
+                                    channel_id=item['snippet']['videoOwnerChannelId'],
+                                    channel_name=item['snippet']['videoOwnerChannelTitle'],
                                     video_position=item['snippet']['position'] + 1,
                                     playlist=playlist
                                 )
@@ -866,9 +876,11 @@ class PlaylistManager(models.Manager):
                             item['snippet']['description'] == "This video is unavailable.") or (
                                 item['snippet']['title'] == "Private video" and item['snippet'][
                             'description'] == "This video is private."):
+                            video.is_unavailable_on_yt = True
                             video.was_deleted_on_yt = True  # video went private on YouTube
                             video.video_details_modified = True
                             video.video_details_modified_at = datetime.datetime.now(tz=pytz.utc)
+
                             unavailable_videos.append(video)
 
                     video.save()
@@ -937,6 +949,7 @@ class PlaylistManager(models.Manager):
                                     item['snippet']['description'] == "This video is unavailable.") or (
                                         item['snippet']['title'] == "Private video" and item['snippet'][
                                     'description'] == "This video is private."):
+                                    video.is_unavailable_on_yt = True
                                     video.was_deleted_on_yt = True
                                     video.video_details_modified = True
                                     video.video_details_modified_at = datetime.datetime.now(tz=pytz.utc)
@@ -1017,8 +1030,8 @@ class Playlist(models.Model):
     has_unavailable_videos = models.BooleanField(default=False)  # if videos in playlist are private/deleted
 
     # playlist is made by this channel
-    channel_id = models.CharField(max_length=420, blank=True)
-    channel_name = models.CharField(max_length=420, blank=True)
+    channel_id = models.CharField(max_length=420, default="")
+    channel_name = models.CharField(max_length=420, default="")
 
     user_notes = models.CharField(max_length=420, default="")  # user can take notes on the playlist and save them
     user_label = models.CharField(max_length=100, default="")  # custom user given name for this playlist
@@ -1087,9 +1100,17 @@ class Video(models.Model):
 
     # manage video
     is_duplicate = models.BooleanField(default=False)  # True if the same video exists more than once in the playlist
+
+    # NOTE: For a video in db:
+    # 1.) if both is_unavailable_on_yt and was_deleted_on_yt are true,
+    # that means the video was originally fine, but then went unavailable when updatePlaylist happened
+    # 2.) if only is_unavailable_on_yt is true and was_deleted_on_yt is false,
+    # then that means the video was an unavaiable video when initPlaylist was happening
+    # 3.) if both is_unavailable_on_yt and was_deleted_on_yt are false, the video is fine, ie up on Youtube
     is_unavailable_on_yt = models.BooleanField(
         default=False)  # True if the video was unavailable (private/deleted) when the API call was first made
     was_deleted_on_yt = models.BooleanField(default=False)  # True if video became unavailable on a subsequent API call
+
     is_marked_as_watched = models.BooleanField(default=False, blank=True)  # mark video as watched
     is_favorite = models.BooleanField(default=False, blank=True)  # mark video as favorite
     num_of_accesses = models.CharField(max_length=69,
