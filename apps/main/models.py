@@ -113,55 +113,9 @@ class PlaylistManager(models.Manager):
 
         playlist = user.profile.playlists.get(playlist_id=pl_id)
 
-        with build('youtube', 'v3', credentials=credentials) as youtube:
-            pl_request = youtube.playlists().list(
-                part='contentDetails, snippet, id, status',
-                id=pl_id,  # get playlist details for this playlist id
-                maxResults=50
-            )
-
-            # execute the above request, and store the response
-            try:
-                pl_response = pl_request.execute()
-            except googleapiclient.errors.HttpError:
-                print("YouTube channel not found if mine=True")
-                print("YouTube playlist not found if id=playlist_id")
-                return -1
-
-            playlist_items = []
-
-            for item in pl_response["items"]:
-                playlist_items.append(item)
-
-            while True:
-                try:
-                    pl_request = youtube.playlists().list_next(pl_request, pl_response)
-                    pl_response = pl_request.execute()
-                    for item in pl_response["items"]:
-                        playlist_items.append(item)
-                except AttributeError:
-                    break
-
-        for item in playlist_items:
-            playlist_id = item["id"]
-
-            # check if this playlist already exists in database
-            if user.profile.playlists.filter(playlist_id=playlist_id).count() != 0:
-                playlist = user.profile.playlists.get(playlist_id__exact=playlist_id)
-                print(f"PLAYLIST {playlist.name} ALREADY EXISTS IN DB")
-
-                # POSSIBLE CASES:
-                # 1. PLAYLIST HAS DUPLICATE VIDEOS, DELETED VIDS, UNAVAILABLE VIDS
-
-                # check if playlist changed on youtube
-                if playlist.video_count != item['contentDetails']['itemCount']:
-                    playlist.has_playlist_changed = True
-                    playlist.save()
-                    return [-1, item['contentDetails']['itemCount']]
-
         # if its been a week since the last full scan, do a full playlist scan
         # basically checks all the playlist video for any updates
-        if playlist.last_full_scan_at + datetime.timedelta(days=7) < datetime.datetime.now(pytz.utc):
+        if playlist.last_full_scan_at + datetime.timedelta(hours=1) < datetime.datetime.now(pytz.utc):
             print("DOING A FULL SCAN")
             current_video_ids = [video.video_id for video in playlist.videos.all()]
 
@@ -172,7 +126,7 @@ class PlaylistManager(models.Manager):
             with build('youtube', 'v3', credentials=credentials) as youtube:
                 pl_request = youtube.playlistItems().list(
                     part='contentDetails, snippet, status',
-                    playlistId=playlist_id,  # get all playlist videos details for this playlist id
+                    playlistId=pl_id,  # get all playlist videos details for this playlist id
                     maxResults=50
                 )
 
@@ -233,6 +187,53 @@ class PlaylistManager(models.Manager):
             deleted_videos = len(current_video_ids)  # left out video ids
 
             return [1, deleted_videos, unavailable_videos, added_videos]
+
+        with build('youtube', 'v3', credentials=credentials) as youtube:
+            pl_request = youtube.playlists().list(
+                part='contentDetails, snippet, id, status',
+                id=pl_id,  # get playlist details for this playlist id
+                maxResults=50
+            )
+
+            # execute the above request, and store the response
+            try:
+                pl_response = pl_request.execute()
+            except googleapiclient.errors.HttpError:
+                print("YouTube channel not found if mine=True")
+                print("YouTube playlist not found if id=playlist_id")
+                return -1
+
+            playlist_items = []
+
+            for item in pl_response["items"]:
+                playlist_items.append(item)
+
+            while True:
+                try:
+                    pl_request = youtube.playlists().list_next(pl_request, pl_response)
+                    pl_response = pl_request.execute()
+                    for item in pl_response["items"]:
+                        playlist_items.append(item)
+                except AttributeError:
+                    break
+
+        for item in playlist_items:
+            playlist_id = item["id"]
+
+            # check if this playlist already exists in database
+            if user.profile.playlists.filter(playlist_id=playlist_id).count() != 0:
+                playlist = user.profile.playlists.get(playlist_id__exact=playlist_id)
+                print(f"PLAYLIST {playlist.name} ALREADY EXISTS IN DB")
+
+                # POSSIBLE CASES:
+                # 1. PLAYLIST HAS DUPLICATE VIDEOS, DELETED VIDS, UNAVAILABLE VIDS
+
+                # check if playlist changed on youtube
+                if playlist.video_count != item['contentDetails']['itemCount']:
+                    playlist.has_playlist_changed = True
+                    playlist.save()
+                    return [-1, item['contentDetails']['itemCount']]
+
         return [0, "no change"]
 
     # Used to check if the user has a vaild YouTube channel

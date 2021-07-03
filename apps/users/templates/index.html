@@ -12,6 +12,30 @@
 
     <title>UnTube</title>
 
+      <style type="text/css">
+
+            body {
+                background: linear-gradient(-45deg, #B2A3FF, #84bcf3, #AE876B, #B0E7AE);
+                //background: linear-gradient(-45deg, #0645a4, #2480cd, #84bcf3, #b7d6f7);
+                //background: linear-gradient(-45deg, #AE876B, #ABA27B, #A7BC8A, #A3D69A);
+                background-size: 400% 400%;
+                animation: gradient 10s ease infinite;
+                }
+
+            @keyframes gradient {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+
+      </style>
+
       <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
 
     <!-- Bootstrap core CSS -->
@@ -45,7 +69,7 @@
       </main>
 
       <footer class="mastfoot mt-auto">
-        <div class="inner">
+        <div class="inner text-white">
           <h6>Made with <span style="color: #e25555;">&hearts;</span> in Django</h6>
         </div>
       </footer>

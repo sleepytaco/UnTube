@@ -304,7 +304,7 @@
                    </div>
                     <div class="ms-4">
                         {{ video.video_position }}.
-                        <a class="link-dark" href="https://www.youtube.com/watch?v={{ video.videoid }}&list={{ video.playlist.playlist_id }}" target="_blank">
+                        <a class="link-dark" href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" target="_blank">
                             {{ video.name|truncatewords:"16" }}
                         </a> by {{ video.channel_name }} <br>
                         <span class="badge bg-secondary">{{ video.duration }}</span>

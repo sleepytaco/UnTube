@@ -532,7 +532,12 @@ def update_playlist(request, playlist_id, type):
                 playlist.playlist_changed_text = "\n".join(playlist_changed_text)
                 playlist.has_playlist_changed = True
                 playlist.save()
-
+            else:  # no updates found
+                return HttpResponse("""
+                <div class="alert alert-success alert-dismissible fade show visually-hidden" role="alert">
+                    No new updates!
+                </div>
+                """)
         elif result[0] == -1:  # playlist changed
             print("!!!Playlist changed")
 
