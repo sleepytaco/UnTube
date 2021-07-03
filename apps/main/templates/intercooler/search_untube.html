@@ -3,11 +3,13 @@
         <div>
             <div class="d-flex justify-content-center">
                <h1> Search all of UnTube
-                   <h6>Press <code>Esc</code> to close.</h6>
-                </h1>
+                {% if user.profile.open_search_new_tab %}
+                    <h6>Press <kbd>Esc</kbd> to close.</h6>
+                {% endif %}
+               </h1>
             </div>
 
-            <input class="form-control me-lg-2 bg-dark text-white" type="text"
+            <input class="form-control me-lg-2" type="text"
                 name="search" placeholder="Search UnTube"
                 value="{{ search_query }}"
                 hx-post="{% url 'search_UnTube' %}"

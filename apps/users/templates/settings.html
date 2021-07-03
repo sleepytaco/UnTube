@@ -2,6 +2,185 @@
 
 {% block content %}
 
+    <!-- Template taken from https://www.bootdey.com/snippets/view/profile-with-data-and-skills#html -->
+
+<div class="container-fluid text-black">
+<div class="main-body" style="padding: 15px">
+
+      <div class="row g-5">
+        <div class="col-md-4 mb-3">
+          <div class="card bg-dark text-white">
+            <div class="card-body">
+                <!--
+              <div class="d-flex flex-column align-items-center text-center">
+                <img src="https://robohash.org/{{ user.username }}.png?set=set3" alt="{{ user.username }}" class="border border-5 border-primary rounded-circle" width="150">
+                <div class="mt-3">
+                  <h4>{{ user.get_full_name }}</h4>
+                  <p class="text-white-50 mb-1">Full Stack Developer</p>
+                  <p class="text-white-50 font-size-sm">Bay Area, San Francisco, CA</p>
+                  <button class="btn btn-primary"><i class="fas fa-pencil-alt"></i></button>
+                </div>
+              </div>
+              -->
+            <div class="row">
+                <div class="col-sm-3">
+                  <h6 class="mb-0">Pick a picture:</h6>
+                </div>
+                <div class="col-sm-9 text-white-50">
+                    <img src="https://robohash.org/{{ user.username }}.png?set=set1" alt="{{ user.username }}" class="border border-3 {% if user.profile.robohash_set == 1 %}border-primary{% endif %} rounded-circle" width="65">
+                    <input class="form-check-input visually-hidden" type="radio" name="profilePicRadio" id="flexRadioDefault1">
+
+                    <img src="https://robohash.org/{{ user.username }}.png?set=set2" alt="{{ user.username }}" class="border border-3 {% if user.profile.robohash_set == 2 %}border-primary{% endif %} rounded-circle" width="65">
+                    <input class="form-check-input visually-hidden" type="radio" name="profilePicRadio" id="flexRadioDefault2">
+
+                    <img src="https://robohash.org/{{ user.username }}.png?set=set3" alt="{{ user.username }}" class="border border-3 {% if user.profile.robohash_set == 3 %}border-primary{% endif %} rounded-circle" width="65">
+                    <input class="form-check-input visually-hidden" type="radio" name="profilePicRadio" id="flexRadioDefault3">
+
+                    <img src="https://robohash.org/{{ user.username }}.png?set=set4" alt="{{ user.username }}" class="border border-3 {% if user.profile.robohash_set == 4 %}border-primary{% endif %} rounded-circle" width="65">
+                    <input class="form-check-input visually-hidden" type="radio" name="profilePicRadio" id="flexRadioDefault4">
+                </div>
+            </div>
+            <hr>
+              <div class="row">
+                <div class="col-sm-3">
+                  <h6 class="mb-0">Summary</h6>
+                </div>
+                <div class="col-sm-9 text-white-50">
+                    <textarea class="form-control form-text" id="summary">{{ user.profile.user_summary }}</textarea>
+                </div>
+              </div>
+            <hr>
+              <div class="row">
+                <div class="col-sm-3">
+                  <h6 class="mb-0">Location</h6>
+                </div>
+                <div class="col-sm-9 text-white-50">
+                    <input type="text" class="form-control" id="location" value="{{ user.profile.user_location }}">
+                </div>
+              </div>
+            <hr>
+                    <a href="#navbar" hx-post="{% url 'update_settings' %}" hx-include="[id='settings-form']" hx-target="#settings-status-div" class="btn btn-success">Update</a>
+
+            </div>
+          </div>
+        </div>
+        <div class="col-md-8">
+
+        <div id="settings-status-div" class="text-dark">
+
+        </div>
+
+          <div class="card bg-dark text-white mb-3">
+            <div class="card-body">
+                <div id="settings-form">
+
+                <div class="row">
+                <div class="col-sm-3">
+                  <h6 class="mb-0">Username</h6>
+                </div>
+                <div class="col-sm-9 text-white-50">
+                    <input type="text" class="form-control" name="username" id="username" value="{{ user.username }}">
+
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-3">
+                  <h6 class="mb-0">Full Name</h6>
+                </div>
+                <div class="col-sm-9 text-white-50">
+                    <input type="text" class="form-control" id="fullname" value="{{ user.get_full_name }}" disabled>
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-3">
+                  <h6 class="mb-0">Email</h6>
+                </div>
+                <div class="col-sm-9 text-white-50">
+                    <input type="email" class="form-control" id="email" aria-describedby="emailHelp" value="{{ user.email }}" disabled>
+                    <div id="emailHelp" class="form-text">This is the google account you logged in with.</div>                </div>
+                  </div>
+              <hr>
+
+              <div class="row">
+                <div class="col-sm-3">
+                  <h6 class="mb-0">Access Token</h6>
+                </div>
+                <div class="col-sm-9 text-white-50">
+                    {{ user.profile.access_token }}
+                </div>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-sm-3">
+                  <h6 class="mb-0">Refresh Token</h6>
+                </div>
+                <div class="col-sm-9 text-white-50">
+                    {{ user.profile.refresh_token }}
+                </div>
+              </div>
+              <hr>
+            <div class="row">
+                <div class="col-sm-3">
+                  <h6 class="mb-0">Expires At</h6>
+                </div>
+                <div class="col-sm-9 text-white-50">
+                    {{ user.profile.expires_at }}
+                </div>
+              </div>
+              <hr>
+                <div class="row">
+                    <div class="col-sm-3">
+                        <h6 class="mb-0">Preferences</h6>
+                    </div>
+                    <div class="col-sm-9 text-white">
+                        <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" name="open search in new tab" type="checkbox" id="openSearchCheckDefault" {% if user.profile.open_search_new_tab %} checked {% endif %}>
+                        <label class="form-check-label" for="openSearchCheckDefault">Open Search in new tab</label>
+                        </div>
+
+                        <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="flexSwitchCheckDefault">
+                        <label class="form-check-label" for="flexSwitchCheckDefault">Automatically refresh playlists on visit</label>
+                        </div>
+
+                        <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
+                        <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
+                        </div>
+
+
+                        <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" checked>
+                        <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+              <div class="row">
+                <div class="col-sm-12">
+                    <a href="#navbar" hx-post="{% url 'update_settings' %}" hx-include="[id='settings-form']" hx-target="#settings-status-div" class="btn btn-success">Save</a>
+                    <a class="btn btn-outline-danger" href="{% url 'delete_account' %}">Delete account</a>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+
+
+        </div>
+      </div>
+
+    </div>
+</div>
+
+<!--
 <div class="container-fluid">
 
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -77,4 +256,6 @@
         </div>
 
 </div>
+
+-->
 {% endblock %}

@@ -107,6 +107,19 @@ def view_playlist(request, playlist_id):
         messages.error(request, "No such playlist found!")
         return redirect('home')
 
+    if playlist.has_new_updates:
+        recently_updated_videos = playlist.videos.filter(video_details_modified=True)
+
+        for video in recently_updated_videos:
+            if video.video_details_modified_at + datetime.timedelta(hours=12) < datetime.datetime.now(
+                    pytz.utc):  # expired
+                video.video_details_modified = False
+                video.save()
+
+        if recently_updated_videos.count() == 0:
+            playlist.has_new_updates = False
+            playlist.save()
+
     videos = playlist.videos.order_by("video_position")
 
     return render(request, 'view_playlist.html', {"playlist": playlist,
@@ -588,11 +601,11 @@ def update_playlist(request, playlist_id, type):
 
     if len(added_videos) != 0:
         playlist_changed_text.append(f"{len(added_videos)} added")
-        for video in added_videos[:3]:
+        for video in added_videos:
             playlist_changed_text.append(f"--> {video.name}")
 
-        if len(added_videos) > 3:
-            playlist_changed_text.append(f"+ {len(added_videos) - 3} more")
+        #if len(added_videos) > 3:
+        #    playlist_changed_text.append(f"+ {len(added_videos) - 3} more")
 
     if len(unavailable_videos) != 0:
         if len(playlist_changed_text) == 0:
@@ -615,8 +628,8 @@ def update_playlist(request, playlist_id, type):
     if len(playlist_changed_text) == 0:
         playlist_changed_text = ["Successfully refreshed playlist! No new changes found!"]
 
-    return HttpResponse(loader.get_template("intercooler/updated_playlist.html")
+    # return HttpResponse
+    return HttpResponse(loader.get_template("intercooler/playlist_updates.html")
         .render(
         {"playlist_changed_text": "\n".join(playlist_changed_text),
-         "playlist": playlist,
-         "videos": playlist.videos.order_by("video_position")}))
+         "playlist_id": playlist_id}))

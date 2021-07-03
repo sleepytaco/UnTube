@@ -1,18 +1,4 @@
-
-{% load humanize %}
-{% load static %}
-    <div id="view_playlist">
-    <br>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-      <h4 class="alert-heading">Updates</h4>
-      <p>{{ playlist_changed_text|linebreaksbr }}</p>
-      <hr>
-      <p class="mb-0">Tip: Sort By Updates to see what changed in this playlist. Deleted videos will not show up there. Updates can be seen for 12 hrs.</p>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-
-    </div>
-
-    <div class="list-group-item list-group-item-action active">
+<div class="list-group-item list-group-item-action active">
         <div class="d-flex w-100 justify-content-between">
             <span>
                 <h2 class="mb-1">{{ playlist.name }}

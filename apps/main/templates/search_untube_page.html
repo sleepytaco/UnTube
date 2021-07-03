@@ -15,10 +15,10 @@
 
     <div class="d-flex justify-content-center">
         <h1> Search all of UnTube
-            <h6>Press <code>Esc</code> to close.</h6>
+            {% if user.profile.open_search_new_tab %}<h6>Press <kbd>Esc</kbd> to close.</h6>{% endif %}
         </h1>
     </div>
-<input class="form-control me-lg-2 bg-dark text-white" type="text"
+<input class="form-control me-lg-2" type="text"
        id="untubeSearchBar"
         name="search" placeholder="Search UnTube"
         hx-post="{% url 'search_UnTube' %}"

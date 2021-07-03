@@ -19,12 +19,17 @@ def index(request):
         return redirect('home')
 
 
+@login_required
+def profile(request):
+    return render(request, 'profile.html')
+
+
 @require_POST
 def update_settings(request):
     print(request.POST)
     user = request.user
     username_input = request.POST['username'].strip()
-    message_content = "Saved! Refresh to see changes!"
+    message_content = "Saved!"
     message_type = "success"
     if username_input != user.username:
         if User.objects.filter(username__exact=username_input).count() != 0:
@@ -32,11 +37,18 @@ def update_settings(request):
             message_content = f"Username {request.POST['username'].strip()} already taken"
         else:
             user.username = request.POST['username'].strip()
-            user.save()
+            # user.save()
             message_content = f"Username updated to {username_input}!"
 
+    if 'open search in new tab' in request.POST:
+        user.profile.open_search_new_tab = True
+    else:
+        user.profile.open_search_new_tab = False
+
+    user.save()
+
     return HttpResponse(loader.get_template("intercooler/messages.html").render(
-        {"message_type": message_type, "message_content": message_content}))
+        {"message_type": message_type, "message_content": message_content, "refresh_page": True}))
 
 
 @login_required
@@ -179,7 +191,8 @@ def user_playlists_updates(request, action):
             playlists = []
         else:
             playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False))
-            print(f"New updates found! {playlists.count()} newly added and {len(deleted_playlist_ids)} playlists deleted!")
+            print(
+                f"New updates found! {playlists.count()} newly added and {len(deleted_playlist_ids)} playlists deleted!")
             print(deleted_playlist_names)
 
         return HttpResponse(loader.get_template('intercooler/user_playlist_updates.html').render(

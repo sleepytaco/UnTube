@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',  # specifies google as OAuth provider
 
     'crispy_forms',
-    'apps.users',  # has stuff related to user management in it (login, signup, show homepage, pass reset)
+    'apps.users',  # has stuff related to user management in it (login, signup, show homepage, import)
     'apps.main',  # main app, shows user their homepage
 ]
 

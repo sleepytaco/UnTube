@@ -1062,7 +1062,7 @@ class Playlist(models.Model):
 
     # for updates
     last_full_scan_at = models.DateTimeField(auto_now_add=True)
-    has_new_updates = models.BooleanField(default=False)
+    has_new_updates = models.BooleanField(default=False)  # meant to keep track of newly added/unavailable videos
 
     def __str__(self):
         return "Playlist Len " + str(self.video_count)

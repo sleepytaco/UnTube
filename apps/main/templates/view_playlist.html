@@ -74,103 +74,105 @@
     <br>
 
     <div id="row1">
-        <div class="d-flex bd-highlight mb-1">
-            <div class="me-auto bd-highlight">
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <!--
+    <div class="d-flex bd-highlight mb-1">
+        <div class="me-auto bd-highlight">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <!--
+                <div class="btn-group me-2">
+                    <button type="button" class="btn {% if playlist.view_in_grid_mode %}btn-info {% else %}btn-outline-info{% endif %}">Grid</button>
+                    <button type="button" class="btn {% if not playlist.view_in_grid_mode %}btn-info {% else %}btn-outline-info{% endif %}">List</button>
+                </div>
+                -->
+                <div class="btn-group me-2">
+                    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Sort By
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'all' %}" hx-trigger="click" hx-target="#videos-div">All</button></li>
+                        <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'favorites' %}" hx-trigger="click" hx-target="#videos-div">Favorites</button></li>
+                        <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'popularity' %}" hx-trigger="click" hx-target="#videos-div">Popularity</button></li>
+                        <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'date-published' %}" hx-trigger="click" hx-target="#videos-div">Date Published</button></li>
+                        <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'views' %}" hx-trigger="click" hx-target="#videos-div">Views</button></li>
+                        <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'has-cc' %}" hx-trigger="click" hx-target="#videos-div">Has CC</button></li>
+                        <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'duration' %}" hx-trigger="click" hx-target="#videos-div">Duration</button></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'new-updates' %}" hx-trigger="click" hx-target="#videos-div">Updates</button></li>
+                        <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'unavailable-videos' %}" hx-trigger="click" hx-target="#videos-div">Unavailable</button></li>
+
+                    </ul>
+                </div>
+
+
                     <div class="btn-group me-2">
-                        <button type="button" class="btn {% if playlist.view_in_grid_mode %}btn-info {% else %}btn-outline-info{% endif %}">Grid</button>
-                        <button type="button" class="btn {% if not playlist.view_in_grid_mode %}btn-info {% else %}btn-outline-info{% endif %}">List</button>
-                    </div>
-                    -->
-                    <div class="btn-group me-2">
-                        <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            Sort By
+                        <button type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            Mark As
                         </button>
                         <ul class="dropdown-menu">
-                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'all' %}" hx-trigger="click" hx-target="#videos-div">All</button></li>
-                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'favorites' %}" hx-trigger="click" hx-target="#videos-div">Favorites</button></li>
-                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'popularity' %}" hx-trigger="click" hx-target="#videos-div">Popularity</button></li>
-                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'date-published' %}" hx-trigger="click" hx-target="#videos-div">Date Published</button></li>
-                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'views' %}" hx-trigger="click" hx-target="#videos-div">Views</button></li>
-                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'has-cc' %}" hx-trigger="click" hx-target="#videos-div">Has CC</button></li>
-                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'duration' %}" hx-trigger="click" hx-target="#videos-div">Duration</button></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'new-updates' %}" hx-trigger="click" hx-target="#videos-div">Updates</button></li>
-                            <li><button class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'unavailable-videos' %}" hx-trigger="click" hx-target="#videos-div">Unavailable</button></li>
-
+                            <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'none' %}" hx-trigger="click" hx-target="#notice-div">None</button></li>
+                            <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'watching' %}" hx-trigger="click" hx-target="#notice-div">Watching</button></li>
+                            <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'plan-to-watch' %}" hx-trigger="click" hx-target="#notice-div">Plan to Watch</button></li>
                         </ul>
+                    </div>
+            </div>
+        </div>
+
+        <div class="bd-highlight">
+            <div class="btn-toolbar mb-2 mb-md-0">
+
+                    <div class="btn-group me-2">
+                        <a hx-get="{% url 'update_playlist' playlist.playlist_id 'manual' %}" hx-target="#view_playlist" class="btn btn-secondary">
+                            <i class="fas fa-sync"></i>
+                        </a>
+                    </div>
+
+                {% if playlist.is_user_owned %}
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-danger">
+                            <i class="fas fa-dumpster-fire"></i>
+                        </button>
+                    </div>
+
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-primary">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                {% endif %}
+
+                    <div class="btn-group me-2">
+
+                        <button class="btn btn-warning" type="button" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'favorite' %}" hx-target="#playlist-fav">
+                            <div id="playlist-fav">
+                                {% if playlist.is_favorite %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            </div>
+                        </button>
                     </div>
 
 
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-outline-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                Mark As
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'none' %}" hx-trigger="click" hx-target="#notice-div">None</button></li>
-                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'watching' %}" hx-trigger="click" hx-target="#notice-div">Watching</button></li>
-                                <li><button class="dropdown-item" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'plan-to-watch' %}" hx-trigger="click" hx-target="#notice-div">Plan to Watch</button></li>
-                            </ul>
-                        </div>
-                </div>
-            </div>
 
-            <div class="bd-highlight">
-                <div class="btn-toolbar mb-2 mb-md-0">
-
-                        <div class="btn-group me-2">
-                            <a hx-get="{% url 'update_playlist' playlist.playlist_id 'manual' %}" hx-target="#view_playlist" class="btn btn-secondary">
-                                <i class="fas fa-sync"></i>
-                            </a>
-                        </div>
-
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-danger">
-                                <i class="fas fa-dumpster-fire"></i>
-                            </button>
-                        </div>
-
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-primary">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </div>
-
-                        <div class="btn-group me-2">
-
-                            <button class="btn btn-warning" type="button" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'favorite' %}" hx-target="#playlist-fav">
-                                <div id="playlist-fav">
-                                    {% if playlist.is_favorite %}
-                                        <i class="fas fa-star"></i>
-                                    {% else %}
-                                        <i class="far fa-star"></i>
-                                    {% endif %}
-                                </div>
-                            </button>
-                        </div>
-
-
-
-                        <div class="btn-group me-2">
-                            <button type="button" class="btn btn-outline-light" onclick="row1_hide()">Manage</button>
-                        </div>
-                </div>
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-light" onclick="row1_hide()">Manage</button>
+                    </div>
             </div>
         </div>
     </div>
+</div>
     <div id="row2" style="display: none">
         <div class="d-flex bd-highlight mb-1">
             <div class="me-auto bd-highlight">
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <div id="select-all-btn">
                         <div class="btn-group me-2">
-                        <button type="button" class="btn btn-outline-info" id="select-all-btn">Select All</button>
+                        <button type="button" class="btn btn-info" id="select-all-btn">Select All</button>
                     </div>
                     </div>
                     <div id="deselect-all-btn" style="display: none">
                         <div class="btn-group me-2">
-                        <button type="button" class="btn btn-outline-info" id="select-all-btn">De-select All</button>
+                        <button type="button" class="btn btn-info" id="select-all-btn">De-select All</button>
                         </div>
                     </div>
 
@@ -178,7 +180,7 @@
                         <!-- <button type="submit" form="my-form" class="btn btn-outline-success" data-bs-toggle="dropdown" aria-expanded="false">
                             Move
                         </button> -->
-                           <button class="btn btn-outline-success" id="move-copy-vids-btn" type="button" data-bs-toggle="collapse" data-bs-target="#moveItemsToCollapse" aria-expanded="false" aria-controls="moveItemsToCollapse">
+                           <button class="btn btn-success" id="move-copy-vids-btn" type="button" data-bs-toggle="collapse" data-bs-target="#moveItemsToCollapse" aria-expanded="false" aria-controls="moveItemsToCollapse">
                                 Move/Copy Videos
                            </button>
                     </div>
@@ -192,7 +194,7 @@
                     </div>
                     -->
                     <div class="btn-group me-2">
-                        <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" id="delete-vids-btn" class="btn btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#deleteItemsCollapse" aria-expanded="false" aria-controls="deleteItemsCollapse">
+                        <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" id="delete-vids-btn" class="btn btn-danger" data-bs-toggle="collapse" data-bs-target="#deleteItemsCollapse" aria-expanded="false" aria-controls="deleteItemsCollapse">
                             Delete Selected
                         </button>
                     </div>
@@ -213,33 +215,33 @@
 
         </div>
     </div>
-        <div id="row3" style="background-color: #0f5132">
-          <div class="collapse border-danger" id="moveItemsToCollapse">
-              <div class="card card-body bg-dark text-white-50">
+    <div id="row3" style="background-color: #0f5132">
+    <div class="collapse border-danger" id="moveItemsToCollapse">
+    <div class="card card-body bg-dark text-white-50">
 
-                  <h5>Move or Copy videos to another playlist!</h5>
+      <h5>Move or Copy videos to another playlist!</h5>
 
-                  <div class="d-flex justify-content-start">
-                      <input class="form-control w-50 bg-dark text-white border border-secondary" placeholder="Enter playlist ID here">
-                      <div class="btn-group ms-2">
-                        <button type="button" class="btn btn-info" id="select-all-btn">Move!</button>
-                      </div>
-                      <div class="btn-group ms-2">
-                        <button type="button" class="btn btn-info" id="select-all-btn">Copy!</button>
-                      </div>
-                  </div>
+      <div class="d-flex justify-content-start">
+          <input class="form-control w-50 bg-dark text-white border border-secondary" placeholder="Enter playlist ID here">
+          <div class="btn-group ms-2">
+            <button type="button" class="btn btn-info" id="select-all-btn">Move!</button>
+          </div>
+          <div class="btn-group ms-2">
+            <button type="button" class="btn btn-info" id="select-all-btn">Copy!</button>
+          </div>
 
-                  <div class="d-flex justify-content-start mt-3">
-                      <div class="btn-group">
-                          <a href="{% url 'all_playlists' 'all' %}" target="_blank" class="btn btn-sm btn-success" id="select-all-btn">Search for Playlists <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
-                      </div>
-                  </div>
+      </div>
 
-              </div>
-            </div>
-        </div>
+      <div class="d-flex justify-content-start mt-3">
+          <div class="btn-group">
+              <a href="{% url 'all_playlists' 'all' %}" target="_blank" class="btn btn-sm btn-success" id="select-all-btn">Search for Playlists <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+          </div>
+      </div>
 
-        <div id="row4" style="background-color: #0f5132">
+    </div>
+    </div>
+    </div>
+    <div id="row4" style="background-color: #0f5132">
           <div class="collapse border-danger" id="deleteItemsCollapse">
               <div class="card card-body bg-dark text-white-50">
 
@@ -264,12 +266,14 @@
             </div>
         </div>
 
+
+
     <div class="table-responsive" id="videos-div">
         <br>
         <div class="list-group" id="video-checkboxes">
           {% for video in videos %}
 
-            <li class="list-group-item d-flex justify-content-between align-items-center" style="background-color: #40B3A2">
+            <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent" style="background-color: #40B3A2">
 
         {% if video.is_unavailable_on_yt and not video.was_deleted_on_yt %}
 
@@ -350,8 +354,8 @@
     </div>
 
 
-
     </div>
+
 
     <!--
       <script src="{% static 'youtube-audio-player/iframe-api.js' %}"></script>

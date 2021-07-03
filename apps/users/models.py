@@ -20,6 +20,15 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # settings
+    robohash_set = models.IntegerField(default=3)  # determines profile picture from https://robohash.org/
+    user_summary = models.CharField(max_length=300, default="I think my arm is on backward.")
+    user_location = models.CharField(max_length=100, default="Hell, Earth")
+
+    # preferences
+    open_search_new_tab = models.BooleanField(default=True)  # open search page in new tab by default
+    hide_deleted_private_videos = models.BooleanField(default=False)
+
     # manage user
     objects = ProfileManager()
     just_joined = models.BooleanField(default=True)

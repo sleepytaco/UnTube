@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <!-- Template taken from https://www.bootdey.com/snippets/view/profile-with-data-and-skills#html -->
+
+<div class="container-fluid text-black">
+<div class="main-body" style="padding: 15px">
+
+      <div class="row g-5">
+        <div class="col-md-4 mb-3">
+          <div class="card bg-dark text-white">
+            <div class="card-body">
+              <div class="d-flex flex-column align-items-center text-center">
+                <img src="https://robohash.org/{{ user.username }}.png?set=set{{ user.profile.robohash_set }}" alt="{{ user.username }}" class="border border-5 border-primary rounded-circle" width="150">
+                <div class="mt-3">
+                  <h4>{{ user.get_full_name }}</h4>
+                  <p class="text-white-50 mb-1">{{ user.profile.user_summary }}</p>
+                  <p class="text-white-50 font-size-sm">{{ user.profile.user_location }}</p>
+                  <button class="btn btn-primary">Follow</button>
+                  <button class="btn btn-outline-primary">Message</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card mt-3 bg-dark ">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item bg-dark d-flex justify-content-between align-items-center flex-wrap">
+                <h6 class="mb-0 text-white">YouTube Channel ID</h6>
+                <span class="text-white-50">{{ user.profile.yt_channel_id }}</span>
+              </li>
+              <li class="list-group-item bg-dark d-flex justify-content-between align-items-center flex-wrap">
+                <h6 class="mb-0 text-white">
+                Followers</h6>
+                <span class="text-white-50">0</span>
+              </li>
+              <li class="list-group-item bg-dark d-flex justify-content-between align-items-center flex-wrap">
+                <h6 class="mb-0 text-white">Total Playlist Count</h6>
+                <span class="text-white-50">{{ user.profile.playlists.count }}</span>
+              </li>
+              <li class="list-group-item bg-dark d-flex justify-content-between align-items-center flex-wrap">
+                <h6 class="mb-0 text-white">Profile Views</h6>
+                <span class="text-white-50">0</span>
+              </li>
+              <li class="list-group-item bg-dark d-flex justify-content-between align-items-center flex-wrap">
+                <h6 class="mb-0 text-white">Imported YouTube Playlists</h6>
+                <span class="text-white-50">Yes</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-8">
+
+        <div id="settings-status-div" class="text-dark">
+
+        </div>
+
+
+          <div class="row gutters-sm">
+            <div class="col-sm-6 mb-3">
+              <div class="card h-100 bg-dark text-white">
+                <div class="card-body">
+                  <h6 class="d-flex align-items-center mb-3"><span class="text-info me-2">{{ user.profile.playlists.count }}</span>Playlists Statistics</h6>
+                  <small>Public</small>
+                  <div class="progress mb-3" style="height: 5px">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 80%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <small>Private</small>
+                  <div class="progress mb-3" style="height: 5px">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 72%" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <small>Favorites</small>
+                  <div class="progress mb-3" style="height: 5px">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 89%" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <small>Watching</small>
+                  <div class="progress mb-3" style="height: 5px">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 55%" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <small>Imported</small>
+                  <div class="progress mb-3" style="height: 5px">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 66%" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 mb-3">
+              <div class="card h-100 bg-dark text-white">
+                <div class="card-body">
+                  <h6 class="d-flex align-items-center mb-3"><span class="text-info me-2">23</span>Watching</h6>
+                  <small>Web Design</small>
+                  <div class="progress mb-3" style="height: 5px">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 80%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <small>Website Markup</small>
+                  <div class="progress mb-3" style="height: 5px">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 72%" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <small>One Page</small>
+                  <div class="progress mb-3" style="height: 5px">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 89%" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <small>Mobile Template</small>
+                  <div class="progress mb-3" style="height: 5px">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 55%" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <small>Backend API</small>
+                  <div class="progress mb-3" style="height: 5px">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 66%" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card bg-dark text-white mb-3">
+<div class="card-body">
+    <div class="d-flex justify-content-center">
+        No activity yet!
+    </div>
+
+
+</div>
+</div>
+
+
+
+        </div>
+      </div>
+
+    </div>
+</div>
+
+<!--
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+
+        <h1 class="h2">Settings</h1>
+        <span><small>Logged in as <b>{{ user.username }}</b></small></span>
+
+    </div>
+
+        <div id="settings-status-div" class="text-dark">
+
+        </div>
+
+        <div id="settings-form">
+            <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" name="username" id="username" value="{{ user.username }}">
+            </div>
+
+            <fieldset disabled>
+            <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="email" aria-describedby="emailHelp" value="{{ user.email }}">
+            <div id="emailHelp" class="form-text">This is the google account you logged in with.</div>
+            </div>
+
+            <div class="mb-3">
+            <label for="fullname" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="fullname" value="{{ user.get_full_name }}">
+            </div>
+
+            <div class="mb-3">
+            <label for="ytchannelid" class="form-label">YouTube Channel ID</label>
+            <input type="text" class="form-control" id="ytchannelid" aria-describedby="emailHelp" value="{{ user.profile.yt_channel_id }}">
+            </div>
+
+            <div class="mb-3">
+            <label for="accesstoken" class="form-label">Access Token</label>
+            <input type="text" class="form-control" id="accesstoken" value="{{ user.profile.access_token }}">
+            </div>
+
+            <div class="mb-3">
+            <label for="refreshtoken" class="form-label">Refresh Token</label>
+            <input type="text" class="form-control" id="refreshtoken" value="{{ user.profile.refresh_token }}">
+            </div>
+
+            <div class="mb-3">
+            <label for="expiresat" class="form-label">Expires At</label>
+            <input type="datetime-local" class="form-control" id="expiresat" value="{{ user.profile.expires_at }}">
+            </div>
+            </fieldset>
+
+            <div class="mb-3 form-check form-switch">
+            <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="flexSwitchCheckDefault">
+            <label class="form-check-label" for="flexSwitchCheckDefault">Automatically refresh playlists on visit</label>
+            </div>
+
+            <div class="mb-3 form-check form-switch">
+            <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
+            <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
+            </div>
+
+
+            <div class="mb-3 form-check form-switch">
+            <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" checked>
+            <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
+            </div>
+            </div>
+
+        <div>
+            <a class="btn btn-outline-danger" href="{% url 'delete_account' %}">Delete account</a>
+            <button type="button" hx-post="{% url 'update_settings' %}" hx-include="[id='settings-form']" hx-target="#settings-status-div" class="btn btn-success">Save</button>
+        </div>
+
+</div>
+
+-->
+{% endblock %}

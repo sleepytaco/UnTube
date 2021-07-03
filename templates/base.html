@@ -10,12 +10,33 @@
         <title>UnTube</title>
 
         <style type="text/css">
+
+            body {
+                background: linear-gradient(-45deg, #B2A3FF, #84bcf3, #AE876B, #B0E7AE);
+                //background: linear-gradient(-45deg, #0645a4, #2480cd, #84bcf3, #b7d6f7);
+                //background: linear-gradient(-45deg, #AE876B, #ABA27B, #A7BC8A, #A3D69A);
+                background-size: 400% 400%;
+                animation: gradient 10s ease infinite;
+                }
+
+            @keyframes gradient {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+
+
             #btn-back-to-top {
               position: fixed;
               bottom: 20px;
               right: 20px;
               display: none;
-                z-index: 4;
             }
 
             .big-checkbox {width: 30px; height: 30px;}
@@ -29,7 +50,7 @@
 
     </head>
     <body class="bg-dark text-white"  style="font-family: 'Fredoka One',fantasy; filter: contrast(80%);">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{% url 'home' %}"><h3>UnTube</h3></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,8 +94,12 @@
                         <!--
                         <input class="form-control border border-secondary bg-dark text-white-50 me-lg-2 bg-dark mb-1" id="unTubeSearchBar" type="text" placeholder="Search UnTube">
                         -->
-                        <a class="nav-link btn-lg me-2" href="{% url 'search' %}" target="_blank">
+                        <a class="nav-link btn-lg me-1 mt-1" href="{% url 'search' %}" {% if user.profile.open_search_new_tab %}target="_blank"{% endif %}>
                             <i class="fas fa-search"></i>
+                        </a>
+
+                        <a href="{% url 'profile' %}" class="mt-1">
+                        <img src="https://robohash.org/{{ user.username }}.png?set=set{{ user.profile.robohash_set }}" alt="{{ user.username }}" class="border border-3 border-primary rounded-circle me-2" width="42" height="42">
                         </a>
 
                     </div>
@@ -85,15 +110,13 @@
             </div>
         </nav>
 
-        <div class="container-fluid">
+        <div class="container-fluid text-dark">
         <div class="row">
             <main class="ms-lg-auto px-lg-5">
     {% block content %}
     {% endblock %}
 
-
-
-        </main>
+            </main>
 
 
       </div>
@@ -102,13 +125,7 @@
     </div>
 
 
-        <button
-        type="button"
-        class="btn btn-danger btn-floating btn-lg"
-        id="btn-back-to-top"
-        >
-            ▲
-        </button>
+
 
         <br>
 
@@ -121,7 +138,9 @@
 
 
         <script type="application/javascript">
-
+            $(document).ready(function() {
+                $(".toast").toast('show');
+            });
             document.body.addEventListener('htmx:configRequest', (event) => {
             event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
           })
@@ -225,8 +244,8 @@
 
             function scrollFunction() {
               if (
-                document.body.scrollTop > 550 ||
-                document.documentElement.scrollTop > 550
+                document.body.scrollTop > 150 ||
+                document.documentElement.scrollTop > 150
               ) {
                 mybutton.style.display = "block";
               } else {
@@ -249,5 +268,6 @@
         <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script>
         -->
+
     </body>
 </html>
