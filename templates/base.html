@@ -52,7 +52,7 @@
     <body class="bg-dark text-white"  style="font-family: 'Fredoka One',fantasy; filter: contrast(80%);">
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
             <div class="container-fluid">
-                <a class="navbar-brand" href="{% url 'home' %}"><h3>UnTube</h3></a>
+                <a class="navbar-brand" href="{% url 'home' %}"><h3><kbd>UnTube</kbd></h3></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -168,19 +168,10 @@
                 bsDeleteCollapse.hide();
             });
             moveCopyCollapse.addEventListener('show.bs.collapse', function () {
-                    moveCopyBtn.classList = "btn btn-success";
                     bsDeleteCollapse.hide();
-
-            });
-            moveCopyCollapse.addEventListener('hide.bs.collapse', function () {
-                    moveCopyBtn.classList = "btn btn-outline-success";
             });
             deleteCollapse.addEventListener('show.bs.collapse', function () {
-                    deleteBtn.classList = "btn btn-danger";
                     bsMoveCopyCollapse.hide();
-            });
-            deleteCollapse.addEventListener('hide.bs.collapse', function () {
-                    deleteBtn.classList = "btn btn-outline-danger";
             });
 
             <!-- end -->

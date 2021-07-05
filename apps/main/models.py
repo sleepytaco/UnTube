@@ -115,7 +115,7 @@ class PlaylistManager(models.Manager):
 
         # if its been a week since the last full scan, do a full playlist scan
         # basically checks all the playlist video for any updates
-        if playlist.last_full_scan_at + datetime.timedelta(hours=1) < datetime.datetime.now(pytz.utc):
+        if playlist.last_full_scan_at + datetime.timedelta(hours=24) < datetime.datetime.now(pytz.utc):
             print("DOING A FULL SCAN")
             current_video_ids = [video.video_id for video in playlist.videos.all()]
 
@@ -1010,6 +1010,33 @@ class PlaylistManager(models.Manager):
         deleted_videos = current_video_ids  # left out video ids
 
         return [0, deleted_videos, unavailable_videos, added_videos]
+
+    def deletePlaylistItems(self, user, playlist_id, playlist_item_ids):
+        """
+        Takes in playlist itemids for the videos in a particular playlist
+        """
+        credentials = self.getCredentials(user)
+        playlist = Playlist.objects.get(playlist_id=playlist_id)
+
+        num_deleted = 0
+        with build('youtube', 'v3', credentials=credentials) as youtube:
+            for playlist_item_id in playlist_item_ids:
+                pl_request = youtube.playlistItems().delete(
+                    id=playlist_item_id
+                )
+
+                try:
+                    pl_response = pl_request.execute()
+                except googleapiclient.errors.HttpError:  # failed to delete playlist item
+                    # possible causes:
+                    # playlistItemsNotAccessible (403)
+                    # playlistItemNotFound (404)
+                    # playlistOperationUnsupported (400)
+                    pass
+
+                # playlistItem was successfully deleted if no HttpError, so delete it from db
+                playlist.videos.get(playlist_item_id=playlist_item_id).delete()
+
 
 
 class Playlist(models.Model):

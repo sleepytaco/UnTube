@@ -33,50 +33,75 @@
                           <img src="{% if video.thumbnail_url %}{{ video.thumbnail_url }}{% else %}https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg{% endif %}" class="img-fluid" alt="">
                       </div>
                         <div class="ms-4">
+
+                        {% if video.is_unavailable_on_yt and video.was_deleted_on_yt %}
                             {{ video.video_position }}.
                             <a class="link-dark" href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" target="_blank">
                                 {{ video.name|truncatewords:"16" }}
-                            </a> by {{ video.channel_name }}<br>
+                            </a>
+                            <br>
+                            <span class="badge bg-dark">VIDEO UNAVAILABLE</span>
+                            {% if video.video_details_modified %}<span class="badge bg-danger">UPDATED - {% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}NEWLY ADDED{% endif %}</span>{% endif %}
+                            <br><br>
+                        {% else %}
+                            {{ video.video_position }}.
+                            <a class="link-dark" href="https://www.youtube.com/watch?v={{ video.video_id }}&list={{ video.playlist.playlist_id }}" target="_blank">
+                                {{ video.name|truncatewords:"16" }}
+                            </a> by {{ video.channel_name }} <br>
                             <span class="badge bg-secondary">{{ video.duration }}</span>
                             {% if video.has_cc %}<span class="badge bg-secondary">CC</span>{% endif %}
                             {% if video.published_at %}<span class="badge bg-secondary">{{ video.published_at }}</span>{% endif %}
-                            {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
+                          {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
 
                             {% if video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}
-                            {% if video.is_unavailable_on_yt and video.was_deleted_on_yt %}<span class="badge bg-dark">UNAVAILABLE</span>{% endif %}
-
-                            {% if video.video_details_modified %}
-                                <span class="badge bg-danger">UPDATED - {% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}NEWLY ADDED{% endif %}</span>
-                            {% endif %}<br>
+                            {% if video.video_details_modified %}<span class="badge bg-danger">UPDATED - {% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}NEWLY ADDED{% endif %}</span>{% endif %}<br>
                             <br>
-                        </div>
+                        {% endif %}
+
+
+                    </div>
+
                 </div>
                 <div class="ms-5">
-                    <a class="btn btn-sm btn-info mb-1" type="button" href="https://www.youtube.com/watch?v={{ video.video_id }}" class="btn btn-info me-1" target="_blank"><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
-                    <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ video.video_id }}">
-                    <button class="copy-btn btn btn-success mb-1" data-clipboard-target="#video-{{ video.video_id }}">
-                        <i class="far fa-copy" aria-hidden="true"></i>
-                    </button>
-                    <button class="btn btn-sm btn-primary mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasBottom" hx-get="{% url 'video_details' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-details">Details</button>
-                    <button class="btn btn-sm btn-warning mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForVideoNotes" aria-controls="offcanvasBottom" hx-get="{% url 'video_notes' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-notes">Notes</button>
-                    <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist.playlist_id video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
-                        <div id="video-{{ forloop.counter }}-fav">
-                            {% if video.is_favorite %}
-                                <i class="fas fa-heart"></i>
-                            {% else %}
-                                <i class="far fa-heart"></i>
-                            {% endif %}
-                        </div>
-                    </button>
-                        {% if playlist.marked_as == "watching" %}
-                                            <button class="btn btn-sm btn-light mb-1" type="button">
-
-                            <i class="far fa-check-circle"></i>
-                                            </button>
-
+                {% if video.is_unavailable_on_yt and video.was_deleted_on_yt %}
+                <button class="btn btn-sm  btn-warning mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForVideoNotes" aria-controls="offcanvasBottom" hx-get="{% url 'video_notes' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-notes">Notes</button>
+                <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist.playlist_id video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
+                    <div id="video-{{ forloop.counter }}-fav">
+                        {% if video.is_favorite %}
+                            <i class="fas fa-heart"></i>
+                        {% else %}
+                            <i class="far fa-heart"></i>
                         {% endif %}
-                </div>
-              {% endif %}
+                    </div>
+                </button>
+                {% else %}
+
+                <a class="btn btn-sm btn-info mb-1" type="button" href="https://www.youtube.com/watch?v={{ video.video_id }}" class="btn btn-info me-1" target="_blank"><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+                <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ video.video_id }}">
+                <button class="copy-btn btn btn-sm  btn-success mb-1" data-clipboard-target="#video-{{ video.video_id }}">
+                    <i class="far fa-copy" aria-hidden="true"></i>
+                </button>
+                <button class="btn btn-sm  btn-primary mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasBottom" hx-get="{% url 'video_details' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-details"><i class="fas fa-info"></i></button>
+                <button class="btn btn-sm  btn-warning mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForVideoNotes" aria-controls="offcanvasBottom" hx-get="{% url 'video_notes' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-notes">Notes</button>
+                <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist.playlist_id video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
+                    <div id="video-{{ forloop.counter }}-fav">
+                        {% if video.is_favorite %}
+                            <i class="fas fa-heart"></i>
+                        {% else %}
+                            <i class="far fa-heart"></i>
+                        {% endif %}
+                    </div>
+                </button>
+                    {% if playlist.marked_as == "watching" %}
+                                        <button class="btn btn-sm btn-light mb-1" type="button">
+
+                        <i class="far fa-check-circle"></i>
+                                        </button>
+
+                    {% endif %}
+                {% endif %}
+            </div>
+             {% endif %}
 
                 </li>
       {% endfor %}

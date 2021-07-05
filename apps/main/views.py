@@ -284,6 +284,8 @@ def playlists_home(request):
 def delete_videos(request, playlist_id, command):
     video_ids = request.POST.getlist("video-id", default=[])
 
+    print(request.META, request.META["HTTP_HOST"])
+
     if command == "confirm":
         print(video_ids)
         num_vids = len(video_ids)
@@ -298,14 +300,12 @@ def delete_videos(request, playlist_id, command):
         return HttpResponse(
             f"<h5>Are you sure you want to delete {delete_text} from your YouTube playlist?{extra_text}This cannot be undone.</h5>")
     elif command == "confirmed":
+        print(video_ids)
         return HttpResponse(
             f'<div class="spinner-border text-light" role="status" hx-post="/from/{playlist_id}/delete-videos/start" hx-trigger="load" hx-swap="outerHTML"></div>')
     elif command == "start":
-        for i in range(1000):
-            pass
-        return HttpResponse('DONE!')
-    print(len(video_ids), request.POST)
-    return HttpResponse("Worked!")
+        Playlist.objects.deletePlaylistItems(request.user, playlist_id, video_ids)
+        return HttpResponse(f'<div hx-get="http://{request.META["HTTP_HOST"]}/update_playlist/{playlist_id}/manual" hx-target="#view_playlist" hx-trigger="load">Done!</div>')
 
 
 @login_required
@@ -638,3 +638,9 @@ def update_playlist(request, playlist_id, type):
         .render(
         {"playlist_changed_text": "\n".join(playlist_changed_text),
          "playlist_id": playlist_id}))
+
+
+def view_playlist_settings(request, playlist_id):
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+
+    return render(request, 'view_playlist_settings.html', {"playlist": playlist})

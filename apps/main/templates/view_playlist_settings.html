@@ -1,0 +1,206 @@
+
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+
+
+    <div id="view_playlist">
+        <br>
+    {% if playlist.is_user_owned %}
+
+        <div class="table-responsive" id="videos-div">
+
+            <div id="settings-status-div" class="text-dark">
+
+            </div>
+
+              <div class="card bg-dark text-white mb-3">
+                <div class="card-body">
+                    <div id="settings-form">
+
+                    <div class="row">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Playlist Name</h6>
+                    </div>
+                    <div class="col-sm-9 text-white-50">
+                        <input type="text" class="form-control" name="username" id="username" value="{{ playlist.name }}">
+                    </div>
+                  </div>
+                    <hr>
+
+                      <div class="row">
+                        <div class="col-sm-3">
+                          <h6 class="mb-0">Owned By</h6>
+                        </div>
+                        <div class="col-sm-9 text-white-50">
+                            <input type="text" class="form-control" id="fullname" value="{{ playlist.channel_name }}" disabled>
+                        </div>
+                      </div>
+                      <hr>
+                      <div class="row">
+                          <div class="col-sm-3">
+                          <h6 class="mb-0">Playlist Description</h6>
+                        </div>
+                        <div class="col-sm-9 text-white-50">
+                            <textarea class="form-control form-text" id="summary" rows="6" placeholder="Enter a playlist description here!">{{ playlist.description }}</textarea>
+                        </div>
+                        </div>
+                      <hr>
+                    <div class="row">
+                      <div class="col-sm-3">
+                          <h6 class="mb-0">Playlist Privacy</h6>
+                        </div>
+                        <div class="col-sm-9 text-white-50">
+                            <select  class="form-select w-25" id="playlistPrivacy">
+                                  <option value="Public" {% if not playlist.is_private_on_yt %}selected{% endif %}>Public</option>
+                                  <option value="Private" {% if playlist.is_private_on_yt %}selected{% endif %}>Private</option>
+                            </select>
+                        </div>
+                        </div>
+                      <hr>
+                        <div class="row">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Preferences</h6>
+                        </div>
+                        <div class="col-sm-9 text-white">
+                            <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" name="open search in new tab" type="checkbox" id="openSearchCheckDefault" {% if user.profile.open_search_new_tab %} checked {% endif %}>
+                            <label class="form-check-label" for="openSearchCheckDefault">Open Search in new tab</label>
+                            </div>
+
+                            <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="flexSwitchCheckDefault">
+                            <label class="form-check-label" for="flexSwitchCheckDefault">Automatically refresh playlists on visit</label>
+                            </div>
+
+                            <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
+                            <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
+                            </div>
+
+
+                            <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" checked>
+                            <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                          <h6 class="mb-0">Danger Zone</h6>
+                        </div>
+                        <div class="col-sm-9 text-white-50">
+                            <button type="button" class="btn btn-outline-danger">Delete Playlist From YouTube</button>
+                        </div>
+                      </div>
+
+                </div>
+                </div>
+              </div>
+
+            <div class="d-flex justify-content-center">
+                            <div class="btn-group">
+                <a href="{% url 'playlist' playlist.playlist_id %}" class="btn btn-secondary me-2">Back</a>
+
+                <button type="button" class="btn btn-success me-2">Save</button>
+                                </div>
+              </div>
+        </div>
+
+    {% else %}
+        <div class="table-responsive" id="videos-div">
+
+            <div id="settings-status-div" class="text-dark">
+
+            </div>
+
+              <div class="card bg-dark text-white mb-3">
+                <div class="card-body">
+                    <div id="settings-form">
+
+                    <div class="row">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Playlist Name on YouTube</h6>
+                    </div>
+                    <div class="col-sm-9 text-white-50">
+                        <input type="text" class="form-control" name="username" id="username" value="{{ playlist.name }}">
+                    </div>
+                  </div>
+                    <hr>
+
+                    <div class="row">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Playlist User Label</h6>
+                    </div>
+                    <div class="col-sm-9 text-white-50">
+                        <input type="text" class="form-control" name="user_label" id="user_label" placeholder="Enter a personal label you want to identify this playlist with" value="{{ playlist.user_label }}">
+                    </div>
+                  </div>
+                      <hr>
+                      <div class="row">
+                        <div class="col-sm-3">
+                          <h6 class="mb-0">Owned By</h6>
+                        </div>
+                        <div class="col-sm-9 text-white-50">
+                            <input type="text" class="form-control" id="fullname" value="{{ playlist.channel_name }}" disabled>
+                        </div>
+                      </div>
+                      <hr>
+                        <div class="row">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Preferences</h6>
+                        </div>
+                        <div class="col-sm-9 text-white">
+                            <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" name="open search in new tab" type="checkbox" id="openSearchCheckDefault" {% if user.profile.open_search_new_tab %} checked {% endif %}>
+                            <label class="form-check-label" for="openSearchCheckDefault">Open Search in new tab</label>
+                            </div>
+
+                            <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="flexSwitchCheckDefault">
+                            <label class="form-check-label" for="flexSwitchCheckDefault">Automatically refresh playlists on visit</label>
+                            </div>
+
+                            <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
+                            <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
+                            </div>
+
+
+                            <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" checked>
+                            <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
+                            </div>
+                        </div>
+                    </div>
+
+                        <hr>
+                      <div class="row">
+                        <div class="col-sm-3">
+                          <h6 class="mb-0">Danger Zone</h6>
+                        </div>
+                        <div class="col-sm-9 text-white-50">
+                            <button type="button" class="btn btn-outline-danger">Remove Playlist From UnTube</button>
+                        </div>
+                      </div>
+
+                </div>
+                </div>
+              </div>
+
+            <div class="d-flex justify-content-center">
+                            <div class="btn-group">
+                <a href="{% url 'playlist' playlist.playlist_id %}" class="btn btn-secondary me-2">Back</a>
+
+                <button type="button" class="btn btn-success me-2">Save</button>
+                                </div>
+              </div>
+        </div>
+    {% endif %}
+
+
+    </div>
+{% endblock %}
