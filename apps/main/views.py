@@ -16,28 +16,38 @@ from django.template import Context, loader
 @login_required
 def home(request):
     user_profile = request.user.profile
-    user_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-num_of_accesses")
+    user_playlists = user_profile.playlists.filter(Q(is_in_db=True) & Q(num_of_accesses__gt=0)).order_by(
+        "-num_of_accesses")
     watching = user_profile.playlists.filter(Q(marked_as="watching") & Q(is_in_db=True)).order_by("-num_of_accesses")
     recently_accessed_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-updated_at")[:6]
     recently_added_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-created_at")[:6]
 
     #### FOR NEWLY JOINED USERS ######
     channel_found = True
-    if user_profile.just_joined:
-        if user_profile.import_in_progress:
-            return render(request, "import_in_progress.html")
-        else:
-            if user_profile.access_token.strip() == "" or user_profile.refresh_token.strip() == "":
-                user_social_token = SocialToken.objects.get(account__user=request.user)
-                user_profile.access_token = user_social_token.token
-                user_profile.refresh_token = user_social_token.token_secret
-                user_profile.expires_at = user_social_token.expires_at
-                request.user.save()
+    if user_profile.show_import_page:
+        """
+        Logic:
+        show_import_page is True by default. When a user logs in for the first time (infact anytime), google 
+        redirects them to 'home' url. Since, show_import_page is True by default, the user is then redirected
+        from 'home' to 'import_in_progress' url
+        
+        show_import_page is only set false in the import_in_progress.html page, i.e when user cancels YT import
+        """
+        # user_profile.show_import_page = False
 
-            user_profile.just_joined = False
-            user_profile.save()
+        if user_profile.access_token.strip() == "" or user_profile.refresh_token.strip() == "":
+            user_social_token = SocialToken.objects.get(account__user=request.user)
+            user_profile.access_token = user_social_token.token
+            user_profile.refresh_token = user_social_token.token_secret
+            user_profile.expires_at = user_social_token.expires_at
+            request.user.save()
 
+        if user_profile.imported_yt_playlists:
+            user_profile.show_import_page = False  # after user imports all their YT playlists no need to show_import_page again
+            user_profile.save(update_fields=['show_import_page'])
             return render(request, "home.html", {"import_successful": True})
+
+        return render(request, "import_in_progress.html")
 
         # if Playlist.objects.getUserYTChannelID(request.user) == -1:  # user channel not found
         #    channel_found = False
@@ -284,8 +294,6 @@ def playlists_home(request):
 def delete_videos(request, playlist_id, command):
     video_ids = request.POST.getlist("video-id", default=[])
 
-    print(request.META, request.META["HTTP_HOST"])
-
     if command == "confirm":
         print(video_ids)
         num_vids = len(video_ids)
@@ -305,7 +313,10 @@ def delete_videos(request, playlist_id, command):
             f'<div class="spinner-border text-light" role="status" hx-post="/from/{playlist_id}/delete-videos/start" hx-trigger="load" hx-swap="outerHTML"></div>')
     elif command == "start":
         Playlist.objects.deletePlaylistItems(request.user, playlist_id, video_ids)
-        return HttpResponse(f'<div hx-get="http://{request.META["HTTP_HOST"]}/update_playlist/{playlist_id}/manual" hx-target="#view_playlist" hx-trigger="load">Done!</div>')
+        playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+        playlist.has_playlist_changed = True
+        playlist.save(update_fields=['has_playlist_changed'])
+        return HttpResponse(f'Done! Refreshing page...<meta http-equiv="refresh" content="1" />')
 
 
 @login_required
@@ -323,19 +334,22 @@ def search_playlists(request, playlist_type):
         playlist_type_display = "All Playlists"
     elif playlist_type == "user-owned":  # YT playlists owned by user
         try:
-            playlists = request.user.profile.playlists.filter(Q(name__startswith=search_query) & Q(is_user_owned=True) & Q(is_in_db=True))
+            playlists = request.user.profile.playlists.filter(
+                Q(name__startswith=search_query) & Q(is_user_owned=True) & Q(is_in_db=True))
         except:
             playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
         playlist_type_display = "Your YouTube Playlists"
     elif playlist_type == "imported":  # YT playlists (public) owned by others
         try:
-            playlists = request.user.profile.playlists.filter(Q(name__startswith=search_query) & Q(is_user_owned=False) & Q(is_in_db=True))
+            playlists = request.user.profile.playlists.filter(
+                Q(name__startswith=search_query) & Q(is_user_owned=False) & Q(is_in_db=True))
         except:
             playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
         playlist_type_display = "Imported Playlists"
     elif playlist_type == "favorites":  # YT playlists (public) owned by others
         try:
-            playlists = request.user.profile.playlists.filter(Q(name__startswith=search_query) & Q(is_favorite=True) & Q(is_in_db=True))
+            playlists = request.user.profile.playlists.filter(
+                Q(name__startswith=search_query) & Q(is_favorite=True) & Q(is_in_db=True))
         except:
             playlists = request.user.profile.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True))
         playlist_type_display = "Your Favorites"
@@ -390,7 +404,8 @@ def search_UnTube(request):
     contains = False
 
     if request.POST['search-settings'] == 'starts-with':
-        playlists = request.user.profile.playlists.filter(Q(name__startswith=search_query) & Q(is_in_db=True)) if search_query != "" else []
+        playlists = request.user.profile.playlists.filter(
+            Q(name__startswith=search_query) & Q(is_in_db=True)) if search_query != "" else []
 
         if search_query != "":
             for playlist in all_playlists:
@@ -402,7 +417,8 @@ def search_UnTube(request):
 
         starts_with = True
     else:
-        playlists = request.user.profile.playlists.filter(Q(name__contains=search_query) & Q(is_in_db=True)) if search_query != "" else []
+        playlists = request.user.profile.playlists.filter(
+            Q(name__contains=search_query) & Q(is_in_db=True)) if search_query != "" else []
 
         if search_query != "":
             for playlist in all_playlists:
@@ -430,15 +446,12 @@ def manage_playlists(request):
 @login_required
 def manage_view_page(request, page):
     if page == "import":
-        return HttpResponse(loader.get_template("intercooler/manage_playlists_import.html")
-            .render(
-            {"manage_playlists_import_textarea": request.user.profile.manage_playlists_import_textarea}))
+        return render(request, "manage_playlists_import.html",
+                      {"manage_playlists_import_textarea": request.user.profile.manage_playlists_import_textarea})
     elif page == "create":
-        return HttpResponse(loader.get_template("intercooler/manage_playlists_create.html")
-            .render(
-            {}))
+        return render(request, "manage_playlists_create.html")
     else:
-        return redirect('home')
+        return HttpResponse('Working on this!')
 
 
 @login_required
@@ -505,6 +518,40 @@ def manage_import_playlists(request):
 def manage_create_playlist(request):
     print(request.POST)
     return HttpResponse("")
+
+
+@login_required
+@require_POST
+def update_playlist_settings(request, playlist_id):
+
+    message_type = "success"
+    message_content = "Saved!"
+
+    if "user_label" in request.POST:
+        playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+        playlist.user_label = request.POST["user_label"]
+        playlist.save(update_fields=['user_label'])
+
+        return HttpResponse(loader.get_template("intercooler/messages.html")
+            .render(
+            {"message_type": message_type,
+             "message_content": message_content}))
+
+    details = {
+        "title": request.POST['playlistTitle'],
+        "description": request.POST['playlistDesc'],
+        "privacyStatus": True if request.POST['playlistPrivacy'] == "Private" else False
+    }
+
+    status = Playlist.objects.updatePlaylistDetails(request.user, playlist_id, details)
+    if status == -1:
+        message_type = "error"
+        message_content = "Could not save :("
+
+    return HttpResponse(loader.get_template("intercooler/messages.html")
+        .render(
+        {"message_type": message_type,
+         "message_content": message_content}))
 
 
 @login_required
@@ -586,7 +633,8 @@ def update_playlist(request, playlist_id, type):
                 </div>""")
 
     print("Attempting to update playlist")
-    status, deleted_video_ids, unavailable_videos, added_videos = Playlist.objects.updatePlaylist(request.user, playlist_id)
+    status, deleted_video_ids, unavailable_videos, added_videos = Playlist.objects.updatePlaylist(request.user,
+                                                                                                  playlist_id)
 
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
 
@@ -600,7 +648,6 @@ def update_playlist(request, playlist_id, type):
                     </div>
             """)
 
-
     print("Updated playlist")
     playlist_changed_text = []
 
@@ -609,7 +656,7 @@ def update_playlist(request, playlist_id, type):
         for video in added_videos:
             playlist_changed_text.append(f"--> {video.name}")
 
-        #if len(added_videos) > 3:
+        # if len(added_videos) > 3:
         #    playlist_changed_text.append(f"+ {len(added_videos) - 3} more")
 
     if len(unavailable_videos) != 0:

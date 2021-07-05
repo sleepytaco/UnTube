@@ -25,14 +25,14 @@
                       <h6 class="mb-0">Playlist Name</h6>
                     </div>
                     <div class="col-sm-9 text-white-50">
-                        <input type="text" class="form-control" name="username" id="username" value="{{ playlist.name }}">
+                        <input type="text" class="form-control" name="playlistTitle" value="{{ playlist.name }}">
                     </div>
                   </div>
                     <hr>
 
                       <div class="row">
                         <div class="col-sm-3">
-                          <h6 class="mb-0">Owned By</h6>
+                          <h6 class="mb-0">Created By</h6>
                         </div>
                         <div class="col-sm-9 text-white-50">
                             <input type="text" class="form-control" id="fullname" value="{{ playlist.channel_name }}" disabled>
@@ -44,7 +44,7 @@
                           <h6 class="mb-0">Playlist Description</h6>
                         </div>
                         <div class="col-sm-9 text-white-50">
-                            <textarea class="form-control form-text" id="summary" rows="6" placeholder="Enter a playlist description here!">{{ playlist.description }}</textarea>
+                            <textarea class="form-control form-text" name="playlistDesc" rows="6" placeholder="Enter a playlist description here!">{{ playlist.description }}</textarea>
                         </div>
                         </div>
                       <hr>
@@ -53,27 +53,18 @@
                           <h6 class="mb-0">Playlist Privacy</h6>
                         </div>
                         <div class="col-sm-9 text-white-50">
-                            <select  class="form-select w-25" id="playlistPrivacy">
+                            <select  class="form-select w-25" name="playlistPrivacy">
                                   <option value="Public" {% if not playlist.is_private_on_yt %}selected{% endif %}>Public</option>
                                   <option value="Private" {% if playlist.is_private_on_yt %}selected{% endif %}>Private</option>
                             </select>
                         </div>
                         </div>
                       <hr>
-                        <div class="row">
+                    <div class="row">
                         <div class="col-sm-3">
                             <h6 class="mb-0">Preferences</h6>
                         </div>
                         <div class="col-sm-9 text-white">
-                            <div class="mb-3 form-check form-switch">
-                            <input class="form-check-input" name="open search in new tab" type="checkbox" id="openSearchCheckDefault" {% if user.profile.open_search_new_tab %} checked {% endif %}>
-                            <label class="form-check-label" for="openSearchCheckDefault">Open Search in new tab</label>
-                            </div>
-
-                            <div class="mb-3 form-check form-switch">
-                            <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="flexSwitchCheckDefault">
-                            <label class="form-check-label" for="flexSwitchCheckDefault">Automatically refresh playlists on visit</label>
-                            </div>
 
                             <div class="mb-3 form-check form-switch">
                             <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
@@ -102,11 +93,12 @@
               </div>
 
             <div class="d-flex justify-content-center">
-                            <div class="btn-group">
-                <a href="{% url 'playlist' playlist.playlist_id %}" class="btn btn-secondary me-2">Back</a>
+                <div class="btn-group">
+                    <a href="{% url 'playlist' playlist.playlist_id %}" class="btn btn-secondary me-2">Back</a>
 
-                <button type="button" class="btn btn-success me-2">Save</button>
-                                </div>
+                    <button href="#navbar" hx-post="{% url 'update_playlist_settings' playlist.playlist_id %}" hx-include="[id='settings-form']" hx-target="#settings-status-div"
+                            type="button" class="btn btn-success me-2">Save</button>
+                </div>
               </div>
         </div>
 
@@ -126,7 +118,7 @@
                       <h6 class="mb-0">Playlist Name on YouTube</h6>
                     </div>
                     <div class="col-sm-9 text-white-50">
-                        <input type="text" class="form-control" name="username" id="username" value="{{ playlist.name }}">
+                        <input type="text" class="form-control" name="username" id="username" value="{{ playlist.name }}" disabled>
                     </div>
                   </div>
                     <hr>
@@ -142,7 +134,7 @@
                       <hr>
                       <div class="row">
                         <div class="col-sm-3">
-                          <h6 class="mb-0">Owned By</h6>
+                          <h6 class="mb-0">Created By</h6>
                         </div>
                         <div class="col-sm-9 text-white-50">
                             <input type="text" class="form-control" id="fullname" value="{{ playlist.channel_name }}" disabled>
@@ -154,15 +146,6 @@
                             <h6 class="mb-0">Preferences</h6>
                         </div>
                         <div class="col-sm-9 text-white">
-                            <div class="mb-3 form-check form-switch">
-                            <input class="form-check-input" name="open search in new tab" type="checkbox" id="openSearchCheckDefault" {% if user.profile.open_search_new_tab %} checked {% endif %}>
-                            <label class="form-check-label" for="openSearchCheckDefault">Open Search in new tab</label>
-                            </div>
-
-                            <div class="mb-3 form-check form-switch">
-                            <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="flexSwitchCheckDefault">
-                            <label class="form-check-label" for="flexSwitchCheckDefault">Automatically refresh playlists on visit</label>
-                            </div>
 
                             <div class="mb-3 form-check form-switch">
                             <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
@@ -195,7 +178,8 @@
                             <div class="btn-group">
                 <a href="{% url 'playlist' playlist.playlist_id %}" class="btn btn-secondary me-2">Back</a>
 
-                <button type="button" class="btn btn-success me-2">Save</button>
+                <button href="#navbar" hx-post="{% url 'update_playlist_settings' playlist.playlist_id %}" hx-include="[id='settings-form']" hx-target="#settings-status-div"
+                            type="button" class="btn btn-success me-2">Save</button>
                                 </div>
               </div>
         </div>

@@ -522,7 +522,7 @@ class PlaylistManager(models.Manager):
                 playlist.save()
 
         if pl_id is None:
-            user.profile.just_joined = False
+            user.profile.show_import_page = False
             user.profile.import_in_progress = False
             user.save()
 
@@ -1035,8 +1035,46 @@ class PlaylistManager(models.Manager):
                     pass
 
                 # playlistItem was successfully deleted if no HttpError, so delete it from db
-                playlist.videos.get(playlist_item_id=playlist_item_id).delete()
+                # playlist.videos.get(playlist_item_id=playlist_item_id).delete()  # updatePlaylist will be called so unecessary for now
 
+    def updatePlaylistDetails(self, user, playlist_id, details):
+        """
+        Takes in playlist itemids for the videos in a particular playlist
+        """
+        credentials = self.getCredentials(user)
+        playlist = user.profile.playlists.get(playlist_id=playlist_id)
+
+        with build('youtube', 'v3', credentials=credentials) as youtube:
+            pl_request = youtube.playlists().update(
+                part="id,snippet,status",
+                body={
+                    "id": playlist_id,
+                    "snippet": {
+                        "title": details["title"],
+                        "description": details["description"],
+                    },
+                    "status": {
+                        "privacyStatus": "private" if details["privacyStatus"] else "public"
+                    }
+                },
+            )
+
+            try:
+                pl_response = pl_request.execute()
+            except googleapiclient.errors.HttpError:  # failed to update playlist details
+                # possible causes:
+                # playlistItemsNotAccessible (403)
+                # playlistItemNotFound (404)
+                # playlistOperationUnsupported (400)
+                return -1
+
+            print(pl_response)
+            playlist.name = pl_response['snippet']['title']
+            playlist.description = pl_response['snippet']['description']
+            playlist.is_private_on_yt = True if pl_response['status']['privacyStatus'] == "private" else False
+            playlist.save(update_fields=['name', 'description', 'is_private_on_yt'])
+
+            return 0
 
 
 class Playlist(models.Model):

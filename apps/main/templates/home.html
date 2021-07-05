@@ -3,14 +3,28 @@
 {% block content %}
 
             {% if messages %}
-                <br>
                 {% for message in messages %}
                   <div class="alert alert-success alert-dismissible fade show" role="alert">
                       {{ message }}
                       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
                 {% endfor %}
+            {% else %}
+                <br>
             {% endif %}
+        {% if user.profile.playlists.all.count == 0 %}
+            <div class="alert alert-success" role="alert">
+              <h4 class="alert-heading">It's empty in here</h4>
+              <p>
+                  There's no playlists in your UnTube right now. You can change that by heading over to <a href="{% url 'manage_playlists' %}" class="btn btn-sm btn-primary">Manage</a> to import some public playlists into your UnTube.
+                  {% if not user.profile.imported_yt_playlists %}
+                      Or you could always head over to your <a href="{% url 'profile' %}" class="btn btn-sm btn-primary">Profile</a> to import all of your public/private YouTube playlists.
+                  {% else %}
+                      Keep in mind that your own YouTube playlists will automatically be imported into UnTube.
+                  {% endif %}
+              </p>
+            </div>
+        {% endif %}
         {% if import_successful %}
             <br>
                 <br>
@@ -22,7 +36,7 @@
                   </div>
 
                   <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
-                        <h3>You'll now be able to import/export playlists from YouTube and UnTube :)</h3>
+                        <h3>You'll now be notified on the Dashboard whenever there's any new un-exported playlists on YouTube :)</h3>
                   </div>
 
 
@@ -42,10 +56,11 @@
             </div>
             -->
 
+            {% if user.profile.imported_yt_playlists %}
             <div hx-get="{% url 'user_playlists_updates' 'check-for-updates' %}" hx-trigger="load" hx-swap="outerHTML">
 
             </div>
-
+            {% endif %}
 
 
 
@@ -101,7 +116,7 @@
                 {% endif %}
 
             <br>
-            <h3><span style="border-bottom: 3px #ffffff dashed;">Most viewed playlists</span> <a href="{% url 'all_playlists' 'all' %}" class="btn btn-sm btn-info">View All</a></h3>
+            <h3><span style="border-bottom: 3px #ffffff dashed;">Most viewed playlists</span> {% if user_playlists.count > 3 %}<a href="{% url 'all_playlists' 'all' %}" class="btn btn-sm btn-info">View All</a>{% endif %}</h3>
             {% if user_playlists %}
             <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
                 {% for playlist in user_playlists|slice:"0:3" %}
@@ -136,7 +151,8 @@
             </div>
 
             {% else %}
-            <h5>You have no playlists ;-;</h5>
+                <br>
+            <h5>Nothing to see here... yet.</h5>
             {% endif %}
 
 
@@ -175,6 +191,7 @@
                 {% endfor %}
             </div>
             {% else %}
+            <br>
             <h5>You have no playlists ;-;</h5>
             {% endif %}
 
@@ -212,6 +229,7 @@
                 {% endfor %}
             </div>
              {% else %}
+            <br>
             <h5>You have no playlists ;-;</h5>
             {% endif %}
         <br>

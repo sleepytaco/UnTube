@@ -2,14 +2,14 @@
 {% extends 'base.html' %}
 {% block content %}
     <br>
-<div hx-get="{% url 'user_playlists_updates' 'check-for-updates' %}" hx-trigger="load" hx-swap="outerHTML">
+    {% if user.profile.imported_yt_playlists %}
+    <div hx-get="{% url 'user_playlists_updates' 'check-for-updates' %}" hx-trigger="load" hx-swap="outerHTML">
 
-</div>
-
+    </div>
+    {% endif %}
 <div class="row row-cols-1 row-cols-md-3 g-4" >
     <div id="manage-import-playlists-btn" class="col">
-
-        <a  hx-get="{% url 'manage_view_page' 'import' %}" hx-trigger="click" hx-target="#manage-pl-div" class="text-decoration-none text-white">
+        <a  href="{% url 'manage_view_page' 'import' %}" class="text-decoration-none text-white">
         <div class="card" style="background-color: #25641a;">
             <div class="card-body">
                 <h4 class="card-title">Import Playlists</h4>
@@ -19,7 +19,7 @@
         </a>
     </div>
     <div id="manage-create-playlists-btn" class="col">
-        <a  hx-get="{% url 'manage_view_page' 'create' %}" hx-trigger="click" hx-target="#manage-pl-div" class="text-decoration-none text-white">
+        <a  href="{% url 'manage_view_page' 'create' %}" class="text-decoration-none text-white">
         <div class="card" style="background-color: #64631a;">
             <div class="card-body">
                 <h4 class="card-title">Create a New Playlist</h4>
@@ -38,27 +38,16 @@
         </div>
         </a>
     </div>
-</div>
-<script>
-    document.getElementById('manage-import-playlists-btn').onclick = function() {
-        document.getElementById('manage-import-playlists-btn').className = "col border border-5 rounded-3 border-primary p-3";
-        document.getElementById('manage-create-playlists-btn').className = "col";
-        document.getElementById('manage-untube-playlists-btn').className = "col";
-    }
-
-    document.getElementById('manage-create-playlists-btn').onclick = function() {
-        document.getElementById('manage-import-playlists-btn').className = "col";
-        document.getElementById('manage-create-playlists-btn').className = "col border border-5 rounded-3 border-primary p-3";
-        document.getElementById('manage-untube-playlists-btn').className = "col";
-    }
-
-    document.getElementById('manage-untube-playlists-btn').onclick = function() {
-        document.getElementById('manage-import-playlists-btn').className = "col";
-        document.getElementById('manage-create-playlists-btn').className = "col";
-        document.getElementById('manage-untube-playlists-btn').className = "col border border-5 rounded-3 border-primary p-3";
-    }
-</script>
-<div id="manage-pl-div">
+    <div id="manage-delete-playlists-btn" class="col">
+        <a  hx-get="{% url 'manage_view_page' 'nuke-playlists' %}" hx-trigger="click" hx-target="#manage-pl-div" class="text-decoration-none text-white">
+        <div class="card" style="background-color: #a72744;">
+            <div class="card-body">
+                <h4 class="card-title">Nuke Playlists</h4>
+                <p class="card-text">Bulk delete multiple YouTube playlists, or just remove them from UnTube.</p>
+            </div>
+        </div>
+        </a>
+    </div>
 
 </div>
 {% endblock %}

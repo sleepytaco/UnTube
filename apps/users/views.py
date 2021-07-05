@@ -21,7 +21,31 @@ def index(request):
 
 @login_required
 def profile(request):
-    return render(request, 'profile.html')
+    user_playlists = request.user.profile.playlists.all()
+    total_num_playlists = user_playlists.count()
+
+    statistics = {
+        "public_x": 0,
+        "private_x": 0,
+        "favorites_x": 0,
+        "watching_x": 0,
+        "imported_x": 0
+    }
+
+    if total_num_playlists != 0:
+        # x means  percentage
+        statistics["public_x"] = round(user_playlists.filter(is_private_on_yt=False).count() / total_num_playlists, 1) * 100
+        statistics["private_x"] = round(user_playlists.filter(is_private_on_yt=True).count() / total_num_playlists, 1) * 100
+        statistics["favorites_x"] = round(user_playlists.filter(is_favorite=True).count() / total_num_playlists, 1) * 100
+        statistics["watching_x"] = round(user_playlists.filter(marked_as="watching").count() / total_num_playlists, 1) * 100
+        statistics["imported_x"] = round(user_playlists.filter(is_user_owned=False).count() / total_num_playlists, 1) * 100
+
+    return render(request, 'profile.html', {"statistics": statistics})
+
+
+@login_required
+def settings(request):
+    return render(request, 'settings.html')
 
 
 @require_POST
@@ -66,6 +90,31 @@ def log_out(request):
     request.session.flush()  # delete all stored session keys
     logout(request)  # log out authenticated user
     return redirect('/')
+
+
+def cancel_import(request):
+    user_profile = request.user.profile
+
+    if user_profile.access_token.strip() == "" or user_profile.refresh_token.strip() == "":
+        user_social_token = SocialToken.objects.get(account__user=request.user)
+        user_profile.access_token = user_social_token.token
+        user_profile.refresh_token = user_social_token.token_secret
+        user_profile.expires_at = user_social_token.expires_at
+
+        # request.user.save()
+
+    user_profile.imported_yt_playlists = False
+    user_profile.show_import_page = False
+    user_profile.save()
+
+    return redirect('home')
+
+
+def import_user_yt_playlists(request):
+    request.user.profile.show_import_page = True
+    request.user.profile.save(update_fields=['show_import_page'])
+
+    return render(request, 'import_in_progress.html')
 
 
 @login_required
@@ -114,6 +163,9 @@ def start_import(request):
         if request.user.profile.yt_channel_id == "":
             Playlist.objects.getUserYTChannelID(request.user)
 
+        user_profile.import_in_progress = True
+        user_profile.save()
+
         return HttpResponse(loader.get_template('intercooler/progress_bar.html').render(
             {"total_playlists": result["num_of_playlists"],
              "playlist_name": result["first_playlist_name"],
@@ -121,11 +173,6 @@ def start_import(request):
              "progress": 0,
              "channel_found": channel_found}
         ))
-
-
-@login_required
-def settings(request):
-    return render(request, 'settings.html')
 
 
 @login_required
@@ -155,6 +202,8 @@ def continue_import(request):
     else:
         # request.user.profile.just_joined = False
         request.user.profile.import_in_progress = False
+        request.user.profile.imported_yt_playlists = True
+        request.user.profile.show_import_page = True  # set back to true again so as to show users the welcome screen on 'home'
         request.user.save()
 
         return HttpResponse(loader.get_template('intercooler/progress_bar.html').render(

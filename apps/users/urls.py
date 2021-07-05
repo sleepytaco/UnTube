@@ -11,8 +11,10 @@ urlpatterns = [
     path("delete/account", views.delete_account, name='delete_account'),
     path('settings/', views.settings, name="settings"),
 
+    path("import/init", views.import_user_yt_playlists, name='import_user_yt_playlists'),
     path("import/start", views.start_import, name='start'),
     path("import/continue", views.continue_import, name='continue'),
+    path("import/cancel", views.cancel_import, name='cancel'),
 
     path("updates/user-playlists/<slug:action>", views.user_playlists_updates, name='user_playlists_updates'),
 ]

@@ -1,4 +1,5 @@
 {% load static %}
+{% with domain="http://127.0.0.1:8000/" %}
 <!doctype html>
 <html lang="en">
     <head>
@@ -49,7 +50,10 @@
         <link href="{% static 'bootstrap5.0.1/css/bootstrap.min.css' %}" rel="stylesheet">
 
     </head>
-    <body class="bg-dark text-white"  style="font-family: 'Fredoka One',fantasy; filter: contrast(80%);">
+    <body class="bg-dark text-white"  style="font-family: 'Fredoka One', monospace; filter: contrast(80%);">
+        {% if user.profile.show_import_page %}
+            <meta http-equiv="refresh" content="0;url={{ domain }}import/init" />
+        {% endif %}
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
             <div class="container-fluid">
                 <a class="navbar-brand" href="{% url 'home' %}"><h3><kbd>UnTube</kbd></h3></a>
@@ -117,10 +121,7 @@
             <main class="ms-lg-auto px-lg-5">
     {% block content %}
     {% endblock %}
-
             </main>
-
-
       </div>
 
 
@@ -264,3 +265,4 @@
 
     </body>
 </html>
+{% endwith %}

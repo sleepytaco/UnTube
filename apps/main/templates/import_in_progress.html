@@ -10,6 +10,26 @@
         <title>Import in progress</title>
 
         <style type="text/css">
+                    body {
+                //background: linear-gradient(-45deg, #B2A3FF, #84bcf3, #AE876B, #B0E7AE);
+                //background: linear-gradient(-45deg, #0645a4, #2480cd, #84bcf3, #b7d6f7);
+                background: linear-gradient(-45deg, #AE876B, #ABA27B, #A7BC8A, #A3D69A);
+                background-size: 400% 400%;
+                animation: gradient 5s ease infinite;
+                }
+
+            @keyframes gradient {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+
             .progress {
                 height: 20px;
                 margin-bottom: 20px;
@@ -46,13 +66,13 @@
         <!-- Bootstrap core CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
     </head>
-    <body class="bg-dark text-white"  style="font-family: 'Fredoka One'">
+    <body class="bg-dark text-dark"  style="font-family: 'Fredoka One',monospace">
 
         <div class="container-fluid">
 
 
             <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
-                    <h1>UnTube</h1>
+                <h1><kbd>UnTube</kbd></h1>
 
             </div>
             <br>
@@ -73,9 +93,15 @@
                 <div hx-target="this" hx-swap="outerHTML">
                     <div class="d-flex justify-content-center pt-3 pb-2 mb-3">
 
-                      <button class="btn btn-lg btn-success" hx-post="{% url 'start' %}">
+                      <button class="btn btn-lg btn-success me-2" hx-post="{% url 'start' %}">
                                 Import
                       </button>
+
+                    </div>
+                    <div class="d-flex justify-content-center">
+                    <a class="btn btn-lg btn-secondary" href="{% url 'cancel' %}">
+                          Nevermind, I'll do it later :(
+                      </a>
                     </div>
                 </div>
 

@@ -31,9 +31,10 @@ class Profile(models.Model):
 
     # manage user
     objects = ProfileManager()
-    just_joined = models.BooleanField(default=True)
+    show_import_page = models.BooleanField(default=True)  # shows the user tips for a week
     yt_channel_id = models.CharField(max_length=420, default='')
-    import_in_progress = models.BooleanField(default=True)
+    import_in_progress = models.BooleanField(default=False)  # if True, will not let the user access main site until they import their YT playlists
+    imported_yt_playlists = models.BooleanField(default=False)  # True if user imported all their YT playlists
 
     # google api token details
     access_token = models.TextField(default="")
