@@ -3,6 +3,7 @@ import time
 
 import googleapiclient.errors
 import humanize
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
 from google.oauth2.credentials import Credentials
@@ -1073,11 +1074,12 @@ class PlaylistManager(models.Manager):
 
             try:
                 pl_response = pl_request.execute()
-            except googleapiclient.errors.HttpError:  # failed to update playlist details
+            except googleapiclient.errors.HttpError as e:  # failed to update playlist details
                 # possible causes:
                 # playlistItemsNotAccessible (403)
                 # playlistItemNotFound (404)
                 # playlistOperationUnsupported (400)
+                print("ERROR UPDATING PLAYLIST DETAILS", e, e.status_code, e.error_details)
                 return -1
 
             print(pl_response)
@@ -1089,7 +1091,19 @@ class PlaylistManager(models.Manager):
             return 0
 
 
+class Tag(models.Model):
+    name = models.CharField(max_length=69)
+    created_by = models.ForeignKey(User, related_name="playlist_tags", on_delete=models.CASCADE)
+
+    # type = models.CharField(max_length=10)  # either 'playlist' or 'video'
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
 class Playlist(models.Model):
+    tags = models.ManyToManyField(Tag, related_name="playlists")
+
     # playlist details
     playlist_id = models.CharField(max_length=150)
     name = models.CharField(max_length=150, blank=True)  # YT PLAYLIST NAMES CAN ONLY HAVE MAX OF 150 CHARS

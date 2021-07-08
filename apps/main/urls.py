@@ -26,6 +26,12 @@ urlpatterns = [
          name='mark_playlist_as'),
     path("playlist/<slug:playlist_id>/update/<slug:type>", views.update_playlist, name="update_playlist"),
     path("playlist/<slug:playlist_id>/update-settings", views.update_playlist_settings, name="update_playlist_settings"),
+    path("playlist/<slug:playlist_id>/load-more-videos/<int:page>", views.load_more_videos, name="load_more_videos"),
+    path("playlist/<slug:playlist_id>/create-tag", views.create_playlist_tag, name="create_playlist_tag"),
+    path("playlist/<slug:playlist_id>/add-tag", views.add_playlist_tag, name="add_playlist_tag"),
+    path("playlist/<slug:playlist_id>/remove-tag/<str:tag_name>", views.remove_playlist_tag, name="remove_playlist_tag"),
+    path("playlist/<slug:playlist_id>/get-tags", views.get_playlist_tags, name="get_playlist_tags"),
+    path("playlist/<slug:playlist_id>/get-unused-tags", views.get_unused_playlist_tags, name="get_unused_playlist_tags"),
 
     ### STUFF RELATED TO PLAYLISTS IN BULK
     path("search/playlists/<slug:playlist_type>", views.search_playlists, name="search_playlists"),

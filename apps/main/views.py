@@ -2,9 +2,9 @@ import datetime
 
 import pytz
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
-from apps.main.models import Playlist
+from apps.main.models import Playlist, Tag
 from django.contrib.auth.decorators import login_required  # redirects user to settings.LOGIN_URL
 from allauth.socialaccount.models import SocialToken
 from django.views.decorators.http import require_POST
@@ -132,7 +132,14 @@ def view_playlist(request, playlist_id):
 
     videos = playlist.videos.order_by("video_position")
 
+    user_created_tags = Tag.objects.filter(created_by=request.user)
+    playlist_tags = playlist.tags.all()
+
+    unused_tags = user_created_tags.difference(playlist_tags)
+
     return render(request, 'view_playlist.html', {"playlist": playlist,
+                                                  "playlist_tags": playlist_tags,
+                                                  "unused_tags": unused_tags,
                                                   "videos": videos})
 
 
@@ -313,9 +320,9 @@ def delete_videos(request, playlist_id, command):
             f'<div class="spinner-border text-light" role="status" hx-post="/from/{playlist_id}/delete-videos/start" hx-trigger="load" hx-swap="outerHTML"></div>')
     elif command == "start":
         Playlist.objects.deletePlaylistItems(request.user, playlist_id, video_ids)
-        #playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
-        #playlist.has_playlist_changed = True
-        #playlist.save(update_fields=['has_playlist_changed'])
+        # playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+        # playlist.has_playlist_changed = True
+        # playlist.save(update_fields=['has_playlist_changed'])
         return HttpResponse(f"""
         <div hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:4s" hx-target="#checkforupdates" class="sticky-top" style="top: 0.5rem;">
 Done! Playlist on UnTube will update in 3s...
@@ -525,9 +532,21 @@ def manage_create_playlist(request):
 
 
 @login_required
+def load_more_videos(request, playlist_id, page):
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+    videos = playlist.videos.order_by("video_position")[50 * page:]
+
+    return HttpResponse(loader.get_template("intercooler/videos.html")
+        .render(
+        {
+            "playlist": playlist,
+            "videos": videos,
+            "page": page + 1}))
+
+
+@login_required
 @require_POST
 def update_playlist_settings(request, playlist_id):
-
     message_type = "success"
     message_content = "Saved!"
 
@@ -571,19 +590,19 @@ def update_playlist(request, playlist_id, type):
 
             print("CHANGES", deleted_videos, unavailable_videos, added_videos)
 
-            #playlist_changed_text = ["The following modifications happened to this playlist on YouTube:"]
+            # playlist_changed_text = ["The following modifications happened to this playlist on YouTube:"]
             if deleted_videos != 0 or unavailable_videos != 0 or added_videos != 0:
                 pass
-                #if added_videos > 0:
+                # if added_videos > 0:
                 #    playlist_changed_text.append(f"{added_videos} new video(s) were added")
-                #if deleted_videos > 0:
+                # if deleted_videos > 0:
                 #    playlist_changed_text.append(f"{deleted_videos} video(s) were deleted")
-                #if unavailable_videos > 0:
+                # if unavailable_videos > 0:
                 #    playlist_changed_text.append(f"{unavailable_videos} video(s) went private/unavailable")
 
-                #playlist.playlist_changed_text = "\n".join(playlist_changed_text)
-                #playlist.has_playlist_changed = True
-                #playlist.save()
+                # playlist.playlist_changed_text = "\n".join(playlist_changed_text)
+                # playlist.has_playlist_changed = True
+                # playlist.save()
             else:  # no updates found
                 return HttpResponse("""
                 <div id="checkforupdates" class="sticky-top" style="top: 0.5em;">
@@ -596,15 +615,15 @@ def update_playlist(request, playlist_id, type):
         elif result[0] == -1:  # playlist changed
             print("!!!Playlist changed")
 
-            #current_playlist_vid_count = playlist.video_count
-            #new_playlist_vid_count = result[1]
+            # current_playlist_vid_count = playlist.video_count
+            # new_playlist_vid_count = result[1]
 
-            #print(current_playlist_vid_count)
-            #print(new_playlist_vid_count)
+            # print(current_playlist_vid_count)
+            # print(new_playlist_vid_count)
 
             # playlist.has_playlist_changed = True
-            #playlist.save()
-            #print(playlist.playlist_changed_text)
+            # playlist.save()
+            # print(playlist.playlist_changed_text)
         else:  # no updates found
             return HttpResponse("""
             <div id="checkforupdates" class="sticky-top" style="top: 0.5em;">
@@ -691,8 +710,108 @@ def update_playlist(request, playlist_id, type):
         {"playlist_changed_text": "\n".join(playlist_changed_text),
          "playlist_id": playlist_id}))
 
-
+@login_required
 def view_playlist_settings(request, playlist_id):
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
 
     return render(request, 'view_playlist_settings.html', {"playlist": playlist})
+
+
+def get_playlist_tags(request, playlist_id):
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+    playlist_tags = playlist.tags.all()
+
+    return HttpResponse(loader.get_template("intercooler/playlist_tags.html")
+        .render(
+        {"playlist_id": playlist_id,
+            "playlist_tags": playlist_tags}))
+
+
+def get_unused_playlist_tags(request, playlist_id):
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+
+    user_created_tags = Tag.objects.filter(created_by=request.user)
+    playlist_tags = playlist.tags.all()
+
+    unused_tags = user_created_tags.difference(playlist_tags)
+
+    return HttpResponse(loader.get_template("intercooler/playlist_tags_unused.html")
+        .render(
+        {"unused_tags": unused_tags}))
+
+@login_required
+@require_POST
+def create_playlist_tag(request, playlist_id):
+    tag_name = request.POST["createTagField"]
+
+    if tag_name == 'Pick from existing unused tags':
+        return HttpResponse("Can't use that! Try again >_<")
+
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+
+    user_created_tags = Tag.objects.filter(created_by=request.user)
+    if user_created_tags.filter(name__iexact=tag_name).count() == 0:  # no tag found, so create it
+        tag = Tag(name=tag_name, created_by=request.user)
+        tag.save()
+
+        # add it to playlist
+        playlist.tags.add(tag)
+
+    else:
+        return HttpResponse("""
+                            Already created. Try Again >w<
+                    """)
+
+    #playlist_tags = playlist.tags.all()
+
+    #unused_tags = user_created_tags.difference(playlist_tags)
+
+    return HttpResponse(f"""
+            Created and Added!
+              <span class="visually-hidden" hx-get="/playlist/{playlist_id}/get-tags" hx-trigger="load" hx-target="#playlist-tags"></span>
+    """)
+
+
+@login_required
+@require_POST
+def add_playlist_tag(request, playlist_id):
+
+    tag_name = request.POST["playlistTag"]
+
+    if tag_name == 'Pick from existing unused tags':
+        return HttpResponse("Pick something! >w<")
+
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+
+    playlist_tags = playlist.tags.all()
+    if playlist_tags.filter(name__iexact=tag_name).count() == 0:  # tag not on this playlist, so add it
+        tag = Tag.objects.filter(Q(created_by=request.user) & Q(name__iexact=tag_name)).first()
+
+        # add it to playlist
+        playlist.tags.add(tag)
+    else:
+        return HttpResponse("Already Added >w<")
+
+    return HttpResponse(f"""
+                Added!
+                  <span class="visually-hidden" hx-get="/playlist/{playlist_id}/get-tags" hx-trigger="load" hx-target="#playlist-tags"></span>
+        """)
+
+
+@login_required
+@require_POST
+def remove_playlist_tag(request, playlist_id, tag_name):
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+
+    playlist_tags = playlist.tags.all()
+    if playlist_tags.filter(name__iexact=tag_name).count() != 0:  # tag on this playlist, remove it it
+        tag = Tag.objects.filter(Q(created_by=request.user) & Q(name__iexact=tag_name)).first()
+
+        print("Removed tag", tag_name)
+        # remove it from the playlist
+        playlist.tags.remove(tag)
+    else:
+        return HttpResponse("Whoops >w<")
+
+    return HttpResponse("")
+

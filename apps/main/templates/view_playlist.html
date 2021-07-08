@@ -24,7 +24,7 @@
     <div class="list-group-item list-group-item-action active">
         <div class="d-flex w-100 justify-content-between">
             <span>
-                <h2 class="mb-1">{{ playlist.name }} <small>{% if playlist.user_label %}<span class="h3" style="border-bottom: 3px #ffffff dashed;">a.k.a {{ playlist.user_label }}</span>{% endif %}</small>
+                <h2 class="mb-1"><a href="https://www.youtube.com/playlist?list={{ playlist.playlist_id }}" target="_blank" style="color: white; text-decoration: none">{{ playlist.name }}</a> <small>{% if playlist.user_label %}<span class="h3" style="border-bottom: 3px #ffffff dashed;">a.k.a {{ playlist.user_label }}</span>{% endif %}</small>
                     <small>
 
                         <input class="form-control me-1 visually-hidden" id="pl-{{ playlist.playlist_id }}" value="{{ playlist.playlist_id }}">
@@ -49,7 +49,7 @@
             <h5>No description</h5>
             {% endif %}
         </p>
-        <h6 class="">
+        <h6 class="h6 text-uppercase">
             <span class="badge bg-light text-black-50">{% if playlist.is_user_owned %}OWNED{% else %}IMPORTED{% endif %}</span>
 
             <span class="badge bg-light text-black-50">{{ playlist.video_count }} VIDEOS</span>
@@ -62,7 +62,58 @@
                     <span class="badge bg-light text-black-50">DUPLICATE VIDEOS</span>
             {% endif %}
         </h6>
+        <h6 class="h6 pt-1">
+
+            Tags:
+            <span class="text-uppercase">
+                <span id="playlist-tags">
+                {% for tag in playlist_tags %}
+                    <span id="tag-{{ tag.name|slugify }}">
+                    <span class="badge rounded-pill bg-info mb-lg-1">{{ tag.name }} <a hx-post="{% url 'remove_playlist_tag' playlist.playlist_id tag.name %}" hx-trigger="click" hx-target="#tag-{{ tag.name|slugify }}"><i class="fas fa-times-circle"></i></a></span>
+                    </span>
+                {% endfor %}
+                </span>
+            <a data-bs-toggle="collapse" href="#addTagsCollapse" role="button" aria-expanded="false" aria-controls="addTagsCollapse">
+              <span class="badge rounded-pill bg-warning mb-lg-2{% if not playlist_tags %} ms-1{% endif %}"><i class="fas fa-plus"></i>{% if playlist_tags.count == 0 %} add a tag{% endif %}</span>
+            </a>
+            </span>
+            <div class="collapse" id="addTagsCollapse">
+                <div class="card card-body bg-dark text-white">
+
+      <h5>Add a tag to this playlist</h5>
+
+        {% if unused_tags %}
+      <div class="d-flex justify-content-start mt-2">
+              <select class="form-select w-50 bg-dark text-white border border-secondary" name="playlistTag" hx-get="{% url 'get_unused_playlist_tags' playlist.playlist_id %}" hx-trigger="click" hx-target="#unused-playlist-tags">
+                  <option selected>Pick from existing unused tags</option>
+                    <span id="unused-playlist-tags">
+                        {% for tag in unused_tags %}
+                          <option value="{{ tag.name }}">{{ tag.name }}</option>
+                        {% endfor %}
+                    </span>
+              </select>
+            <div class="btn-group ms-2">
+                <button type="button" class="btn btn-warning" hx-post="{% url 'add_playlist_tag' playlist.playlist_id %}" hx-trigger="click" hx-include="[name='playlistTag']" hx-target="this">Add Tag</button>
+            </div>
+      </div>
+    <div class="d-flex justify-content-start mt-3">
+          - OR -
+      </div>
+        {% endif %}
+
+      <div class="d-flex justify-content-start mt-2">
+           <input class="form-control w-50 bg-dark text-white border border-secondary" placeholder="Enter a new tag name here" name="createTagField">
+          <div class="btn-group ms-2">
+            <button type="button" class="btn btn-warning" hx-post="{% url 'create_playlist_tag' playlist.playlist_id %}" hx-trigger="click" hx-include="[name='createTagField']" hx-target="this">Create & Add Tag</button>
+          </div>
+      </div>
+
     </div>
+
+            </div>
+        </h6>
+    </div>
+
 
     <br>
 
@@ -264,9 +315,11 @@
         <br>
         {% if videos %}
         <div class="list-group" id="video-checkboxes">
-          {% for video in videos %}
+          {% for video in videos|slice:"0:50" %}
 
-            <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent" style="background-color: #40B3A2">
+            <li {% if forloop.last %}hx-get="{% url 'load_more_videos' playlist.playlist_id page|default:"1" %}"
+    hx-trigger="revealed"
+    hx-swap="afterend" hx-indicator="#load-more-videos-spinner" {% endif %} class="list-group-item d-flex justify-content-between align-items-center bg-transparent" style="background-color: #40B3A2">
 
         {% if video.is_unavailable_on_yt and not video.was_deleted_on_yt %}
 
@@ -384,9 +437,12 @@
             </div>
 
         {% endif %}
+
     </div>
     {% endif %}
-
+    <div class="d-flex justify-content-center">
+        <img id="load-more-videos-spinner" class="htmx-indicator mt-4" src="{% static 'svg-loaders/spinning-circles.svg' %}" width="40" height="40">
+    </div>
 
     </div>
 
