@@ -744,7 +744,7 @@ def get_unused_playlist_tags(request, playlist_id):
 def create_playlist_tag(request, playlist_id):
     tag_name = request.POST["createTagField"]
 
-    if tag_name == 'Pick from existing unused tags':
+    if tag_name.lower() == 'Pick from existing unused tags'.lower():
         return HttpResponse("Can't use that! Try again >_<")
 
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)

@@ -106,4 +106,32 @@
         </a>
     </div>
 </div>
+<br>
+    <div class="card bg-dark text-white">
+            <div class="card-header">
+                <div class="d-flex justify-content-center">
+                    <h3><span style="border-bottom: 3px #ffffff dashed;">Your Playlist Tags</span></h3>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-evenly h4">
+                    <div class="w-75">
+                    {% for tag in user.playlist_tags.all %}
+                        <span class="badge rounded-pill bg-warning bg-gradient mb-lg-1 text-black-50">{{ tag.name }}</span>
+                    {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-center">
+                    <h3>
+                        <a href="" class="btn btn-success">Filter Playlists by Tags</a>
+                        <a href="" class="btn btn-danger">Edit Tags</a>
+                    </h3>
+                </div>
+            </div>
+
+    </div>
+
 {% endblock %}
