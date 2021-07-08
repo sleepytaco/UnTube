@@ -313,10 +313,14 @@ def delete_videos(request, playlist_id, command):
             f'<div class="spinner-border text-light" role="status" hx-post="/from/{playlist_id}/delete-videos/start" hx-trigger="load" hx-swap="outerHTML"></div>')
     elif command == "start":
         Playlist.objects.deletePlaylistItems(request.user, playlist_id, video_ids)
-        playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
-        playlist.has_playlist_changed = True
-        playlist.save(update_fields=['has_playlist_changed'])
-        return HttpResponse(f'Done! Refreshing page...<meta http-equiv="refresh" content="1" />')
+        #playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+        #playlist.has_playlist_changed = True
+        #playlist.save(update_fields=['has_playlist_changed'])
+        return HttpResponse(f"""
+        <div hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:4s" hx-target="#checkforupdates" class="sticky-top" style="top: 0.5rem;">
+Done! Playlist on UnTube will update in 3s...
+        </div>
+        """)
 
 
 @login_required
@@ -567,57 +571,58 @@ def update_playlist(request, playlist_id, type):
 
             print("CHANGES", deleted_videos, unavailable_videos, added_videos)
 
-            playlist_changed_text = ["The following modifications happened to this playlist on YouTube:"]
+            #playlist_changed_text = ["The following modifications happened to this playlist on YouTube:"]
             if deleted_videos != 0 or unavailable_videos != 0 or added_videos != 0:
-                if added_videos > 0:
-                    playlist_changed_text.append(f"{added_videos} new video(s) were added")
-                if deleted_videos > 0:
-                    playlist_changed_text.append(f"{deleted_videos} video(s) were deleted")
-                if unavailable_videos > 0:
-                    playlist_changed_text.append(f"{unavailable_videos} video(s) went private/unavailable")
+                pass
+                #if added_videos > 0:
+                #    playlist_changed_text.append(f"{added_videos} new video(s) were added")
+                #if deleted_videos > 0:
+                #    playlist_changed_text.append(f"{deleted_videos} video(s) were deleted")
+                #if unavailable_videos > 0:
+                #    playlist_changed_text.append(f"{unavailable_videos} video(s) went private/unavailable")
 
-                playlist.playlist_changed_text = "\n".join(playlist_changed_text)
-                playlist.has_playlist_changed = True
-                playlist.save()
+                #playlist.playlist_changed_text = "\n".join(playlist_changed_text)
+                #playlist.has_playlist_changed = True
+                #playlist.save()
             else:  # no updates found
                 return HttpResponse("""
+                <div id="checkforupdates" class="sticky-top" style="top: 0.5em;">
                 <div class="alert alert-success alert-dismissible fade show visually-hidden" role="alert">
                     No new updates!
+                </div>
+                <br>
                 </div>
                 """)
         elif result[0] == -1:  # playlist changed
             print("!!!Playlist changed")
 
-            current_playlist_vid_count = playlist.video_count
-            new_playlist_vid_count = result[1]
+            #current_playlist_vid_count = playlist.video_count
+            #new_playlist_vid_count = result[1]
 
-            print(current_playlist_vid_count)
-            print(new_playlist_vid_count)
+            #print(current_playlist_vid_count)
+            #print(new_playlist_vid_count)
 
-            if current_playlist_vid_count > new_playlist_vid_count:
-                playlist.playlist_changed_text = f"Looks like {current_playlist_vid_count - new_playlist_vid_count} video(s) were deleted from this playlist on YouTube!"
-            else:
-                playlist.playlist_changed_text = f"Looks like {new_playlist_vid_count - current_playlist_vid_count} video(s) were added to this playlist on YouTube!"
-
-            playlist.has_playlist_changed = True
-            playlist.save()
-            print(playlist.playlist_changed_text)
+            # playlist.has_playlist_changed = True
+            #playlist.save()
+            #print(playlist.playlist_changed_text)
         else:  # no updates found
             return HttpResponse("""
-            <div class="alert alert-success alert-dismissible fade show visually-hidden" role="alert">
+            <div id="checkforupdates" class="sticky-top" style="top: 0.5em;">
+            <div class="alert alert-success alert-dismissible fade show visually-hidden sticky-top" role="alert" style="top: 0.5em;">
                 No new updates!
+            </div>
+            <br>
             </div>
             """)
 
         return HttpResponse(f"""
-        <div hx-get="/playlist/{playlist_id}/update/auto" hx-trigger="load" hx-target="#view_playlist">
+        <div hx-get="/playlist/{playlist_id}/update/auto" hx-trigger="load" hx-target="this" class="sticky-top" style="top: 0.5em;">
+            
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {playlist.playlist_changed_text}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <div class="d-flex justify-content-center mt-4 mb-3" id="loading-sign">
+            <div class="d-flex justify-content-center" id="loading-sign">
                 <img src="/static/svg-loaders/circles.svg" width="40" height="40">
-                <h5 class="mt-2 ms-2">Updating playlist '{playlist.name}', please wait!</h5>
+                <h5 class="mt-2 ms-2">Changes detected on YouTube, updating playlist '{playlist.name}'...</h5>
+            </div>
             </div>
         </div>
         """)
@@ -643,9 +648,9 @@ def update_playlist(request, playlist_id, type):
         playlist.delete()
         return HttpResponse(
             f"""
-                    <div class="d-flex justify-content-center mt-4 mb-3" id="loading-sign">
-                        <h5 class="mt-2 ms-2">Looks like the playlist '{playlist_name}' was deleted on YouTube. It has been removed from UnTube as well.</h5>
-                    </div>
+                <div class="d-flex justify-content-center mt-4 mb-3" id="loading-sign">
+                    <h5 class="mt-2 ms-2">Looks like the playlist '{playlist_name}' was deleted on YouTube. It has been removed from UnTube as well.</h5>
+                </div>
             """)
 
     print("Updated playlist")

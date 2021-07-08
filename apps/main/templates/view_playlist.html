@@ -5,33 +5,26 @@
 
 {% block content %}
 
-
     <div id="view_playlist">
 
-    <div hx-get="{% url 'update_playlist' playlist.playlist_id 'checkforupdates' %}" hx-trigger="load" hx-swap="outerHTML">
 
-    </div>
 
     {% if playlist.has_playlist_changed %}
-
         <div hx-get="{% url 'update_playlist' playlist.playlist_id 'auto' %}" hx-trigger="load" hx-swap="outerHTML">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ playlist.playlist_changed_text|linebreaksbr|default:"Looks like the playlist on YouTube was modified!" }}
-
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
             <div class="d-flex justify-content-center mt-4 mb-3" id="loading-sign">
                 <img src="{% static 'svg-loaders/circles.svg' %}" width="40" height="40">
                 <h5 class="mt-2 ms-2">Updating playlist '{{ playlist.name }}', please wait!</h5>
             </div>
         </div>
     {% else %}
-    <br>
+    <div hx-get="{% url 'update_playlist' playlist.playlist_id 'checkforupdates' %}" hx-trigger="load" hx-swap="outerHTML" class="sticky-top" style="top: 0.5rem;" id="checkforupdates">
+
+    </div>
 
     <div class="list-group-item list-group-item-action active">
         <div class="d-flex w-100 justify-content-between">
             <span>
-                <h2 class="mb-1">{{ playlist.name }} <small>{% if playlist.user_label %}a.k.a <kbd>{{ playlist.user_label }}</kbd>{% endif %}</small>
+                <h2 class="mb-1">{{ playlist.name }} <small>{% if playlist.user_label %}<span class="h3" style="border-bottom: 3px #ffffff dashed;">a.k.a {{ playlist.user_label }}</span>{% endif %}</small>
                     <small>
 
                         <input class="form-control me-1 visually-hidden" id="pl-{{ playlist.playlist_id }}" value="{{ playlist.playlist_id }}">
@@ -269,7 +262,6 @@
 
     <div class="table-responsive" id="videos-div">
         <br>
-
         {% if videos %}
         <div class="list-group" id="video-checkboxes">
           {% for video in videos %}
@@ -312,7 +304,7 @@
                             </a>
                             <br>
                             <span class="badge bg-dark">VIDEO UNAVAILABLE</span>
-                            {% if video.video_details_modified %}<span class="badge bg-danger">UPDATED - {% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}NEWLY ADDED{% endif %}</span>{% endif %}
+                            {% if video.video_details_modified %}<span class="badge bg-danger">WENT PRIVATE/DELETED {{ video.updated_at|naturaltime|upper }}</span>{% endif %}
                             <br><br>
                         {% else %}
                             {{ video.video_position }}.
@@ -325,7 +317,7 @@
                           {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
 
                             {% if video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}
-                            {% if video.video_details_modified %}<span class="badge bg-danger">UPDATED - {% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}NEWLY ADDED{% endif %}</span>{% endif %}<br>
+                            {% if video.video_details_modified %}<span class="badge bg-danger">{% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}ADDED{% endif %} {{ video.created_at|naturaltime|upper }}</span>{% endif %}<br>
                             <br>
                         {% endif %}
 

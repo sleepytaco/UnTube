@@ -11,7 +11,6 @@
         <title>UnTube</title>
 
         <style type="text/css">
-
             body {
                 background: linear-gradient(-45deg, #B2A3FF, #84bcf3, #AE876B, #B0E7AE);
                 //background: linear-gradient(-45deg, #0645a4, #2480cd, #84bcf3, #b7d6f7);
@@ -47,10 +46,13 @@
         <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
 
         <link href="{% static 'fontawesome-free-5.15.3-web/css/all.min.css' %}" rel="stylesheet">
+        <link href="{% static 'jquery-toast-plugin/dist/jquery.toast.min.css' %}" rel="stylesheet">
         <link href="{% static 'bootstrap5.0.1/css/bootstrap.min.css' %}" rel="stylesheet">
 
     </head>
-    <body class="bg-dark text-white"  style="font-family: 'Fredoka One', monospace; filter: contrast(80%);">
+    <body class="text-dark" style="font-family: 'Fredoka One', monospace; filter: contrast(80%);">
+
+
         {% if user.profile.show_import_page %}
             <meta http-equiv="refresh" content="0;url={{ domain }}import/init" />
         {% endif %}
@@ -116,19 +118,17 @@
             </div>
         </nav>
 
+
+
         <div class="container-fluid text-dark">
-        <div class="row">
-            <main class="ms-lg-auto px-lg-5">
-    {% block content %}
-    {% endblock %}
-            </main>
-      </div>
 
-
-    </div>
-
-
-
+            <div class="row">
+                <main class="ms-lg-auto px-lg-5">
+                {% block content %}
+                {% endblock %}
+                </main>
+            </div>
+        </div>
 
         <br>
 
@@ -136,14 +136,19 @@
         <script src="{% static 'htmx/htmx.min.js' %}" type="application/javascript"></script>
         <script src="{% static 'clipboard.js/clipboard.min.js' %}" type="application/javascript"></script>
         <script src="{% static 'jquery3.6.0/js/jquery-3.6.0.min.js' %}" type="application/javascript"></script>
+        <script src="{% static 'jquery-toast-plugin/dist/jquery.toast.min.js' %}" type="application/javascript"></script>
         <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.js' %}" type="application/javascript"></script>
         <!-- <script src="{% static 'htmx/extensions/class-tools.js' %}" type="application/javascript"></script> -->
 
 
         <script type="application/javascript">
-            $(document).ready(function() {
-                $(".toast").toast('show');
-            });
+              $( document ).ready(function() {
+                  var msg = "Small Message";
+                 // var msg = "Lengthy Message is here. MMMMMmmmmmmmmmmmM";
+                  $(".msgText").text(msg);
+                    $(".alert").show();
+                });
+
             document.body.addEventListener('htmx:configRequest', (event) => {
             event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
           })

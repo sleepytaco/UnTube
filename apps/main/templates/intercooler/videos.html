@@ -41,7 +41,7 @@
                             </a>
                             <br>
                             <span class="badge bg-dark">VIDEO UNAVAILABLE</span>
-                            {% if video.video_details_modified %}<span class="badge bg-danger">UPDATED - {% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}NEWLY ADDED{% endif %}</span>{% endif %}
+                            {% if video.video_details_modified %}<span class="badge bg-danger">{% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}ADDED{% endif %} {{ video.updated_at|naturaltime|upper }}</span>{% endif %}
                             <br><br>
                         {% else %}
                             {{ video.video_position }}.
@@ -54,7 +54,7 @@
                           {% if video.view_count %}<span class="badge bg-info">{{ video.view_count|intword|intcomma }} views</span>{% endif %}
 
                             {% if video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}
-                            {% if video.video_details_modified %}<span class="badge bg-danger">UPDATED - {% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}NEWLY ADDED{% endif %}</span>{% endif %}<br>
+                            {% if video.video_details_modified %}<span class="badge bg-danger">{% if video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}ADDED{% endif %} {{ video.created_at|naturaltime|upper }}</span>{% endif %}<br>
                             <br>
                         {% endif %}
 

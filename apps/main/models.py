@@ -1,6 +1,8 @@
 import datetime
+import time
 
 import googleapiclient.errors
+import humanize
 from django.db import models
 from django.db.models import Q
 from google.oauth2.credentials import Credentials
@@ -115,7 +117,7 @@ class PlaylistManager(models.Manager):
 
         # if its been a week since the last full scan, do a full playlist scan
         # basically checks all the playlist video for any updates
-        if playlist.last_full_scan_at + datetime.timedelta(hours=24) < datetime.datetime.now(pytz.utc):
+        if playlist.last_full_scan_at + datetime.timedelta(hours=1) < datetime.datetime.now(pytz.utc):
             print("DOING A FULL SCAN")
             current_video_ids = [video.video_id for video in playlist.videos.all()]
 
@@ -512,7 +514,7 @@ class PlaylistManager(models.Manager):
                 playlist_duration_in_seconds = calculateDuration(vid_durations)
 
                 playlist.playlist_duration_in_seconds = playlist_duration_in_seconds
-                playlist.playlist_duration = str(timedelta(seconds=playlist_duration_in_seconds))
+                playlist.playlist_duration = humanize.precisedelta(timedelta(seconds=playlist_duration_in_seconds)).upper()
 
                 if len(video_ids) != len(vid_durations):  # that means some videos in the playlist are deleted
                     playlist.has_unavailable_videos = True
@@ -782,7 +784,7 @@ class PlaylistManager(models.Manager):
         playlist_duration_in_seconds = calculateDuration(vid_durations)
 
         playlist.playlist_duration_in_seconds = playlist_duration_in_seconds
-        playlist.playlist_duration = str(timedelta(seconds=playlist_duration_in_seconds))
+        playlist.playlist_duration = humanize.precisedelta(timedelta(seconds=playlist_duration_in_seconds)).upper()
 
         if len(video_ids) != len(vid_durations):  # that means some videos in the playlist are deleted
             playlist.has_unavailable_videos = True
@@ -996,7 +998,7 @@ class PlaylistManager(models.Manager):
         playlist_duration_in_seconds = calculateDuration(vid_durations)
 
         playlist.playlist_duration_in_seconds = playlist_duration_in_seconds
-        playlist.playlist_duration = str(timedelta(seconds=playlist_duration_in_seconds))
+        playlist.playlist_duration = humanize.precisedelta(timedelta(seconds=playlist_duration_in_seconds)).upper()
 
         if len(video_ids) != len(vid_durations) or len(
                 unavailable_videos) != 0:  # that means some videos in the playlist became private/deleted
@@ -1018,7 +1020,8 @@ class PlaylistManager(models.Manager):
         credentials = self.getCredentials(user)
         playlist = Playlist.objects.get(playlist_id=playlist_id)
 
-        num_deleted = 0
+        #new_playlist_duration_in_seconds = playlist.playlist_duration_in_seconds
+        #new_playlist_video_count = playlist.video_count
         with build('youtube', 'v3', credentials=credentials) as youtube:
             for playlist_item_id in playlist_item_ids:
                 pl_request = youtube.playlistItems().delete(
@@ -1035,7 +1038,16 @@ class PlaylistManager(models.Manager):
                     pass
 
                 # playlistItem was successfully deleted if no HttpError, so delete it from db
-                # playlist.videos.get(playlist_item_id=playlist_item_id).delete()  # updatePlaylist will be called so unecessary for now
+                #video = playlist.videos.get(playlist_item_id=playlist_item_id)
+                #new_playlist_video_count -= 1
+                #new_playlist_duration_in_seconds -= video.duration_in_seconds
+                #video.delete()
+
+        #playlist.video_count = new_playlist_video_count
+        #playlist.playlist_duration_in_seconds = new_playlist_duration_in_seconds
+        #playlist.playlist_duration = humanize.precisedelta(timedelta(seconds=new_playlist_duration_in_seconds)).upper()
+        #playlist.save(update_fields=['video_count', 'playlist_duration', 'playlist_duration_in_seconds'])
+        #time.sleep(2)
 
     def updatePlaylistDetails(self, user, playlist_id, details):
         """
@@ -1112,8 +1124,6 @@ class Playlist(models.Model):
     has_duplicate_videos = models.BooleanField(default=False)  # duplicate videos will not be shown on site
 
     has_playlist_changed = models.BooleanField(default=False)  # determines whether playlist was modified online or not
-    playlist_changed_text = models.CharField(max_length=420,
-                                             default="")  # user friendly text to display what changed and how much changed
 
     # for UI
     view_in_grid_mode = models.BooleanField(default=False)  # if False, videso will be showed in a list
