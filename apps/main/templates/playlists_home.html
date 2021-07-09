@@ -107,6 +107,7 @@
     </div>
 </div>
 <br>
+    {% if user.playlist_tags.all %}
     <div class="card bg-dark text-white">
             <div class="card-header">
                 <div class="d-flex justify-content-center">
@@ -117,7 +118,9 @@
                 <div class="d-flex justify-content-evenly h4">
                     <div class="w-75">
                     {% for tag in user.playlist_tags.all %}
-                        <span class="badge rounded-pill bg-warning bg-gradient mb-lg-1 text-black-50">{{ tag.name }}</span>
+                        <a href="{% url 'tagged_playlists' tag.name %}" style="text-decoration: none">
+                        <span class="badge rounded-pill bg-warning bg-gradient mb-lg-1 text-black-50">{{ tag.name }} <span class="badge bg-dark text-white">{{ tag.playlists.all.count }}</span> </span>
+                        </a>
                     {% endfor %}
                     </div>
                 </div>
@@ -133,5 +136,5 @@
             </div>
 
     </div>
-
+    {% endif %}
 {% endblock %}

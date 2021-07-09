@@ -3,7 +3,7 @@ import datetime
 import pytz
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from apps.main.models import Playlist, Tag
 from django.contrib.auth.decorators import login_required  # redirects user to settings.LOGIN_URL
 from allauth.socialaccount.models import SocialToken
@@ -142,6 +142,12 @@ def view_playlist(request, playlist_id):
                                                   "unused_tags": unused_tags,
                                                   "videos": videos})
 
+@login_required
+def tagged_playlists(request, tag):
+    tag = get_object_or_404(Tag, created_by=request.user, name=tag)
+    playlists = tag.playlists.all()
+
+    return render(request, 'all_playlists_with_tag.html', {"playlists": playlists, "tag": tag})
 
 @login_required
 def all_playlists(request, playlist_type):
@@ -329,11 +335,18 @@ Done! Playlist on UnTube will update in 3s...
         </div>
         """)
 
+@login_required
+@require_POST
+def search_tagged_playlists(request, tag):
+    tag = get_object_or_404(Tag, created_by=request.user, name=tag)
+    playlists = tag.playlists.all()
+
+    return HttpResponse("yay")
 
 @login_required
 @require_POST
 def search_playlists(request, playlist_type):
-    print(request.POST)  # prints <QueryDict: {'search': ['aa']}>
+    # print(request.POST)  # prints <QueryDict: {'search': ['aa']}>
 
     search_query = request.POST["search"]
 
@@ -410,43 +423,40 @@ def search_UnTube(request):
     search_query = request.POST["search"]
 
     all_playlists = request.user.profile.playlists.filter(is_in_db=True)
+    if 'playlist-tags' in request.POST:
+        tags = request.POST.getlist('playlist-tags')
+        print(type(tags), tags)
+        all_playlists = all_playlists.filter(tags__name__in=tags)
+
     videos = []
-    starts_with = False
-    contains = False
 
     if request.POST['search-settings'] == 'starts-with':
-        playlists = request.user.profile.playlists.filter(
-            Q(name__startswith=search_query) & Q(is_in_db=True)) if search_query != "" else []
+        playlists = all_playlists.filter(name__istartswith=search_query) if search_query != "" else all_playlists.none()
 
         if search_query != "":
             for playlist in all_playlists:
-                pl_videos = playlist.videos.filter(name__startswith=search_query)
+                pl_videos = playlist.videos.filter(name__istartswith=search_query)
 
                 if pl_videos.count() != 0:
                     for v in pl_videos.all():
                         videos.append(v)
 
-        starts_with = True
     else:
-        playlists = request.user.profile.playlists.filter(
-            Q(name__contains=search_query) & Q(is_in_db=True)) if search_query != "" else []
+        playlists = all_playlists.filter(name__icontains=search_query) if search_query != "" else all_playlists.none()
 
         if search_query != "":
             for playlist in all_playlists:
-                pl_videos = playlist.videos.filter(name__contains=search_query)
+                pl_videos = playlist.videos.filter(name__icontains=search_query)
 
                 if pl_videos.count() != 0:
                     for v in pl_videos.all():
                         videos.append(v)
 
-        contains = True
-    return HttpResponse(loader.get_template("intercooler/search_untube.html")
+
+    return HttpResponse(loader.get_template("intercooler/search_untube_results.html")
                         .render({"playlists": playlists,
                                  "videos": videos,
-                                 "videos_count": len(videos),
-                                 "search_query": search_query,
-                                 "starts_with": starts_with,
-                                 "contains": contains}))
+                                 "videos_count": len(videos)}))
 
 
 @login_required

@@ -46,8 +46,9 @@
         <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
 
         <link href="{% static 'fontawesome-free-5.15.3-web/css/all.min.css' %}" rel="stylesheet">
-        <link href="{% static 'jquery-toast-plugin/dist/jquery.toast.min.css' %}" rel="stylesheet">
         <link href="{% static 'bootstrap5.0.1/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.css">
+
 
     </head>
     <body class="text-dark" style="font-family: 'Fredoka One', monospace; filter: contrast(80%);">
@@ -136,18 +137,20 @@
         <script src="{% static 'htmx/htmx.min.js' %}" type="application/javascript"></script>
         <script src="{% static 'clipboard.js/clipboard.min.js' %}" type="application/javascript"></script>
         <script src="{% static 'jquery3.6.0/js/jquery-3.6.0.min.js' %}" type="application/javascript"></script>
-        <script src="{% static 'jquery-toast-plugin/dist/jquery.toast.min.js' %}" type="application/javascript"></script>
         <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.js' %}" type="application/javascript"></script>
+        <script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
         <!-- <script src="{% static 'htmx/extensions/class-tools.js' %}" type="application/javascript"></script> -->
 
 
         <script type="application/javascript">
-              $( document ).ready(function() {
-                  var msg = "Small Message";
-                 // var msg = "Lengthy Message is here. MMMMMmmmmmmmmmmmM";
-                  $(".msgText").text(msg);
-                    $(".alert").show();
+            $(document).ready(function(){
+
+                var multipleCancelButton = new Choices('#choices-multiple-remove-button', {
+                removeItemButton: true,
                 });
+
+
+            });
 
             document.body.addEventListener('htmx:configRequest', (event) => {
             event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';

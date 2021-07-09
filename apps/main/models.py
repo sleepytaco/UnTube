@@ -1214,3 +1214,29 @@ class Video(models.Model):
     video_details_modified = models.BooleanField(
         default=False)  # is true for videos whose details changed after playlist update
     video_details_modified_at = models.DateTimeField(auto_now_add=True)  # to set the above false after a day
+
+
+class PlaylistItem(models.Model):
+    playlist = models.ForeignKey(Playlist, related_name="playlist_items",
+                                 on_delete=models.CASCADE)  # playlist this pl item belongs to
+    video = models.ForeignKey(Video, related_name="playlists", on_delete=models.CASCADE)
+
+    # details
+    playlist_item_id = models.CharField(max_length=100)  # the item id of the playlist this video beo
+    video_position = models.IntegerField(blank=True)  # video position in the playlist
+    user_notes = models.CharField(max_length=420, default="")  # i.e user can take notes on the video and save them
+    is_duplicate = models.BooleanField(default=False)  # True if the same video exists more than once in the playlist
+    is_marked_as_watched = models.BooleanField(default=False, blank=True)  # mark video as watched
+    is_favorite = models.BooleanField(default=False, blank=True)  # mark video as favorite
+    num_of_accesses = models.CharField(max_length=69,
+                                       default="0")  # tracks num of times this video was clicked on by user
+    user_label = models.CharField(max_length=100, default="")  # custom user given name for this video
+
+    # for new videos added/modified/deleted in the playlist
+    video_details_modified = models.BooleanField(
+        default=False)  # is true for videos whose details changed after playlist update
+    video_details_modified_at = models.DateTimeField(auto_now_add=True)  # to set the above false after a day
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+

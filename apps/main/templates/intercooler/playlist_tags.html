@@ -1,10 +1,8 @@
 {% for tag in playlist_tags %}
 <span id="tag-{{ tag.name|slugify }}">
     <span class="badge rounded-pill bg-info mb-lg-1">
-        {{ tag.name }}
-        <a hx-post="{% url 'remove_playlist_tag' playlist_id tag.name %}" hx-trigger="click" hx-target="#tag-{{ tag.name|slugify }}">
-            <i class="fas fa-times-circle"></i>
-        </a>
+        <a href="{% url 'tagged_playlists' tag.name %}" style="text-decoration: none; color: white">{{ tag.name }} </a>
+        <a class="ms-1" hx-post="{% url 'remove_playlist_tag' playlist_id tag.name %}" hx-trigger="click" hx-target="#tag-{{ tag.name|slugify }}"><i class="fas fa-times-circle"></i></a>
     </span>
 </span>
 {% endfor %}

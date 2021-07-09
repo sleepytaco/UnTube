@@ -37,6 +37,8 @@ urlpatterns = [
     path("search/playlists/<slug:playlist_type>", views.search_playlists, name="search_playlists"),
     path("playlists/<slug:playlist_type>", views.all_playlists, name='all_playlists'),
     path("playlists/<slug:playlist_type>/order-by/<slug:order_by>", views.order_playlists_by, name='order_playlists_by'),
+    path("search/tagged-playlists/<str:tag>", views.search_tagged_playlists, name="search_tagged_playlists"),
+    path("playlists/tag/<str:tag>", views.tagged_playlists, name='tagged_playlists'),
 
     ### STUFF RELATED TO MANAGING A PLAYLIST
     path("manage", views.manage_playlists, name='manage_playlists'),

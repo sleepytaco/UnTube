@@ -2,12 +2,12 @@
 {% extends 'base.html' %}
 {% block content %}
 
-        {% if playlists %}
     <div id="search-results">
 
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">{{ playlist_type_display|title }} <span class="badge bg-primary rounded-pill">{{ playlists.count }}</span></h1>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 mb-3">
+            <h1 class="h2"><span style="border-bottom: 3px #ffffff dashed;">{{ playlist_type_display|title }}</span> <span class="badge bg-primary rounded-pill">{{ playlists.count }}</span></h1>
 
+            {% if playlists %}
             <div class="btn-toolbar mb-2 mb-md-0">
                 <!--
                 <div class="btn-group me-2">
@@ -16,20 +16,22 @@
                 </div>
                 -->
                 <div class="btn-group">
-                  <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     Sort By
                   </button>
                   <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" hx-get="{% url 'order_playlists_by' playlist_type 'playlist-duration-in-seconds' %}" hx-trigger="click" hx-target="#search-results">Duration</a></li>
-                    <li><a class="dropdown-item" hx-get="{% url 'order_playlists_by' playlist_type 'video-count' %}" hx-trigger="click" hx-target="#search-results"># Videos</a></li>
-                    <li><a class="dropdown-item" hx-get="{% url 'order_playlists_by' playlist_type 'recently-accessed' %}" hx-trigger="click" hx-target="#search-results">Recently Accessed</a></li>
+                    <li class="dropdown-item"><a hx-get="{% url 'order_playlists_by' playlist_type 'playlist-duration-in-seconds' %}" hx-trigger="click" hx-target="#search-results">Duration</a></li>
+                    <li class="dropdown-item"><a hx-get="{% url 'order_playlists_by' playlist_type 'video-count' %}" hx-trigger="click" hx-target="#search-results"># Videos</a></li>
+                    <li class="dropdown-item"><a hx-get="{% url 'order_playlists_by' playlist_type 'recently-accessed' %}" hx-trigger="click" hx-target="#search-results">Recently Accessed</a></li>
                   </ul>
                 </div>
 
             </div>
+            {% endif %}
 
         </div>
 
+        {% if playlists %}
         <div class="">
             <input   class="form-control border border-secondary" type="text"
        name="search" placeholder="Begin to search playlists..."
@@ -71,39 +73,37 @@
 
 
         </div>
+        {% else %}
+              <div class="card bg-dark text-white mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-center h3">
+                    Nothing here!
+                </div>
+                <div class="d-flex justify-content-center h5">
+                    {% if playlist_type == "watching" %}
+                        You can mark a playlist as watching by heading over to the playlist and marking it from the dropdown.
+                    {% elif playlist_type == "imported" %}
+                        To import public playlists into your UnTube collection you can head over to <a href="{% url 'manage_playlists' %}" class="btn btn-sm btn-primary ms-2">Manage</a>
+                    {% elif playlist_type == "plan-to-watch" %}
+                        You can mark a playlist as plan to watch by heading over to the playlist and marking it from the dropdown.
+                    {% elif playlist_type == "user-owned" %}
+                        {% if user.profile.imported_yt_playlists %}
+                            Looks like you have no playlists on YouTube.
+                        {% else %}
+                            You can always head over to your <a href="{% url 'profile' %}" class="btn btn-sm btn-primary">Profile</a> to import all of your public/private YouTube playlists.
+                        {% endif %}
+                    {% else %}
+                        {{ playlist_type }}
+                    {% endif %}
+                </div>
+            </div>
+            </div>
 
+        {% endif %}
         <br>
 
     </div>
-        {% else %}
-            <div class="container-fluid">
-            <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">{{ playlist_type_display|title }} <span class="badge bg-primary rounded-pill">{{ playlists.count }}</span></h1>
 
-            <div class="btn-toolbar mb-2 mb-md-0">
-                <!--
-                <div class="btn-group me-2">
-                    <button type="button" class="btn btn-outline-info">Grid</button>
-                    <button type="button" class="btn btn-outline-info">List</button>
-                </div>
-                -->
-                <div class="btn-group">
-                  <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    Sort By
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" hx-get="{% url 'order_playlists_by' playlist_type 'playlist-duration-in-seconds' %}" hx-trigger="click" hx-target="#search-results">Duration</a></li>
-                    <li><a class="dropdown-item" hx-get="{% url 'order_playlists_by' playlist_type 'video-count' %}" hx-trigger="click" hx-target="#search-results"># Videos</a></li>
-                    <li><a class="dropdown-item" hx-get="{% url 'order_playlists_by' playlist_type 'recently-accessed' %}" hx-trigger="click" hx-target="#search-results">Recently Accessed</a></li>
-                  </ul>
-                </div>
-
-            </div>
-
-        </div>
-            <h5 class="text-white align-content-center">Nothing to see here. Add something!</h5>
-            </div>
-        {% endif %}
 
 
 {% endblock %}

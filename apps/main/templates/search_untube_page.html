@@ -11,44 +11,72 @@
         }
     };
     </script>
-<div id="untube-searchbar-results">
 
     <div class="d-flex justify-content-center">
         <h1> Search all of UnTube
             {% if user.profile.open_search_new_tab %}<h6>Press <kbd>Esc</kbd> to close.</h6>{% endif %}
         </h1>
     </div>
-<input class="form-control me-lg-2" type="text"
-       id="untubeSearchBar"
-        name="search" placeholder="Search UnTube"
-        hx-post="{% url 'search_UnTube' %}"
-        hx-trigger="keyup changed delay:700ms"
-        hx-target="#untube-searchbar-results"
-        hx-include="[id='searchbar-radio-form']"
-        hx-indicator=".htmx-indicator" autofocus>
+        <div id="search-playlist-form">
 
-<br>
+        <input class="form-control me-lg-2" type="text"
+               id="untubeSearchBar"
+                name="search" placeholder="Search UnTube"
+                hx-post="{% url 'search_UnTube' %}"
+                hx-trigger="keyup changed delay:700ms"
+                hx-target="#untube-searchbar-results"
+                hx-include="[id='search-playlist-form']"
+                hx-indicator="#spinner" autofocus>
 
-<div id="searchbar-radio-form">
+        <br>
+
+        <div class="row d-flex justify-content-center">
+            <div class="col-md-6">
+
+                <select hx-trigger="click[enterKey]"
+                    hx-target="#untube-searchbar-results"
+                    hx-include="[id='search-playlist-form']"
+                    hx-indicator="#spinner" id="choices-multiple-remove-button" name="playlist-tags" placeholder="Add playlist tags" multiple>
+                    {% for tag in user.playlist_tags.all %}
+                    <option value="{{ tag.name }}" hx-post="{% url 'search_UnTube' %}">{{ tag.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <br>
     <div class="d-flex justify-content-center">
         <div class="form-check me-5">
-            <input class="form-check-input" type="radio" name="search-settings" value="starts-with" id="starts-with-cb" checked>
+            <input hx-post="{% url 'search_UnTube' %}"
+        hx-trigger="click"
+        hx-target="#untube-searchbar-results"
+        hx-include="[id='search-playlist-form']"
+        hx-indicator="#spinner"
+                           class="form-check-input" type="radio" name="search-settings" value="starts-with" id="starts-with-cb" checked>
             <label class="form-check-label" for="starts-with-cb">
                     Starts with
             </label>
         </div>
          <div class="form-check">
-            <input class="form-check-input" type="radio" name="search-settings" value="contains" id="contains-cb">
+            <input hx-post="{% url 'search_UnTube' %}"
+        hx-trigger="click"
+        hx-target="#untube-searchbar-results"
+        hx-include="[id='search-playlist-form']"
+        hx-indicator="#spinner"
+                    class="form-check-input" type="radio" name="search-settings" value="contains" id="contains-cb">
                   <label class="form-check-label" for="contains-cb">
                     Contains
                   </label>
         </div>
     </div>
 </div>
-</div>
+
+    <div id="untube-searchbar-results">
+    </div>
+
+
 <div id="spinner" class="htmx-indicator d-flex justify-content-center">
-                <div class="spinner-border text-light" role="status">
-                </div>
-                </div>
+    <div class="spinner-border text-light" role="status">
+    </div>
+</div>
 
 {% endblock %}
