@@ -107,6 +107,7 @@ def video_notes(request, playlist_id, video_id):
 @login_required
 def view_playlist(request, playlist_id):
     user_profile = request.user.profile
+    user_owned_playlists = user_profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
 
     # specific playlist requested
     if user_profile.playlists.filter(Q(playlist_id=playlist_id) & Q(is_in_db=True)).count() != 0:
@@ -140,7 +141,8 @@ def view_playlist(request, playlist_id):
     return render(request, 'view_playlist.html', {"playlist": playlist,
                                                   "playlist_tags": playlist_tags,
                                                   "unused_tags": unused_tags,
-                                                  "videos": videos})
+                                                  "videos": videos,
+                                                  "user_owned_playlists": user_owned_playlists})
 
 
 @login_required

@@ -5,7 +5,7 @@
 <div class="list-group" id="video-checkboxes">
     {% if videos %}
       {% for video in videos|slice:"0:50" %}
-                <li {% if forloop.last %}hx-get="{% url 'load_more_videos' playlist.playlist_id page|default:"1" %}"
+                <li {% if forloop.last and videos.count > 50 %}hx-get="{% url 'load_more_videos' playlist.playlist_id page|default:"1" %}"
     hx-trigger="revealed"
     hx-swap="afterend" hx-indicator="#load-more-videos-spinner"{% endif %} class="list-group-item d-flex justify-content-between align-items-center bg-transparent" style="background-color: #40B3A2">
 

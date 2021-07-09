@@ -98,7 +98,7 @@
                 <button type="button" class="btn btn-warning" hx-post="{% url 'add_playlist_tag' playlist.playlist_id %}" hx-trigger="click" hx-include="[name='playlistTag']" hx-target="this">Add Tag</button>
             </div>
       </div>
-    <div class="d-flex justify-content-start mt-3">
+    <div class="d-flex justify-content-start mt-3 mb-2">
           - OR -
       </div>
         {% endif %}
@@ -265,21 +265,34 @@
       <h5>{% if playlist.is_user_owned %}Move or {% endif %}Copy videos to another playlist!</h5>
 
       <div class="d-flex justify-content-start">
-          <input class="form-control w-50 bg-dark text-white border border-secondary" placeholder="Enter playlist ID or comma seperated list of playlist IDs here">
-          {% if playlist.is_user_owned %}
-          <div class="btn-group ms-2">
-            <button type="button" class="btn btn-info" id="select-all-btn">Move!</button>
-          </div>
-          {% endif %}
-          <div class="btn-group ms-2">
-            <button type="button" class="btn btn-info" id="select-all-btn">Copy!</button>
+
+
+          <div class="col-md-6 text-dark">
+                <select class="visually-hidden" onchange="triggerSubmit()"
+                     id="choices-multiple-remove-button" name="playlist-tags" placeholder="Select Playlists" multiple>
+                    {% for pl in user_owned_playlists %}
+                        {% if pl.playlist_id != playlist.playlist_id %}
+                            <option value="{{ pl.playlist_id }}" class="text-dark">{{ pl.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
           </div>
 
       </div>
 
-      <div class="d-flex justify-content-start mt-3">
+      <div class="d-flex justify-content-start mt-2">
+          <!--
           <div class="btn-group">
               <a href="{% url 'all_playlists' 'all' %}" target="_blank" class="btn btn-sm btn-success" id="select-all-btn">Search for Playlists <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+          </div>
+          -->
+          {% if playlist.is_user_owned %}
+          <div class="btn-group me-2">
+            <button type="button" class="btn btn-info" id="select-all-btn">Move!</button>
+          </div>
+          {% endif %}
+          <div class="btn-group">
+            <button type="button" class="btn btn-info" id="select-all-btn">Copy!</button>
           </div>
       </div>
 
@@ -319,7 +332,7 @@
         <div class="list-group" id="video-checkboxes">
           {% for video in videos|slice:"0:50" %}
 
-            <li {% if forloop.last %}hx-get="{% url 'load_more_videos' playlist.playlist_id page|default:"1" %}"
+            <li {% if forloop.last and videos.count > 50 %}hx-get="{% url 'load_more_videos' playlist.playlist_id page|default:"1" %}"
     hx-trigger="revealed"
     hx-swap="afterend" hx-indicator="#load-more-videos-spinner" {% endif %} class="list-group-item d-flex justify-content-between align-items-center bg-transparent" style="background-color: #40B3A2">
 
