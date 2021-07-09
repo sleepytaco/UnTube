@@ -425,7 +425,6 @@ def search_UnTube(request):
     all_playlists = request.user.profile.playlists.filter(is_in_db=True)
     if 'playlist-tags' in request.POST:
         tags = request.POST.getlist('playlist-tags')
-        print(type(tags), tags)
         all_playlists = all_playlists.filter(tags__name__in=tags)
 
     videos = []

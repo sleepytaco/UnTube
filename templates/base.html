@@ -149,8 +149,19 @@
                 removeItemButton: true,
                 });
 
-
             });
+
+            function triggerSubmit() {
+                var startsWithCB = document.getElementById("starts-with-cb");
+                var containsCB = document.getElementById("contains-cb");
+
+                if (startsWithCB.checked) {
+                    startsWithCB.click();
+                } else {
+                    containsCB.click();
+                }
+            }
+
 
             document.body.addEventListener('htmx:configRequest', (event) => {
             event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';

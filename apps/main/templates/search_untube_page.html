@@ -33,10 +33,8 @@
         <div class="row d-flex justify-content-center">
             <div class="col-md-6">
 
-                <select hx-trigger="click[enterKey]"
-                    hx-target="#untube-searchbar-results"
-                    hx-include="[id='search-playlist-form']"
-                    hx-indicator="#spinner" id="choices-multiple-remove-button" name="playlist-tags" placeholder="Add playlist tags" multiple>
+                <select onchange="triggerSubmit()"
+                     id="choices-multiple-remove-button" name="playlist-tags" placeholder="Add playlist tags" multiple>
                     {% for tag in user.playlist_tags.all %}
                     <option value="{{ tag.name }}" hx-post="{% url 'search_UnTube' %}">{{ tag.name }}</option>
                     {% endfor %}
