@@ -1,4 +1,6 @@
 {% load humanize %}
+
+{% if search_query %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Playlists <span class="badge bg-primary rounded-pill">{{ playlists.count|default:"0" }}</span></h1>
 </div>
@@ -25,6 +27,22 @@
                                 No description
                             {% endif %}
                         </p>
+                        {% if playlist.tags.all %}
+    <p class="card-text">
+        <span class="d-flex justify-content-start flex-wrap">
+            <small>
+            <span style="color: #eed868;" class="me-lg-1 mb-lg-1">
+                <i class="fas fa-tags"></i>
+            </span>
+            </small>
+            {% for tag in playlist.tags.all %}
+                <span class="badge rounded-pill bg-info mb-lg-1 me-lg-1 text-black-50">
+                    {{ tag.name }}
+                </span>
+            {% endfor %}
+        </span>
+    </p>
+    {% endif %}
                         <small>
                             <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} views</span>
                             <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
@@ -36,7 +54,7 @@
         {% endfor %}
 
         {% else %}
-        <h5 class="text-white align-content-center">Nothing found :(</h5>
+        <h5 class="text-dark align-content-center">Nothing found :(</h5>
         {% endif %}
     </div>
 </div>
@@ -88,9 +106,64 @@
         {% endfor %}
 
         {% else %}
-        <h5 class="text-white align-content-center">Nothing found :(</h5>
+        <h5 class="text-dark align-content-center">Nothing found :(</h5>
         {% endif %}
     </div>
 </div>
+{% else %}
+{% if all_playlists %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">All Playlists <span class="badge bg-primary rounded-pill">{{ all_playlists.count }}</span></h1>
+</div>
 
+<div>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for playlist in all_playlists %}
+        <div class="col">
+            <div class="card" style="background-color: #1A4464;">
+                <a style="background-color: #1A4464;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+
+                    <div class="card-body text-white">
+
+                        <h5 class="card-title">
+                            {{ playlist.name|truncatewords:"15" }}
+                            {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                            {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                        </h5>
+                        <p class="card-text">
+                            {% if playlist.description %}
+                                {{ playlist.description|truncatewords:"15" }}
+                            {% else %}
+                                No description
+                            {% endif %}
+                        </p>
+                        {% if playlist.tags.all %}
+    <p class="card-text">
+        <span class="d-flex justify-content-start flex-wrap">
+            <small>
+            <span style="color: #eed868;" class="me-lg-1 mb-lg-1">
+                <i class="fas fa-tags"></i>
+            </span>
+            </small>
+            {% for tag in playlist.tags.all %}
+                <span class="badge rounded-pill bg-info mb-lg-1 me-lg-1 text-black-50">
+                    {{ tag.name }}
+                </span>
+            {% endfor %}
+        </span>
+    </p>
+    {% endif %}
+                        <small>
+                            <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} views</span>
+                            <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                        </small>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endif %}
 <br>

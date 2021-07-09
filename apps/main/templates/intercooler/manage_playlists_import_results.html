@@ -57,8 +57,24 @@
                             Playlist ID: <small><span class="badge bg-dark text-white-50">{{ playlist.playlist_id }}</span></small>
 
                         </p>
-                            <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
-                            <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                        {% if playlist.tags.all %}
+                                <p class="card-text">
+                                    <span class="d-flex justify-content-start flex-wrap">
+                                        <small>
+                                        <span style="color: #eed868;" class="me-lg-1 mb-lg-1">
+                                            <i class="fas fa-tags"></i>
+                                        </span>
+                                        </small>
+                                        {% for tag in playlist.tags.all %}
+                                            <span class="badge rounded-pill bg-info mb-lg-1 me-lg-1 text-black-50">
+                                                {{ tag.name }}
+                                            </span>
+                                        {% endfor %}
+                                    </span>
+                                </p>
+                                {% endif %}
+                        <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
+                        <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
                     </div>
                 </a>
             </div>

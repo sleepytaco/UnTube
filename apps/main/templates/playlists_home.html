@@ -107,7 +107,6 @@
     </div>
 </div>
 <br>
-    {% if user.playlist_tags.all %}
     <div class="card bg-dark text-white">
             <div class="card-header">
                 <div class="d-flex justify-content-center">
@@ -116,16 +115,21 @@
             </div>
             <div class="card-body">
                 <div class="d-flex justify-content-evenly h4">
-                    <div class="w-75">
+                    {% if user.playlist_tags.all %}
+                    <div class="w-75 d-flex justify-content-center flex-wrap">
                     {% for tag in user.playlist_tags.all %}
-                        <a href="{% url 'tagged_playlists' tag.name %}" style="text-decoration: none">
-                        <span class="badge rounded-pill bg-warning bg-gradient mb-lg-1 text-black-50">{{ tag.name }} <span class="badge bg-dark text-white">{{ tag.playlists.all.count }}</span> </span>
+                        <a href="{% url 'tagged_playlists' tag.name %}" style="text-decoration: none" class="me-lg-1 mb-lg-1">
+                        <span class="badge rounded-pill bg-warning bg-gradient text-black-50">{{ tag.name }} <span class="badge bg-dark text-white">{{ tag.playlists.all.count }}</span> </span>
                         </a>
                     {% endfor %}
                     </div>
+                    {% else %}
+                        You haven't created any playlist tags yet.
+                    {% endif %}
                 </div>
 
             </div>
+            {% if user.playlist_tags.all %}
             <div class="card-footer">
                 <div class="d-flex justify-content-center">
                     <h3>
@@ -134,7 +138,6 @@
                     </h3>
                 </div>
             </div>
-
+            {% endif %}
     </div>
-    {% endif %}
 {% endblock %}

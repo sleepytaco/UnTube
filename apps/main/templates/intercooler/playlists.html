@@ -45,6 +45,23 @@
                                     {% if playlist.is_private_on_yt %}<small><span class="badge bg-secondary text-white">Private</span></small> {% endif %}
                                     {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-black-50">YT</span></small> {% endif %}
                                 </p>
+
+                                {% if playlist.tags.all %}
+<p class="card-text">
+    <span class="d-flex justify-content-start flex-wrap">
+        <small>
+        <span style="color: #eed868;" class="me-lg-1 mb-lg-1">
+            <i class="fas fa-tags"></i>
+        </span>
+        </small>
+        {% for tag in playlist.tags.all %}
+            <span class="badge rounded-pill bg-info mb-lg-1 me-lg-1 text-black-50">
+                {{ tag.name }}
+            </span>
+        {% endfor %}
+    </span>
+</p>
+{% endif %}
                                 <small>
                                     <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
                                     <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>

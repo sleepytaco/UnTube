@@ -33,8 +33,8 @@
         <div class="row d-flex justify-content-center">
             <div class="col-md-6">
 
-                <select onchange="triggerSubmit()"
-                     id="choices-multiple-remove-button" name="playlist-tags" placeholder="Add playlist tags" multiple>
+                <select class="visually-hidden" onchange="triggerSubmit()"
+                     id="choices-multiple-remove-button" name="playlist-tags" placeholder="Add playlist tags to search within" multiple>
                     {% for tag in user.playlist_tags.all %}
                     <option value="{{ tag.name }}" hx-post="{% url 'search_UnTube' %}">{{ tag.name }}</option>
                     {% endfor %}
@@ -74,6 +74,60 @@
 </div>
 
     <div id="untube-searchbar-results">
+        {% if user.profile.playlists.all %}
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">All Playlists <span class="badge bg-primary rounded-pill">{{ user.profile.playlists.count }}</span></h1>
+        </div>
+
+        <div>
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for playlist in user.profile.playlists.all %}
+                <div class="col">
+                    <div class="card" style="background-color: #1A4464;">
+                        <a style="background-color: #1A4464;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+
+                            <div class="card-body text-white">
+
+                                <h5 class="card-title">
+                                    {{ playlist.name|truncatewords:"15" }}
+                                    {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                                    {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                                </h5>
+                                <p class="card-text">
+                                    {% if playlist.description %}
+                                        {{ playlist.description|truncatewords:"15" }}
+                                    {% else %}
+                                        No description
+                                    {% endif %}
+                                </p>
+                                {% if playlist.tags.all %}
+            <p class="card-text">
+                <span class="d-flex justify-content-start flex-wrap">
+                    <small>
+                    <span style="color: #eed868;" class="me-lg-1 mb-lg-1">
+                        <i class="fas fa-tags"></i>
+                    </span>
+                    </small>
+                    {% for tag in playlist.tags.all %}
+                        <span class="badge rounded-pill bg-info mb-lg-1 me-lg-1 text-black-50">
+                            {{ tag.name }}
+                        </span>
+                    {% endfor %}
+                </span>
+            </p>
+            {% endif %}
+                                <small>
+                                    <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} views</span>
+                                    <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                                </small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 
 

@@ -142,12 +142,14 @@ def view_playlist(request, playlist_id):
                                                   "unused_tags": unused_tags,
                                                   "videos": videos})
 
+
 @login_required
 def tagged_playlists(request, tag):
     tag = get_object_or_404(Tag, created_by=request.user, name=tag)
     playlists = tag.playlists.all()
 
     return render(request, 'all_playlists_with_tag.html', {"playlists": playlists, "tag": tag})
+
 
 @login_required
 def all_playlists(request, playlist_type):
@@ -335,6 +337,7 @@ Done! Playlist on UnTube will update in 3s...
         </div>
         """)
 
+
 @login_required
 @require_POST
 def search_tagged_playlists(request, tag):
@@ -342,6 +345,7 @@ def search_tagged_playlists(request, tag):
     playlists = tag.playlists.all()
 
     return HttpResponse("yay")
+
 
 @login_required
 @require_POST
@@ -451,11 +455,12 @@ def search_UnTube(request):
                     for v in pl_videos.all():
                         videos.append(v)
 
-
     return HttpResponse(loader.get_template("intercooler/search_untube_results.html")
                         .render({"playlists": playlists,
                                  "videos": videos,
-                                 "videos_count": len(videos)}))
+                                 "videos_count": len(videos),
+                                 "search_query": True if search_query != "" else False,
+                                 "all_playlists": all_playlists}))
 
 
 @login_required
@@ -719,6 +724,7 @@ def update_playlist(request, playlist_id, type):
         {"playlist_changed_text": "\n".join(playlist_changed_text),
          "playlist_id": playlist_id}))
 
+
 @login_required
 def view_playlist_settings(request, playlist_id):
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
@@ -733,7 +739,7 @@ def get_playlist_tags(request, playlist_id):
     return HttpResponse(loader.get_template("intercooler/playlist_tags.html")
         .render(
         {"playlist_id": playlist_id,
-            "playlist_tags": playlist_tags}))
+         "playlist_tags": playlist_tags}))
 
 
 def get_unused_playlist_tags(request, playlist_id):
@@ -747,6 +753,7 @@ def get_unused_playlist_tags(request, playlist_id):
     return HttpResponse(loader.get_template("intercooler/playlist_tags_unused.html")
         .render(
         {"unused_tags": unused_tags}))
+
 
 @login_required
 @require_POST
@@ -771,9 +778,9 @@ def create_playlist_tag(request, playlist_id):
                             Already created. Try Again >w<
                     """)
 
-    #playlist_tags = playlist.tags.all()
+    # playlist_tags = playlist.tags.all()
 
-    #unused_tags = user_created_tags.difference(playlist_tags)
+    # unused_tags = user_created_tags.difference(playlist_tags)
 
     return HttpResponse(f"""
             Created and Added!
@@ -784,7 +791,6 @@ def create_playlist_tag(request, playlist_id):
 @login_required
 @require_POST
 def add_playlist_tag(request, playlist_id):
-
     tag_name = request.POST["playlistTag"]
 
     if tag_name == 'Pick from existing unused tags':
@@ -823,4 +829,3 @@ def remove_playlist_tag(request, playlist_id, tag_name):
         return HttpResponse("Whoops >w<")
 
     return HttpResponse("")
-

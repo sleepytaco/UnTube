@@ -61,6 +61,22 @@
                                     {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-black-50">YT</span></small> {% endif %}
 
                                 </p>
+                                {% if playlist.tags.all %}
+                                <p class="card-text">
+                                    <span class="d-flex justify-content-start flex-wrap">
+                                        <small>
+                                        <span style="color: #eed868;" class="me-lg-1 mb-lg-1">
+                                            <i class="fas fa-tags"></i>
+                                        </span>
+                                        </small>
+                                        {% for tag in playlist.tags.all %}
+                                            <span class="badge rounded-pill bg-info mb-lg-1 me-lg-1 text-black-50">
+                                                {{ tag.name }}
+                                            </span>
+                                        {% endfor %}
+                                    </span>
+                                </p>
+                                {% endif %}
                                 <small>
                                     <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
                                     <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
@@ -82,15 +98,19 @@
                 <div class="d-flex justify-content-center h5">
                     {% if playlist_type == "watching" %}
                         You can mark a playlist as watching by heading over to the playlist and marking it from the dropdown.
+                    {% elif playlist_type == "all" %}
+                        There's no playlists in your UnTube right now.
                     {% elif playlist_type == "imported" %}
                         To import public playlists into your UnTube collection you can head over to <a href="{% url 'manage_playlists' %}" class="btn btn-sm btn-primary ms-2">Manage</a>
                     {% elif playlist_type == "plan-to-watch" %}
                         You can mark a playlist as plan to watch by heading over to the playlist and marking it from the dropdown.
+                    {% elif playlist_type == "favorites" %}
+                        You can mark a playlist as favorite by heading over to the playlist page and pressing the star icon.
                     {% elif playlist_type == "user-owned" %}
                         {% if user.profile.imported_yt_playlists %}
                             Looks like you have no playlists on YouTube.
                         {% else %}
-                            You can always head over to your <a href="{% url 'profile' %}" class="btn btn-sm btn-primary">Profile</a> to import all of your public/private YouTube playlists.
+                            You can always head over to your <a href="{% url 'profile' %}" class="btn btn-sm btn-primary p-2">Profile</a> to import all of your public/private YouTube playlists.
                         {% endif %}
                     {% else %}
                         {{ playlist_type }}
