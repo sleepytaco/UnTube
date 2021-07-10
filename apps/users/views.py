@@ -22,6 +22,8 @@ def index(request):
 @login_required
 def profile(request):
     user_playlists = request.user.profile.playlists.all()
+    watching = user_playlists.filter(marked_as="watching")
+
     total_num_playlists = user_playlists.count()
 
     statistics = {
@@ -40,7 +42,8 @@ def profile(request):
         statistics["watching_x"] = round(user_playlists.filter(marked_as="watching").count() / total_num_playlists, 1) * 100
         statistics["imported_x"] = round(user_playlists.filter(is_user_owned=False).count() / total_num_playlists, 1) * 100
 
-    return render(request, 'profile.html', {"statistics": statistics})
+    return render(request, 'profile.html', {"statistics": statistics,
+                                            "watching": watching})
 
 
 @login_required

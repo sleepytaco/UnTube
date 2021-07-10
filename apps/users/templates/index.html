@@ -3,6 +3,8 @@
 
 {% load socialaccount %}
 
+{% load static %}
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -37,6 +39,7 @@
       </style>
 
       <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
+        <link href="{% static 'fontawesome-free-5.15.3-web/css/all.min.css' %}" rel="stylesheet">
 
     <!-- Bootstrap core CSS -->
     <link href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -63,14 +66,14 @@
         <p class="lead">UnTube is a simple Youtube playlist manager. Modify and keep track of your YouTube playlists with ease.</p>
         <p class="lead">
             <br>
-            <a class="btn btn-outline-danger" href="{% provider_login_url 'google' %}">Login with Google</a>
+            <a class="btn btn-danger" href="{% provider_login_url 'google' %}">Login with Google</a>
 
         </p>
       </main>
 
       <footer class="mastfoot mt-auto">
         <div class="inner text-white">
-          <h6>Made with <span style="color: #e25555;">&hearts;</span> in Django</h6>
+          <h5>Made with <i class="fas fa-heart" style="color: #e25555;"></i> & <i class="fas fa-mug-hot" style="color: brown;"></i> in Django</h5>
         </div>
       </footer>
     </div>

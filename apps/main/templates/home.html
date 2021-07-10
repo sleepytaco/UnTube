@@ -121,7 +121,7 @@
                 {% endif %}
 
             <br>
-            <h3><span style="border-bottom: 3px #ffffff dashed;">Most viewed playlists</span> {% if user_playlists.count > 3 %}<a href="{% url 'all_playlists' 'all' %}" class="pt-1"><i class="fas fa-binoculars"></i> </a>{% endif %}</h3>
+            <h3><span style="border-bottom: 3px #ffffff dashed;">Most viewed playlists</span> <a href="{% url 'all_playlists' 'all' %}" class="pt-1"><i class="fas fa-binoculars"></i> </a></h3>
             {% if user_playlists %}
             <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
                 {% for playlist in user_playlists|slice:"0:3" %}
@@ -201,7 +201,7 @@
             {% endif %}
 
         <br>
-            <h3><span style="border-bottom: 3px #ffffff dashed;">Recently Added</span></h3>
+            <h3><span style="border-bottom: 3px #ffffff dashed;">Recently Added</span> <i class="fas fa-plus-square" style="color:#972727;"></i></h3>
             {% if recently_added_playlists %}
             <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
                 {% for playlist in recently_added_playlists %}
