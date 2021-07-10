@@ -17,10 +17,18 @@
             </div>
         </div>
     {% else %}
-    <div hx-get="{% url 'update_playlist' playlist.playlist_id 'checkforupdates' %}" hx-trigger="load" hx-swap="outerHTML" class="sticky-top" style="top: 0.5rem;" id="checkforupdates">
+    <div class="sticky-top mb-3" style="top: 0.5rem;">
+        <div hx-get="{% url 'update_playlist' playlist.playlist_id 'checkforupdates' %}" hx-trigger="load" hx-swap="outerHTML" id="checkforupdates">
 
+        </div>
+        {% if playlist.marked_as == "watching" %}
+        <div class="py-2 bg-light">
+          <div class="d-flex justify-content-center">
+              <span class="h3 text-muted">2/23 watched! <span style="border-bottom: 3px #e760f1 dashed;">2hr. 23min.</span> left to go! <i class="fas fa-glass-cheers" style="color: lightcoral"></i></span>
+          </div>
+        </div>
+        {% endif %}
     </div>
-
     <div class="list-group-item list-group-item-action active">
         <div class="d-flex w-100 justify-content-between">
             <span>
@@ -37,7 +45,14 @@
             <h4>
                 <span id="notice-div">
                     {% if playlist.marked_as != "none" %}
-                    <span class="badge bg-success text-white" >{{ playlist.marked_as|title }}</span>
+                    <span class="badge bg-success text-white" >
+                        {% if playlist.marked_as == "watching" %}
+                            <i class="fas fa-fire-alt me-2"></i>
+                        {% elif playlist.marked_as == "plan-to-watch"%}
+                            <i class="fas fa-flag me-2"></i>
+                        {% endif %}
+                        {{ playlist.marked_as }}
+                    </span>
                     {% endif %}
                 </span>
             </h4>
@@ -260,14 +275,14 @@
     </div>
     <div id="row3" style="background-color: #0f5132">
     <div class="collapse border-danger" id="moveItemsToCollapse">
-    <div class="card card-body bg-dark text-white-50">
+    <div class="card card-body bg-dark text-white">
 
       <h5>{% if playlist.is_user_owned %}Move or {% endif %}Copy videos to another playlist!</h5>
 
       <div class="d-flex justify-content-start">
 
 
-          <div class="col-md-6 text-dark">
+          <div class="col-md-7 text-dark">
                 <select class="visually-hidden" onchange="triggerSubmit()"
                      id="choices-multiple-remove-button" name="playlist-tags" placeholder="Select Playlists" multiple>
                     {% for pl in user_owned_playlists %}
@@ -458,6 +473,8 @@
     <div class="d-flex justify-content-center">
         <img id="load-more-videos-spinner" class="htmx-indicator mt-4" src="{% static 'svg-loaders/spinning-circles.svg' %}" width="40" height="40">
     </div>
+
+
 
     </div>
 

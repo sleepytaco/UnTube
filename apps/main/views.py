@@ -282,7 +282,12 @@ def mark_playlist_as(request, playlist_id, mark_as):
     if mark_as in ["watching", "on-hold", "plan-to-watch"]:
         playlist.marked_as = mark_as
         playlist.save()
-        marked_as_response = f'<span class="badge bg-success text-white" >{mark_as.replace("-", " ")}</span>'
+        icon = ""
+        if mark_as == "watching":
+            icon = '<i class="fas fa-fire-alt me-2"></i>'
+        elif mark_as == "plan-to-watch":
+            icon = '<i class="fas fa-flag me-2"></i>'
+        marked_as_response = f'<span class="badge bg-success text-white" >{icon}{mark_as}</span> <meta http-equiv="refresh" content="0" />'
     elif mark_as == "none":
         playlist.marked_as = mark_as
         playlist.save()
@@ -334,8 +339,8 @@ def delete_videos(request, playlist_id, command):
         # playlist.has_playlist_changed = True
         # playlist.save(update_fields=['has_playlist_changed'])
         return HttpResponse(f"""
-        <div hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:4s" hx-target="#checkforupdates" class="sticky-top" style="top: 0.5rem;">
-Done! Playlist on UnTube will update in 3s...
+        <div hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:1s" hx-target="#checkforupdates" class="sticky-top" style="top: 0.5rem;">
+            Done! Playlist on UnTube will update in soon...
         </div>
         """)
 
@@ -625,7 +630,6 @@ def update_playlist(request, playlist_id, type):
                 <div class="alert alert-success alert-dismissible fade show visually-hidden" role="alert">
                     No new updates!
                 </div>
-                <br>
                 </div>
                 """)
         elif result[0] == -1:  # playlist changed
@@ -646,7 +650,6 @@ def update_playlist(request, playlist_id, type):
             <div class="alert alert-success alert-dismissible fade show visually-hidden sticky-top" role="alert" style="top: 0.5em;">
                 No new updates!
             </div>
-            <br>
             </div>
             """)
 
