@@ -1072,6 +1072,7 @@ class PlaylistManager(models.Manager):
                 },
             )
 
+            print(details["description"])
             try:
                 pl_response = pl_request.execute()
             except googleapiclient.errors.HttpError as e:  # failed to update playlist details
@@ -1079,6 +1080,8 @@ class PlaylistManager(models.Manager):
                 # playlistItemsNotAccessible (403)
                 # playlistItemNotFound (404)
                 # playlistOperationUnsupported (400)
+                # errors i ran into:
+                # runs into HttpError 400 "Invalid playlist snippet." when the description contains <, >
                 print("ERROR UPDATING PLAYLIST DETAILS", e, e.status_code, e.error_details)
                 return -1
 
@@ -1128,8 +1131,14 @@ class Playlist(models.Model):
     user_notes = models.CharField(max_length=420, default="")  # user can take notes on the playlist and save them
     user_label = models.CharField(max_length=100, default="")  # custom user given name for this playlist
 
+    # watch playlist details
+    num_videos_watched = models.IntegerField(default=0)
+    watch_time_left = models.CharField(max_length=150, default="")
+    started_on = models.DateTimeField(auto_now_add=True, null=True)
+    last_watched = models.DateTimeField(auto_now_add=True, null=True)
+
     # manage playlist
-    marked_as = models.CharField(default="",
+    marked_as = models.CharField(default="none",
                                  max_length=100)  # can be set to "none", "watching", "on-hold", "plan-to-watch"
     is_favorite = models.BooleanField(default=False, blank=True)  # to mark playlist as fav
     num_of_accesses = models.IntegerField(default="0")  # tracks num of times this playlist was opened by user
@@ -1201,7 +1210,7 @@ class Video(models.Model):
         default=False)  # True if the video was unavailable (private/deleted) when the API call was first made
     was_deleted_on_yt = models.BooleanField(default=False)  # True if video became unavailable on a subsequent API call
 
-    is_marked_as_watched = models.BooleanField(default=False, blank=True)  # mark video as watched
+    is_marked_as_watched = models.BooleanField(default=False)  # mark video as watched
     is_favorite = models.BooleanField(default=False, blank=True)  # mark video as favorite
     num_of_accesses = models.CharField(max_length=69,
                                        default="0")  # tracks num of times this video was clicked on by user

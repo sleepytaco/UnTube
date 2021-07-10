@@ -22,11 +22,9 @@
 
         </div>
         {% if playlist.marked_as == "watching" %}
-        <div class="py-2 bg-light">
-          <div class="d-flex justify-content-center">
-              <span class="h3 text-muted">2/23 watched! <span style="border-bottom: 3px #e760f1 dashed;">2hr. 23min.</span> left to go! <i class="fas fa-glass-cheers" style="color: lightcoral"></i></span>
-          </div>
-        </div>
+            <div id="playlist-watch-message">
+                {% include 'intercooler/playlist_watch_message.html' %}
+            </div>
         {% endif %}
     </div>
     <div class="list-group-item list-group-item-action active">
@@ -47,9 +45,9 @@
                     {% if playlist.marked_as != "none" %}
                     <span class="badge bg-success text-white" >
                         {% if playlist.marked_as == "watching" %}
-                            <i class="fas fa-fire-alt me-2"></i>
+                            <i class="fas fa-fire-alt me-1"></i>
                         {% elif playlist.marked_as == "plan-to-watch"%}
-                            <i class="fas fa-flag me-2"></i>
+                            <i class="fas fa-flag me-1"></i>
                         {% endif %}
                         {{ playlist.marked_as }}
                     </span>
@@ -59,7 +57,7 @@
         </div>
         <p class="mb-1">
             {% if playlist.description %}
-            <h5>{{ playlist.description|truncatewords:"50" }}</h5>
+            <h5>{{ playlist.description|truncatewords:"50"|linebreaksbr }}</h5>
             {% else %}
             <h5>No description</h5>
             {% endif %}
@@ -431,19 +429,23 @@
                 <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist.playlist_id video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
                     <div id="video-{{ forloop.counter }}-fav">
                         {% if video.is_favorite %}
-                            <i class="fas fa-heart"></i>
+                            <i class="fas fa-heart" style="color: #fafa06"></i>
                         {% else %}
                             <i class="far fa-heart"></i>
                         {% endif %}
                     </div>
                 </button>
-                    {% if playlist.marked_as == "watching" %}
-                                        <button class="btn btn-sm btn-light mb-1" type="button">
-
-                        <i class="far fa-check-circle"></i>
-                                        </button>
-
-                    {% endif %}
+                {% if playlist.marked_as == "watching" %}
+                <button class="btn btn-sm btn-light mb-1" type="button" hx-get="{% url 'mark_video_watched' playlist.playlist_id video.video_id %}" hx-target="#video-{{ forloop.counter }}-watched">
+                    <div id="video-{{ forloop.counter }}-watched">
+                        {% if video.is_marked_as_watched %}
+                            <i class="fas fa-check-circle"></i>
+                        {% else %}
+                            <i class="far fa-check-circle"></i>
+                        {% endif %}
+                    </div>
+                </button>
+                {% endif %}
                 {% endif %}
             </div>
           {% endif %}

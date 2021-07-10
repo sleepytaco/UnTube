@@ -1,0 +1,34 @@
+<div class="py-2 bg-light rounded-3">
+  <div class="d-flex justify-content-center">
+      <span class="h3 {% if watching_message.percent_complete == 0 %}w-75{% endif %}" style="color: #70777E">
+          {% if watching_message.percent_complete == 0 %}
+              <i class="fas fa-sun fa-spin" style="color: #d0bc0b"></i> Yay, you marked a playlist as watching! This message will keep updating as you mark videos as watched. Good luck! <i class="fas fa-sun fa-spin" style="color: #d0bc0b"></i>
+          {% else %}
+            {% if watching_message.percent_complete == 100 %}
+                <i class="fas fa-flag-checkered" style="color: #2c9c6b"></i>
+            {% endif %}
+          <span style="color: #2c9c2c">{{ watching_message.watched_videos }}</span>
+              /
+              <span {% if watching_message.percent_complete == 100 %}style="color: #2c9c2c"{% endif %}>{{ watching_message.total_videos }}</span> <span {% if watching_message.percent_complete == 100 %}style="color: #2c9c2c"{% endif %}> watched!</span>
+          {% if watching_message.percent_complete != 100 %}<span class="text-dark" style="border-bottom: 3px #e760f1 dashed; {% if watching_message.percent_complete >= 70 and watching_message.percent_complete != 100 %}background: linear-gradient(-45deg, #AE876B, #ABA27B, #A7BC8A, #A3D69A);
+                        background-size: 400% 400%; animation: gradient 7s ease infinite;{% endif %}">{{ watching_message.watch_time_left }}</span> left to go!{% endif %}
+
+            {% if watching_message.percent_complete == 100 %}
+                <i class="fas fa-flag-checkered" style="color: #2c9c6b"></i>
+            {% elif watching_message.percent_complete >= 90  %}
+              <i class="fas fa-glass-cheers" style="color: #9C2C42FF"></i>
+            {% elif watching_message.percent_complete >= 75  %}
+              <i class="fas fa-cocktail" style="color: #9C2C42FF"></i>
+            {% elif watching_message.percent_complete >= 60 %}
+              <i class="fas fa-glass-martini" style="color: #9C2C42FF"></i>
+            {% elif watching_message.percent_complete >= 40 %}
+                <i class="fas fa-glass-martini-alt" style="color: #9C2C42FF"></i>
+            {% elif watching_message.percent_complete >= 20 %}
+              <i class="fas fa-mug-hot" style="color: #9C2C42FF"></i>
+            {% elif watching_message.percent_complete >= 0 %}
+              <i class="fas fa-coffee" style="color: #9C2C42FF"></i>
+            {% endif %}
+          {% endif %}
+      </span>
+  </div>
+</div>

@@ -15,6 +15,7 @@ urlpatterns = [
     path("<slug:playlist_id>/<slug:video_id>/video-details", views.view_video, name='video_details'),
     path("<slug:playlist_id>/<slug:video_id>/video-details/notes", views.video_notes, name='video_notes'),
     path("<slug:playlist_id>/<slug:video_id>/video-details/favorite", views.mark_video_favortie, name='mark_video_favorite'),
+    path('<slug:playlist_id>/<slug:video_id>/video-details/watched', views.mark_video_watched, name='mark_video_watched'),
     path("from/<slug:playlist_id>/delete-videos/<slug:command>", views.delete_videos, name='delete_videos'),
 
     ### STUFF RELATED TO ONE PLAYLIST
@@ -32,6 +33,7 @@ urlpatterns = [
     path("playlist/<slug:playlist_id>/remove-tag/<str:tag_name>", views.remove_playlist_tag, name="remove_playlist_tag"),
     path("playlist/<slug:playlist_id>/get-tags", views.get_playlist_tags, name="get_playlist_tags"),
     path("playlist/<slug:playlist_id>/get-unused-tags", views.get_unused_playlist_tags, name="get_unused_playlist_tags"),
+    path("playlist/<slug:playlist_id>/get-watch-message", views.get_watch_message, name="get_watch_message"),
 
     ### STUFF RELATED TO PLAYLISTS IN BULK
     path("search/playlists/<slug:playlist_type>", views.search_playlists, name="search_playlists"),

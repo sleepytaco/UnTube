@@ -1,5 +1,6 @@
 import datetime
 
+import humanize
 import pytz
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
@@ -9,7 +10,44 @@ from django.contrib.auth.decorators import login_required  # redirects user to s
 from allauth.socialaccount.models import SocialToken
 from django.views.decorators.http import require_POST
 from django.contrib import messages
-from django.template import Context, loader
+from django.template import loader
+
+
+def generateWatchingMessage(playlist):
+    """
+    This is the message that will be seen when a playlist is set to watching.
+    """
+    total_playlist_video_count = playlist.video_count
+    num_videos_watched = playlist.videos.filter(is_marked_as_watched=True).count()
+    percent_complete = round((num_videos_watched / total_playlist_video_count) * 100, 1) if total_playlist_video_count != 0 else 100
+
+    print(total_playlist_video_count, num_videos_watched)
+    if num_videos_watched == 0:  # hasnt started watching any videos yet
+        watch_time_left = playlist.playlist_duration.replace(" month,".upper(), "m.").replace(" days,".upper(),
+                                                                                              "d.").replace(
+            " hours,".upper(), "hr.").replace(" minutes".upper(), "mins.").replace(
+            "and".upper(), "").replace(" seconds".upper(), "sec.")
+    elif total_playlist_video_count == num_videos_watched:  # finished watching all videos in the playlist
+        watch_time_left = "0secs."
+    else:
+        watch_time_left = playlist.watch_time_left
+        watched_seconds = 0
+        for video in playlist.videos.filter(is_marked_as_watched=True):
+            watched_seconds += video.duration_in_seconds
+
+        watch_time_left = humanize.precisedelta(datetime.timedelta(seconds=playlist.playlist_duration_in_seconds - watched_seconds)).upper().\
+            replace(" month,".upper(), "m.").replace(" months,".upper(), "m.").replace(" days,".upper(), "d.").replace(" day,".upper(), "d.").replace(" hours,".upper(), "hrs.").replace(" hour,".upper(), "hr.").replace(
+            " minutes".upper(), "mins.").replace(
+            "and".upper(), "").replace(" seconds".upper(), "secs.").replace(" second".upper(), "sec.")
+
+    playlist.watch_time_left = watch_time_left
+    playlist.num_videos_watched = num_videos_watched
+    playlist.save(update_fields=['watch_time_left', 'num_videos_watched'])
+
+    return {"total_videos": total_playlist_video_count,
+            "watched_videos": num_videos_watched,
+            "percent_complete": percent_complete,
+            "watch_time_left": watch_time_left}
 
 
 # Create your views here.
@@ -142,7 +180,8 @@ def view_playlist(request, playlist_id):
                                                   "playlist_tags": playlist_tags,
                                                   "unused_tags": unused_tags,
                                                   "videos": videos,
-                                                  "user_owned_playlists": user_owned_playlists})
+                                                  "user_owned_playlists": user_owned_playlists,
+                                                  "watching_message": generateWatchingMessage(playlist)})
 
 
 @login_required
@@ -277,7 +316,7 @@ def order_playlists_by(request, playlist_type, order_by):
 def mark_playlist_as(request, playlist_id, mark_as):
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
 
-    marked_as_response = ""
+    marked_as_response = '<span></span><meta http-equiv="refresh" content="0" />'
 
     if mark_as in ["watching", "on-hold", "plan-to-watch"]:
         playlist.marked_as = mark_as
@@ -409,14 +448,31 @@ def mark_video_favortie(request, playlist_id, video_id):
 
     if video.is_favorite:
         video.is_favorite = False
-        video.save()
+        video.save(update_fields=['is_favorite'])
         return HttpResponse('<i class="far fa-heart"></i>')
     else:
         video.is_favorite = True
-        video.save()
-        return HttpResponse('<i class="fas fa-heart"></i>')
+        video.save(update_fields=['is_favorite'])
+        return HttpResponse('<i class="fas fa-heart" style="color: #fafa06"></i>')
 
 
+def mark_video_watched(request, playlist_id, video_id):
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+    video = playlist.videos.get(video_id=video_id)
+
+    if video.is_marked_as_watched:
+        video.is_marked_as_watched = False
+        video.save(update_fields=['is_marked_as_watched'])
+
+        return HttpResponse(
+            f'<i class="far fa-check-circle" hx-get="/playlist/{playlist_id}/get-watch-message" hx-trigger="load" hx-target="#playlist-watch-message"></i>')
+    else:
+        video.is_marked_as_watched = True
+        video.save(update_fields=['is_marked_as_watched'])
+        return HttpResponse(
+            f'<i class="fas fa-check-circle" hx-get="/playlist/{playlist_id}/get-watch-message" hx-trigger="load" hx-target="#playlist-watch-message"></i>')
+
+    generateWatchingMessage(playlist)
 ###########
 @login_required
 def search(request):
@@ -581,15 +637,17 @@ def update_playlist_settings(request, playlist_id):
             {"message_type": message_type,
              "message_content": message_content}))
 
+    valid_title = request.POST['playlistTitle'].replace(">", "greater than").replace("<", "less than")
+    valid_description = request.POST['playlistDesc'].replace(">", "greater than").replace("<", "less than")
     details = {
-        "title": request.POST['playlistTitle'],
-        "description": request.POST['playlistDesc'],
+        "title": valid_title,
+        "description": valid_description,
         "privacyStatus": True if request.POST['playlistPrivacy'] == "Private" else False
     }
 
     status = Playlist.objects.updatePlaylistDetails(request.user, playlist_id, details)
     if status == -1:
-        message_type = "error"
+        message_type = "danger"
         message_content = "Could not save :("
 
     return HttpResponse(loader.get_template("intercooler/messages.html")
@@ -737,6 +795,7 @@ def view_playlist_settings(request, playlist_id):
     return render(request, 'view_playlist_settings.html', {"playlist": playlist})
 
 
+@login_required
 def get_playlist_tags(request, playlist_id):
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
     playlist_tags = playlist.tags.all()
@@ -747,6 +806,7 @@ def get_playlist_tags(request, playlist_id):
          "playlist_tags": playlist_tags}))
 
 
+@login_required
 def get_unused_playlist_tags(request, playlist_id):
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
 
@@ -758,6 +818,15 @@ def get_unused_playlist_tags(request, playlist_id):
     return HttpResponse(loader.get_template("intercooler/playlist_tags_unused.html")
         .render(
         {"unused_tags": unused_tags}))
+
+
+@login_required
+def get_watch_message(request, playlist_id):
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+
+    return HttpResponse(loader.get_template("intercooler/playlist_watch_message.html")
+        .render(
+        {"watching_message": generateWatchingMessage(playlist)}))
 
 
 @login_required
