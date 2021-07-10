@@ -57,7 +57,7 @@ def home(request):
     user_playlists = user_profile.playlists.filter(Q(is_in_db=True) & Q(num_of_accesses__gt=0)).order_by(
         "-num_of_accesses")
     watching = user_profile.playlists.filter(Q(marked_as="watching") & Q(is_in_db=True)).order_by("-num_of_accesses")
-    recently_accessed_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-updated_at")[:6]
+    recently_accessed_playlists = user_profile.playlists.filter(is_in_db=True).filter(updated_at__gt=user_profile.updated_at).order_by("-updated_at")[:6]
     recently_added_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-created_at")[:6]
 
     #### FOR NEWLY JOINED USERS ######
