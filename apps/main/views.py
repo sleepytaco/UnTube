@@ -142,6 +142,10 @@ def view_playlist(request, playlist_id):
     user_created_tags = Tag.objects.filter(created_by=request.user)
     playlist_tags = playlist.tags.all()
 
+    for tag in playlist_tags:
+        tag.times_viewed += 1
+        tag.save(update_fields=['times_viewed'])
+
     unused_tags = user_created_tags.difference(playlist_tags)
 
     all_videos_unavailable = False
@@ -206,7 +210,7 @@ def all_playlists(request, playlist_type):
 
             if playlists.count() == 0:
                 messages.warning(request, f"No playlists in {playlists_type}")
-                return redirect('home')
+                return redirect('/playlists/home')
             random_playlist = random.choice(playlists)
             return redirect(f'/playlist/{random_playlist.playlist_id}')
         return render(request, 'playlists_home.html')
@@ -393,14 +397,18 @@ def delete_videos(request, playlist_id, command):
         num_vids = len(video_ids)
         extra_text = " "
         if num_vids == 0:
-            return HttpResponse("<h5>Select some videos first!</h5>")
+            return HttpResponse("<h5>Select some videos first!</h5><hr>")
         elif num_vids == request.user.profile.playlists.get(playlist_id=playlist_id).videos.all().count():
             delete_text = "ALL VIDEOS"
             extra_text = " This will not delete the playlist itself, will only make the playlist empty. "
         else:
             delete_text = f"{num_vids} videos"
         return HttpResponse(
-            f"<h5>Are you sure you want to delete {delete_text} from your YouTube playlist?{extra_text}This cannot be undone.</h5>")
+            f"""<h5>
+                Are you sure you want to delete {delete_text} from your YouTube playlist?{extra_text}This cannot be undone.</h5>
+                <button hx-post="/from/{playlist_id}/delete-videos/confirmed" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-outline-danger btn-sm" id="select-all-btn">Confirm</button>
+                <hr>
+            """)
     elif command == "confirmed":
         print(video_ids)
         return HttpResponse(
@@ -411,9 +419,10 @@ def delete_videos(request, playlist_id, command):
         # playlist.has_playlist_changed = True
         # playlist.save(update_fields=['has_playlist_changed'])
         return HttpResponse(f"""
-        <div hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:3s" hx-target="#checkforupdates" class="sticky-top" style="top: 0.5rem;">
-            Done! Playlist on UnTube will update in soon...
-        </div>
+        <h5 hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:3s" hx-target="#checkforupdates">
+            Done deleting videos from your playlist on YouTube. Playlist on UnTube will update soon.
+        </h5>
+        <hr>
         """)
 
 
@@ -529,7 +538,9 @@ def search_UnTube(request):
     all_playlists = request.user.profile.playlists.filter(is_in_db=True)
     if 'playlist-tags' in request.POST:
         tags = request.POST.getlist('playlist-tags')
-        all_playlists = all_playlists.filter(tags__name__in=tags)
+        for tag in tags:
+            all_playlists = all_playlists.filter(tags__name=tag)
+        #all_playlists = all_playlists.filter(tags__name__in=tags)
 
     videos = []
 

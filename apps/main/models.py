@@ -975,11 +975,12 @@ class PlaylistManager(models.Manager):
 
                 try:
                     pl_response = pl_request.execute()
-                except googleapiclient.errors.HttpError:  # failed to delete playlist item
+                except googleapiclient.errors.HttpError as e:  # failed to delete playlist item
                     # possible causes:
                     # playlistItemsNotAccessible (403)
                     # playlistItemNotFound (404)
                     # playlistOperationUnsupported (400)
+                    print(e, e.error_details, e.status_code)
                     continue
 
                 # playlistItem was successfully deleted if no HttpError, so delete it from db
@@ -1042,6 +1043,7 @@ class Tag(models.Model):
     name = models.CharField(max_length=69)
     created_by = models.ForeignKey(User, related_name="playlist_tags", on_delete=models.CASCADE)
 
+    times_viewed = models.IntegerField(default=0)
     # type = models.CharField(max_length=10)  # either 'playlist' or 'video'
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1108,6 +1110,9 @@ class Playlist(models.Model):
 
     def __str__(self):
         return str(self.playlist_id)
+
+    def get_unavailable_videos_count(self):
+        return self.video_count - self.get_watchable_videos_count()
 
     # return count of watchable videos, i.e # videos that are not private or deleted in the playlist
     def get_watchable_videos_count(self):

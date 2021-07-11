@@ -13,7 +13,7 @@
             {% endif %}
           <span style="color: #2c9c2c">{{ playlist.get_watched_videos_count }}</span>
               /
-              <span {% if percent_complete == 100 %}style="color: #2c9c2c"{% endif %}>{{ playlist.get_watchable_videos_count }}</span> <span {% if percent_complete == 100 %}style="color: #2c9c2c"{% endif %}> watched!</span>
+              <span {% if percent_complete == 100 %}style="color: #2c9c2c"{% endif %}>{{ playlist.get_watchable_videos_count }}</span> (<span style="color: #2c9c2c">{{ percent_complete }}%</span>) <span {% if percent_complete == 100 %}style="color: #2c9c2c"{% endif %}> watched!</span>
           {% if percent_complete != 100 %}<span class="text-dark" style="border-bottom: 3px #e760f1 dashed; {% if percent_complete >= 70 and percent_complete != 100 %}background: linear-gradient(-45deg, #AE876B, #ABA27B, #A7BC8A, #A3D69A);
                         background-size: 400% 400%; animation: gradient 7s ease infinite;{% endif %}">{{ playlist.get_watch_time_left }}</span> left to go!{% endif %}
 

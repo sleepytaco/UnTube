@@ -3,6 +3,8 @@
 <!doctype html>
 <html lang="en">
     <head>
+        <link rel="icon" href="{% static 'fontawesome-free-5.15.3-web/svgs/solid/underline.svg' %}">
+
         <meta charset="utf-8">
         <meta name="keywords" content="youtube, playlists, videos, delete videos, delete playlists, delete multiple videos, move multiple videos, merge playlists, video manager, playlist manager, youtube playlists, untube, google">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -131,6 +133,14 @@
 
             <div class="row">
                 <main class="ms-lg-auto px-lg-5">
+                {% if messages %}
+                    {% for message in messages %}
+                      <div class="alert alert-success alert-dismissible fade show" role="alert">
+                          {{ message }}
+                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endfor %}
+                {% endif %}
                 {% block content %}
                 {% endblock %}
                 </main>
@@ -156,6 +166,13 @@
                 });
 
             });
+
+            function selectVideo(video) {
+                console.log(video.id);
+                console.log("video-" + video.id);
+                var videoCB = document.getElementById("video-" + video.id);
+                videoCB.checked = !videoCB.checked;  // uncheck video if check and vice versa
+            }
 
             function triggerSubmit() {
                 var startsWithCB = document.getElementById("starts-with-cb");
@@ -189,7 +206,8 @@
             });
 
 
-            document.getElementById('manageBtn').addEventListener('click', function () {
+            document.getElementById('manageBtn').addEventListener('click', function () {                document.getElementById("delete-videos-confirm-box").innerHTML = "";
+                document.getElementById("delete-videos-confirm-box").innerHTML = "";
                 bsMoveCopyCollapse.hide();
                 bsDeleteCollapse.hide();
             });
@@ -228,6 +246,7 @@
                  for(var i=0, len=checkboxes.length; i<len; i++)
                 {
                     checkboxes[i].style.display = "block";
+                    checkboxes[i].checked = false;
                 }
                  document.getElementById("row2").style.display = "block";
              }

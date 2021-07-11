@@ -69,7 +69,14 @@
             <span class="badge bg-light text-black-50">{{ playlist.playlist_duration }} </span>
             <span class="badge bg-light text-black-50">{% if playlist.is_private_on_yt %}PRIVATE{% else %}PUBLIC{% endif %}</span>
             {% if playlist.has_unavailable_videos %}
-                    <span class="badge bg-light text-black-50">SOME VIDEOS ARE UNAVAILABLE</span>
+                    <span class="badge bg-light text-black-50">
+                        {% if playlist.get_watchable_videos_count == 0 %}
+                            ALL
+                        {% else %}
+                            {{ playlist.get_unavailable_videos_count }}
+                        {% endif %}
+                         VIDEOS ARE UNAVAILABLE
+                    </span>
             {% endif %}
             {% if playlist.has_duplicate_videos %}
                     <span class="badge bg-light text-black-50">DUPLICATE VIDEOS</span>
@@ -249,8 +256,8 @@
                     -->
                     {% if playlist.is_user_owned %}
                     <div class="btn-group me-2">
-                        <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" id="delete-vids-btn" class="btn btn-danger" data-bs-toggle="collapse" data-bs-target="#deleteItemsCollapse" aria-expanded="false" aria-controls="deleteItemsCollapse">
-                            Delete Selected Videos
+                        <button class="btn btn-danger" data-bs-toggle="collapse" data-bs-target="#deleteItemsCollapse" aria-expanded="false" aria-controls="deleteItemsCollapse">
+                            Delete Videos
                         </button>
                     </div>
                     {% endif %}
@@ -315,22 +322,35 @@
     <div id="row4" style="background-color: #0f5132">
           <div class="collapse border-danger" id="deleteItemsCollapse">
               <div class="card card-body bg-dark text-white-50">
-
                   <div id="delete-videos-confirm-box">
-                  <h5>Are you sure you want to delete these 40 items from your YouTube playlist? This cannot be undone.</h5>
-                </div>
-                  <div class="d-flex justify-content-start">
-                      <div class="btn-group ms-2">
-                        <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirmed' %}" hx-include="[id='video-checkboxes']" type="button" class="btn btn-danger" id="select-all-btn">Yes!</button>
-                      </div>
-                      <div class="btn-group ms-2">
-                        <button type="button" class="btn btn-secondary" id="select-all-btn">Nvm</button>
-                      </div>
-                      <div class="btn-group ms-2">
-                        <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-primary">
-                            <i class="fas fa-sync"></i>
-                        </button>
                     </div>
+                <br>
+                  <div class="d-flex justify-content-start">
+                      <div class="btn-group me-2">
+                        <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-primary">
+                            Delete Selected
+                        </button>
+                      </div>
+
+                      {% if playlist.has_unavailable_videos %}
+                      <div class="btn-group me-2">
+                        <button hx-post="#" hx-include="[id='video-checkboxes']" type="button" class="btn btn-info">
+                            Delete {{ playlist.get_unavailable_videos_count }} Unavailable Videos
+                        </button>
+                      </div>
+                      {% endif %}
+                        {% if playlist.has_duplicate_videos %}
+                      <div class="btn-group me-2">
+                        <button hx-post="#" hx-include="[id='video-checkboxes']" type="button" class="btn btn-warning">
+                            Delete Duplicate Videos
+                        </button>
+                      </div>
+                        {% endif %}
+                    <div class="btn-group me-2">
+                        <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-danger">
+                            Empty this Playlist
+                        </button>
+                      </div>
                   </div>
 
               </div>
@@ -345,7 +365,7 @@
         <div class="list-group" id="video-checkboxes">
           {% for video in videos|slice:"0:50" %}
 
-            <li {% if forloop.last and videos.count > 50 %}hx-get="{% url 'load_more_videos' playlist.playlist_id order_by|default:"all" page|default:"1" %}"
+            <li id="{{ video.playlist_item_id }}" onclick="selectVideo(this);" {% if forloop.last and videos.count > 50 %}hx-get="{% url 'load_more_videos' playlist.playlist_id order_by|default:"all" page|default:"1" %}"
     hx-trigger="revealed"
     hx-swap="afterend" hx-indicator="#load-more-videos-spinner" {% endif %} class="list-group-item d-flex justify-content-between align-items-center bg-transparent" style="background-color: #40B3A2">
 
@@ -353,7 +373,7 @@
 
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.playlist_item_id }}" name="video-id">
+                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.playlist_item_id }}" id="video-{{ video.playlist_item_id }}" name="video-id">
                 </div>
                   <div class="ms-4" style="max-width: 115px; max-height: 100px;">
                       <img src="https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg" class="img-fluid" alt="">
@@ -369,7 +389,7 @@
 
             <div class="d-flex justify-content-between align-items-center" >
                 <div>
-                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.playlist_item_id }}" name="video-id">
+                    <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ video.playlist_item_id }}" id="video-{{ video.playlist_item_id }}" name="video-id">
                 </div>
                   <div class="ms-4" style="max-width: 115px; max-height: 100px;">
 
