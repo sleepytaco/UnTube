@@ -119,9 +119,9 @@
                   <h6 class="d-flex align-items-center mb-3"><span class="text-info me-2">{{ watching.count }}</span>Watching</h6>
                   {% if watching %}
                         {% for pl in watching|slice:"0:5" %}
-                      <small><a href="{% url 'playlist' pl.playlist_id %}" style="text-decoration: none; color: white;">{{ pl.name|truncatechars:"40" }}</a> <span class="text-warning ms-1">{{ pl.num_videos_watched }}/{{ pl.video_count }} viewed</span></small>
+                      <small><a href="{% url 'playlist' pl.playlist_id %}" style="text-decoration: none; color: white;">{{ pl.name|truncatechars:"40" }}</a> <span class="text-warning ms-1">{{ pl.get_watched_videos_count }}/{{ pl.get_watchable_videos_count }} viewed</span></small>
                       <div class="progress mb-3" style="height: 5px">
-                        <div class="progress-bar bg-{% if pl.percent_complete == 100 %}success{% else %}primary{% endif %}" role="progressbar" style="width: {{ pl.percent_complete }}%" aria-valuenow="{{ pl.num_videos_watched }}" aria-valuemin="0" aria-valuemax="{{ pl.video_count }}"></div>
+                        <div class="progress-bar bg-{% if pl.get_percent_complete == 100 %}success{% else %}primary{% endif %}" role="progressbar" style="width: {{ pl.get_percent_complete }}%" aria-valuenow="{{ pl.get_watched_videos_count }}" aria-valuemin="0" aria-valuemax="{{ pl.get_watchable_videos_count }}"></div>
                       </div>
                             {% if forloop.last and watching.count > 5 %}
                                 <a href="{% url 'all_playlists' 'watching' %}" style="color: white; text-decoration: none">+ {{ watching.count|add:"-5" }} more</a>

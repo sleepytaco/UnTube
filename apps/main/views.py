@@ -14,47 +14,7 @@ from allauth.socialaccount.models import SocialToken
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.template import loader
-
-
-def generateWatchingMessage(playlist):
-    """
-    This is the message that will be seen when a playlist is set to watching.
-    """
-    total_playlist_video_count = playlist.video_count
-    num_videos_watched = playlist.videos.filter(is_marked_as_watched=True).count()
-    percent_complete = round((num_videos_watched / total_playlist_video_count) * 100,
-                             1) if total_playlist_video_count != 0 else 100
-
-    print(total_playlist_video_count, num_videos_watched)
-    if num_videos_watched == 0:  # hasnt started watching any videos yet
-        watch_time_left = playlist.playlist_duration.replace(" month,".upper(), "m.").replace(" days,".upper(),
-                                                                                              "d.").replace(
-            " hours,".upper(), "hr.").replace(" minutes".upper(), "mins.").replace(
-            "and".upper(), "").replace(" seconds".upper(), "sec.")
-    elif total_playlist_video_count == num_videos_watched:  # finished watching all videos in the playlist
-        watch_time_left = "0secs."
-    else:
-        watch_time_left = playlist.watch_time_left
-        watched_seconds = 0
-        for video in playlist.videos.filter(is_marked_as_watched=True):
-            watched_seconds += video.duration_in_seconds
-
-        watch_time_left = humanize.precisedelta(
-            datetime.timedelta(seconds=playlist.playlist_duration_in_seconds - watched_seconds)).upper(). \
-            replace(" month,".upper(), "m.").replace(" months,".upper(), "m.").replace(" days,".upper(), "d.").replace(
-            " day,".upper(), "d.").replace(" hours,".upper(), "hrs.").replace(" hour,".upper(), "hr.").replace(
-            " minutes".upper(), "mins.").replace(
-            "and".upper(), "").replace(" seconds".upper(), "secs.").replace(" second".upper(), "sec.")
-
-    playlist.watch_time_left = watch_time_left
-    playlist.num_videos_watched = num_videos_watched
-    playlist.percent_complete = percent_complete
-    playlist.save(update_fields=['watch_time_left', 'num_videos_watched', 'percent_complete'])
-
-    return {"total_videos": total_playlist_video_count,
-            "watched_videos": num_videos_watched,
-            "percent_complete": percent_complete,
-            "watch_time_left": watch_time_left}
+from .util import *
 
 
 # Create your views here.
@@ -184,12 +144,17 @@ def view_playlist(request, playlist_id):
 
     unused_tags = user_created_tags.difference(playlist_tags)
 
+    all_videos_unavailable = False
+    if playlist.videos.filter(Q(is_unavailable_on_yt=True) | Q(was_deleted_on_yt=True)).count() == playlist.videos.all().count():
+        all_videos_unavailable = True
+
     return render(request, 'view_playlist.html', {"playlist": playlist,
                                                   "playlist_tags": playlist_tags,
                                                   "unused_tags": unused_tags,
                                                   "videos": videos,
                                                   "user_owned_playlists": user_owned_playlists,
-                                                  "watching_message": generateWatchingMessage(playlist)})
+                                                  "watching_message": generateWatchingMessage(playlist),
+                                                  })
 
 
 @login_required
@@ -446,7 +411,7 @@ def delete_videos(request, playlist_id, command):
         # playlist.has_playlist_changed = True
         # playlist.save(update_fields=['has_playlist_changed'])
         return HttpResponse(f"""
-        <div hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:1s" hx-target="#checkforupdates" class="sticky-top" style="top: 0.5rem;">
+        <div hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:3s" hx-target="#checkforupdates" class="sticky-top" style="top: 0.5rem;">
             Done! Playlist on UnTube will update in soon...
         </div>
         """)
@@ -935,7 +900,7 @@ def get_watch_message(request, playlist_id):
 
     return HttpResponse(loader.get_template("intercooler/playlist_watch_message.html")
         .render(
-        {"watching_message": generateWatchingMessage(playlist)}))
+        {"playlist": playlist}))
 
 
 @login_required
@@ -1027,3 +992,16 @@ def delete_playlist(request, playlist_id):
     messages.success(request, "Successfully deleted playlist from UnTube.")
 
     return redirect('home')
+
+
+@login_required
+def reset_watched(request, playlist_id):
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+
+    for video in playlist.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False)):
+        video.is_marked_as_watched = False
+        video.save(update_fields=['is_marked_as_watched'])
+
+    # messages.success(request, "Successfully marked all videos unwatched.")
+
+    return redirect(f'/playlist/{playlist.playlist_id}')

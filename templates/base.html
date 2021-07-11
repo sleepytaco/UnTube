@@ -73,7 +73,7 @@
                             <a class="nav-link dropdown-toggle" href="#" id="libraryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Library
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="libraryDropdown">
+                            <ul class="dropdown-menu" aria-labelledby="libraryDropdown" style="z-index: 1021;">
                                 <li><a class="dropdown-item" href="{% url 'all_playlists' 'home' %}">Playlists</a></li>
                                 <li><a class="dropdown-item" href="{% url 'all_videos' 'home' %}">Videos</a></li>
                             </ul>
@@ -82,7 +82,7 @@
                             <a class="nav-link dropdown-toggle" href="#" id="quickViewDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Quick View
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="quickViewDropdown">
+                            <ul class="dropdown-menu" aria-labelledby="quickViewDropdown" style="z-index: 1021;">
                                 <li><a class="dropdown-item" href="{% url 'all_playlists' 'favorites' %}">Favorites</a></li>
                                 <li><a class="dropdown-item" href="{% url 'all_playlists' 'watching' %}">Watching</a></li>
                                 <li><a class="dropdown-item" href="{% url 'all_playlists' 'plan-to-watch' %}">Plan to Watch</a></li>

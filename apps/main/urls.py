@@ -36,6 +36,7 @@ urlpatterns = [
     path("playlist/<slug:playlist_id>/get-unused-tags", views.get_unused_playlist_tags, name="get_unused_playlist_tags"),
     path("playlist/<slug:playlist_id>/get-watch-message", views.get_watch_message, name="get_watch_message"),
     path("playlist/<slug:playlist_id>/delete", views.delete_playlist, name="delete_playlist"),
+    path("playlist/<slug:playlist_id>/reset-watched", views.reset_watched, name="reset_watched"),
 
     ### STUFF RELATED TO PLAYLISTS IN BULK
     path("search/playlists/<slug:playlist_type>", views.search_playlists, name="search_playlists"),

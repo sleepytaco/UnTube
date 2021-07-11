@@ -1,73 +1,18 @@
 import datetime
-import time
-
 import googleapiclient.errors
 import humanize
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import Q
 from google.oauth2.credentials import Credentials
 from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
 from google.auth.transport.requests import Request
 
 from apps.users.models import Profile
-import re
 from datetime import timedelta
 from googleapiclient.discovery import build
 from UnTube.secrets import SECRETS
-
+from .util import *
 import pytz
-
-# Create your models here.
-
-input = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
-
-
-def getVideoIdsStrings(video_ids):
-    output = []
-
-    i = 0
-    while i < len(video_ids):
-        output.append(",".join(video_ids[i:i + 50]))
-        i += 50
-
-    return output
-
-
-def calculateDuration(vid_durations):
-    hours_pattern = re.compile(r'(\d+)H')
-    minutes_pattern = re.compile(r'(\d+)M')
-    seconds_pattern = re.compile(r'(\d+)S')
-
-    total_seconds = 0
-    for duration in vid_durations:
-        hours = hours_pattern.search(duration)  # returns matches in the form "24H"
-        mins = minutes_pattern.search(duration)  # "24M"
-        secs = seconds_pattern.search(duration)  # "24S"
-
-        hours = int(hours.group(1)) if hours else 0  # returns 24
-        mins = int(mins.group(1)) if mins else 0
-        secs = int(secs.group(1)) if secs else 0
-
-        video_seconds = timedelta(
-            hours=hours,
-            minutes=mins,
-            seconds=secs
-        ).total_seconds()
-
-        total_seconds += video_seconds
-
-    return total_seconds
-
-
-def getThumbnailURL(thumbnails):
-    priority = ("maxres", "standard", "high", "medium", "default")
-
-    for quality in priority:
-        if quality in thumbnails:
-            return thumbnails[quality]["url"]
-
-    return ''
 
 
 class PlaylistManager(models.Manager):
@@ -318,7 +263,6 @@ class PlaylistManager(models.Manager):
                 playlist = current_user.playlists.get(playlist_id__exact=playlist_id)
                 print(f"PLAYLIST {playlist.name} ALREADY EXISTS IN DB")
 
-
                 # POSSIBLE CASES:
                 # 1. PLAYLIST HAS DUPLICATE VIDEOS, DELETED VIDS, UNAVAILABLE VIDS
 
@@ -515,7 +459,7 @@ class PlaylistManager(models.Manager):
                 playlist_duration_in_seconds = calculateDuration(vid_durations)
 
                 playlist.playlist_duration_in_seconds = playlist_duration_in_seconds
-                playlist.playlist_duration = humanize.precisedelta(timedelta(seconds=playlist_duration_in_seconds)).upper()
+                playlist.playlist_duration = getHumanizedTimeString(playlist_duration_in_seconds)
 
                 if len(video_ids) != len(vid_durations):  # that means some videos in the playlist are deleted
                     playlist.has_unavailable_videos = True
@@ -598,7 +542,7 @@ class PlaylistManager(models.Manager):
                 # 1. PLAYLIST HAS DUPLICATE VIDEOS, DELETED VIDS, UNAVAILABLE VIDS
 
                 # check if playlist count changed on youtube
-                #if playlist.video_count != item['contentDetails']['itemCount']:
+                # if playlist.video_count != item['contentDetails']['itemCount']:
                 #    playlist.has_playlist_changed = True
                 #    playlist.save()
             else:  # no such playlist in database
@@ -785,7 +729,7 @@ class PlaylistManager(models.Manager):
         playlist_duration_in_seconds = calculateDuration(vid_durations)
 
         playlist.playlist_duration_in_seconds = playlist_duration_in_seconds
-        playlist.playlist_duration = humanize.precisedelta(timedelta(seconds=playlist_duration_in_seconds)).upper()
+        playlist.playlist_duration = getHumanizedTimeString(playlist_duration_in_seconds)
 
         if len(video_ids) != len(vid_durations):  # that means some videos in the playlist are deleted
             playlist.has_unavailable_videos = True
@@ -999,7 +943,7 @@ class PlaylistManager(models.Manager):
         playlist_duration_in_seconds = calculateDuration(vid_durations)
 
         playlist.playlist_duration_in_seconds = playlist_duration_in_seconds
-        playlist.playlist_duration = humanize.precisedelta(timedelta(seconds=playlist_duration_in_seconds)).upper()
+        playlist.playlist_duration = getHumanizedTimeString(playlist_duration_in_seconds)
 
         if len(video_ids) != len(vid_durations) or len(
                 unavailable_videos) != 0:  # that means some videos in the playlist became private/deleted
@@ -1021,8 +965,8 @@ class PlaylistManager(models.Manager):
         credentials = self.getCredentials(user)
         playlist = Playlist.objects.get(playlist_id=playlist_id)
 
-        #new_playlist_duration_in_seconds = playlist.playlist_duration_in_seconds
-        #new_playlist_video_count = playlist.video_count
+        # new_playlist_duration_in_seconds = playlist.playlist_duration_in_seconds
+        # new_playlist_video_count = playlist.video_count
         with build('youtube', 'v3', credentials=credentials) as youtube:
             for playlist_item_id in playlist_item_ids:
                 pl_request = youtube.playlistItems().delete(
@@ -1036,19 +980,19 @@ class PlaylistManager(models.Manager):
                     # playlistItemsNotAccessible (403)
                     # playlistItemNotFound (404)
                     # playlistOperationUnsupported (400)
-                    pass
+                    continue
 
                 # playlistItem was successfully deleted if no HttpError, so delete it from db
-                #video = playlist.videos.get(playlist_item_id=playlist_item_id)
-                #new_playlist_video_count -= 1
-                #new_playlist_duration_in_seconds -= video.duration_in_seconds
-                #video.delete()
+                # video = playlist.videos.get(playlist_item_id=playlist_item_id)
+                # new_playlist_video_count -= 1
+                # new_playlist_duration_in_seconds -= video.duration_in_seconds
+                # video.delete()
 
-        #playlist.video_count = new_playlist_video_count
-        #playlist.playlist_duration_in_seconds = new_playlist_duration_in_seconds
-        #playlist.playlist_duration = humanize.precisedelta(timedelta(seconds=new_playlist_duration_in_seconds)).upper()
-        #playlist.save(update_fields=['video_count', 'playlist_duration', 'playlist_duration_in_seconds'])
-        #time.sleep(2)
+        # playlist.video_count = new_playlist_video_count
+        # playlist.playlist_duration_in_seconds = new_playlist_duration_in_seconds
+        # playlist.playlist_duration = getHumanizedTimeString(new_playlist_duration_in_seconds)
+        # playlist.save(update_fields=['video_count', 'playlist_duration', 'playlist_duration_in_seconds'])
+        # time.sleep(2)
 
     def updatePlaylistDetails(self, user, playlist_id, details):
         """
@@ -1132,9 +1076,7 @@ class Playlist(models.Model):
     user_label = models.CharField(max_length=100, default="")  # custom user given name for this playlist
 
     # watch playlist details
-    num_videos_watched = models.IntegerField(default=0)
-    percent_complete = models.FloatField(default=0)
-    watch_time_left = models.CharField(max_length=150, default="")
+    # watch_time_left = models.CharField(max_length=150, default="")
     started_on = models.DateTimeField(auto_now_add=True, null=True)
     last_watched = models.DateTimeField(auto_now_add=True, null=True)
 
@@ -1167,6 +1109,44 @@ class Playlist(models.Model):
     def __str__(self):
         return str(self.playlist_id)
 
+    # return count of watchable videos, i.e # videos that are not private or deleted in the playlist
+    def get_watchable_videos_count(self):
+        return self.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False)).count()
+
+    def get_watched_videos_count(self):
+        return self.videos.filter(Q(is_marked_as_watched=True) & Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False)).count()
+
+    # diff of time from when playlist was first marked as watched and playlist reached 100% completion
+    def get_finish_time(self):
+        return self.last_watched - self.started_on
+
+    def get_watch_time_left(self):
+        watched_videos = self.videos.filter(
+            Q(is_marked_as_watched=True) & Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
+
+        watched_seconds = 0
+        for video in watched_videos:
+            watched_seconds += video.duration_in_seconds
+
+        watch_time_left = getHumanizedTimeString(self.playlist_duration_in_seconds - watched_seconds)
+        return watch_time_left
+
+    # return 0 if playlist empty or all videos in playlist are unavailable
+    def get_percent_complete(self):
+        total_playlist_video_count = self.get_watchable_videos_count()
+        watched_videos = self.videos.filter(
+            Q(is_marked_as_watched=True) & Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
+        num_videos_watched = watched_videos.count()
+        percent_complete = round((num_videos_watched / total_playlist_video_count) * 100,
+                                 1) if total_playlist_video_count != 0 else 0
+        return percent_complete
+
+    def all_videos_unavailable(self):
+        all_vids_unavailable = False
+        if self.videos.filter(
+                Q(is_unavailable_on_yt=True) | Q(was_deleted_on_yt=True)).count() == self.video_count:
+            all_vids_unavailable = True
+        return all_vids_unavailable
 
 class Video(models.Model):
     playlist_item_id = models.CharField(max_length=100)  # the item id of the playlist this video beo
@@ -1249,4 +1229,3 @@ class PlaylistItem(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
