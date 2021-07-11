@@ -92,14 +92,16 @@
             <div class="card-body">
                 <h5 class="card-title">Open a Random Playlist</h5>
                 <p class="card-text mt-4">
-                    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                              From
-                    </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">All</a></li>
-                    <li><a class="dropdown-item" href="#">Watching</a></li>
-                    <li><a class="dropdown-item" href="#">Favorites</a></li>
-                  </ul>
+                    <form action="{% url 'all_playlists' 'random' %}" method="post">
+                        {% csrf_token %}
+                        <select onchange="this.form.submit()" class="form-select w-50 bg-success text-white" name="playlistsType">
+                              <option value="From" selected>From</option>
+                                <option value="All">All</option>
+                              <option value="Favorites">Favorites</option>
+                            <option value="Watching">Watching</option>
+                            <option value="Plan to Watch">Plan to Watch</option>
+                        </select>
+                     </form>
                 </p>
             </div>
         </div>

@@ -26,7 +26,7 @@
                     </div>
                     <div class="col-sm-9 text-white-50">
                         <input type="text" class="form-control" name="playlistTitle" value="{{ playlist.name }}" aria-describedby="plTitleHelp">
-                        <div id="plTitleHelp" class="form-text">Make sure the title does not contain '>' or '<'. They will be replaced by 'greater than' or 'less than' if found.</div>
+                        <div id="plTitleHelp" class="form-text">Maximum of 150 characters. Make sure the title does not contain '>' or '<'. They will be replaced by 'greater than' or 'less than' if found.</div>
                     </div>
                   </div>
                     <hr>
@@ -47,7 +47,7 @@
 
                             <div class="col-sm-9 text-white-50">
                                 <textarea class="form-control form-text" name="playlistDesc" rows="6" placeholder="Enter a playlist description here!" aria-describedby="plDescHelp">{{ playlist.description }}</textarea>
-                                <div id="plDescHelp" class="form-text">Make sure the description does not contain '>' or '<'. They will be replaced by 'greater than' or 'less than' if found.</div>
+                                <div id="plDescHelp" class="form-text">Maximum of 5000 characters. Make sure the description does not contain '>' or '<'. They will be replaced by 'greater than' or 'less than' if found.</div>
                             </div>
                         </div>
                       <hr>
@@ -169,7 +169,7 @@
                           <h6 class="mb-0">Danger Zone</h6>
                         </div>
                         <div class="col-sm-9 text-white-50">
-                            <button type="button" class="btn btn-outline-danger">Remove Playlist From UnTube</button>
+                            <a href="{% url 'delete_playlist' playlist.playlist_id %}" class="btn btn-outline-danger">Remove Playlist From UnTube</a>
                         </div>
                       </div>
 

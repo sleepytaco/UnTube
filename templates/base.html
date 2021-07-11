@@ -4,7 +4,7 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <meta name="keywords" content="youtube, playlists, playlist panager, youtube playlists, untube, google">
+        <meta name="keywords" content="youtube, playlists, videos, delete videos, delete playlists, delete multiple videos, move multiple videos, merge playlists, video manager, playlist manager, youtube playlists, untube, google">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="UnTube is a simple Youtube playlist manager. Modify and keep track of your YouTube playlists with ease.">
         <meta name="author" content="Mohammed Abu Bakar Khan">
@@ -69,14 +69,20 @@
                             <a class="nav-link" aria-current="page" href="{% url 'home' %}">Dashboard</a>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'all_playlists' 'home' %}">Library</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="libraryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Library
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="libraryDropdown">
+                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'home' %}">Playlists</a></li>
+                                <li><a class="dropdown-item" href="{% url 'all_videos' 'home' %}">Videos</a></li>
+                            </ul>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="quickViewDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Quick View
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <ul class="dropdown-menu" aria-labelledby="quickViewDropdown">
                                 <li><a class="dropdown-item" href="{% url 'all_playlists' 'favorites' %}">Favorites</a></li>
                                 <li><a class="dropdown-item" href="{% url 'all_playlists' 'watching' %}">Watching</a></li>
                                 <li><a class="dropdown-item" href="{% url 'all_playlists' 'plan-to-watch' %}">Plan to Watch</a></li>
@@ -137,7 +143,7 @@
         <script src="{% static 'htmx/htmx.min.js' %}" type="application/javascript"></script>
         <script src="{% static 'clipboard.js/clipboard.min.js' %}" type="application/javascript"></script>
         <script src="{% static 'jquery3.6.0/js/jquery-3.6.0.min.js' %}" type="application/javascript"></script>
-        <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.js' %}" type="application/javascript"></script>
+        <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.min.js' %}" type="application/javascript"></script>
         <script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
         <!-- <script src="{% static 'htmx/extensions/class-tools.js' %}" type="application/javascript"></script> -->
 

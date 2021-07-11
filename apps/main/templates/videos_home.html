@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block content %}
+    <br>
+
+<div class="row row-cols-1 row-cols-md-3 g-4" >
+    <div class="col">
+        <a href="{% url 'all_videos' 'all' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #64381a;">
+            <div class="card-body">
+                <h4 class="card-title">All Videos</h4>
+                    <p class="card-text">Everything. From videos in your YouTube playlists to videos in the playlists you Imported.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'all_videos' 'user-owned' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #1A4464;">
+            <div class="card-body">
+                <h4 class="card-title">Your YouTube Playlists Videos</h4>
+                    <p class="card-text">View a list of all the videos you that are in your YouTube playlists.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="{% url 'all_videos' 'imported' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #1a645e;">
+            <div class="card-body">
+                <h4 class="card-title">Imported YouTube Playlists Videos</h4>
+                <p class="card-text">View a list of all the videos from external playlists you imported from YouTube.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'all_videos' 'favorites' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #aa8c2e;">
+            <div class="card-body">
+                <h4 class="card-title">Favorite Videos</h4>
+                <p class="card-text">All the videos you've marked favorite.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'all_videos' 'watched' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #541a64;">
+            <div class="card-body">
+                <h4 class="card-title">Watched Videos</h4>
+                <p class="card-text">All the videos you've marked watched.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="{% url 'all_videos' 'hidden-videos' %}" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #641a29;">
+            <div class="card-body">
+                <h4 class="card-title">Hidden Videos</h4>
+                <p class="card-text">All the videos you've marked hidden inside playlists.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col">
+        <a href="#" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #bd39a7;">
+            <div class="card-body">
+                <h5 class="card-title">Unavailable YouTube Videos</h5>
+                <p class="card-text">List of videos in your collection that went unavailable on YouTube. Note that all details except the video title will have been deleted once a video goes unavailable on YouTube.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+
+    <div class="col">
+        <a href="#" class="text-decoration-none text-white">
+
+        <div class="card h-100" style="background-color: #d04623;">
+            <div class="card-body">
+                <h5 class="card-title">Open a Random Video</h5>
+                <p class="card-text mt-4">
+                    <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                              From
+                    </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">All</a></li>
+                    <li><a class="dropdown-item" href="#">Watched</a></li>
+                    <li><a class="dropdown-item" href="#">Favorites</a></li>
+                  </ul>
+                </p>
+            </div>
+        </div>
+        </a>
+    </div>
+</div>
+<br>
+{% endblock %}

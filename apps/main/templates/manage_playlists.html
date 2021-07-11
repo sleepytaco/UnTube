@@ -43,7 +43,17 @@
         <div class="card" style="background-color: #a75e27;">
             <div class="card-body">
                 <h4 class="card-title">Add Videos to Existing Playlists</h4>
-                <p class="card-text">Search for YouTube videos in your UnTube collection or just input YouTube video links to add new videos to your existing YouTube playlists.</p>
+                <p class="card-text">Add videos to existing YouTube playlists by searching for YouTube videos in your UnTube collection or by inputting YouTube video links.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div id="manage-delete-playlists-btn" class="col">
+        <a  hx-get="{% url 'manage_view_page' 'nuke-playlists' %}" hx-trigger="click" hx-target="#manage-pl-div" class="text-decoration-none text-white">
+        <div class="card" style="background-color: #286593;">
+            <div class="card-body">
+                <h4 class="card-title">Merge Playlists</h4>
+                <p class="card-text">Merge two or more playlists into a single one.</p>
             </div>
         </div>
         </a>

@@ -65,7 +65,6 @@
 
 
             {% if watching %}
-                <br>
                 <div class="border border-5 rounded-3 border-primary p-3">
                     <h3><span style="border-bottom: 3px #ffffff dashed;">Continue Watching</span><i class="fas fa-fire-alt ms-2" style="color: #d24646"></i></h3>
            <div class="row row-cols-1 row-cols-md-4 g-4 text-dark mt-0">
@@ -118,9 +117,9 @@
                 {% endfor %}
             </div>
             </div>
+                <br>
                 {% endif %}
 
-            <br>
             <h3><span style="border-bottom: 3px #ffffff dashed;">Most viewed playlists</span> <a href="{% url 'all_playlists' 'all' %}" class="pt-1"><i class="fas fa-binoculars"></i> </a></h3>
             {% if user_playlists %}
             <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">

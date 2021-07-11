@@ -1133,6 +1133,7 @@ class Playlist(models.Model):
 
     # watch playlist details
     num_videos_watched = models.IntegerField(default=0)
+    percent_complete = models.FloatField(default=0)
     watch_time_left = models.CharField(max_length=150, default="")
     started_on = models.DateTimeField(auto_now_add=True, null=True)
     last_watched = models.DateTimeField(auto_now_add=True, null=True)
@@ -1164,7 +1165,7 @@ class Playlist(models.Model):
     has_new_updates = models.BooleanField(default=False)  # meant to keep track of newly added/unavailable videos
 
     def __str__(self):
-        return "Playlist Len " + str(self.video_count)
+        return str(self.playlist_id)
 
 
 class Video(models.Model):

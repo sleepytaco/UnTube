@@ -1,10 +1,13 @@
 import datetime
+import random
 
 import humanize
 import pytz
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
+
+import apps
 from apps.main.models import Playlist, Tag
 from django.contrib.auth.decorators import login_required  # redirects user to settings.LOGIN_URL
 from allauth.socialaccount.models import SocialToken
@@ -19,7 +22,8 @@ def generateWatchingMessage(playlist):
     """
     total_playlist_video_count = playlist.video_count
     num_videos_watched = playlist.videos.filter(is_marked_as_watched=True).count()
-    percent_complete = round((num_videos_watched / total_playlist_video_count) * 100, 1) if total_playlist_video_count != 0 else 100
+    percent_complete = round((num_videos_watched / total_playlist_video_count) * 100,
+                             1) if total_playlist_video_count != 0 else 100
 
     print(total_playlist_video_count, num_videos_watched)
     if num_videos_watched == 0:  # hasnt started watching any videos yet
@@ -35,14 +39,17 @@ def generateWatchingMessage(playlist):
         for video in playlist.videos.filter(is_marked_as_watched=True):
             watched_seconds += video.duration_in_seconds
 
-        watch_time_left = humanize.precisedelta(datetime.timedelta(seconds=playlist.playlist_duration_in_seconds - watched_seconds)).upper().\
-            replace(" month,".upper(), "m.").replace(" months,".upper(), "m.").replace(" days,".upper(), "d.").replace(" day,".upper(), "d.").replace(" hours,".upper(), "hrs.").replace(" hour,".upper(), "hr.").replace(
+        watch_time_left = humanize.precisedelta(
+            datetime.timedelta(seconds=playlist.playlist_duration_in_seconds - watched_seconds)).upper(). \
+            replace(" month,".upper(), "m.").replace(" months,".upper(), "m.").replace(" days,".upper(), "d.").replace(
+            " day,".upper(), "d.").replace(" hours,".upper(), "hrs.").replace(" hour,".upper(), "hr.").replace(
             " minutes".upper(), "mins.").replace(
             "and".upper(), "").replace(" seconds".upper(), "secs.").replace(" second".upper(), "sec.")
 
     playlist.watch_time_left = watch_time_left
     playlist.num_videos_watched = num_videos_watched
-    playlist.save(update_fields=['watch_time_left', 'num_videos_watched'])
+    playlist.percent_complete = percent_complete
+    playlist.save(update_fields=['watch_time_left', 'num_videos_watched', 'percent_complete'])
 
     return {"total_videos": total_playlist_video_count,
             "watched_videos": num_videos_watched,
@@ -57,7 +64,8 @@ def home(request):
     user_playlists = user_profile.playlists.filter(Q(is_in_db=True) & Q(num_of_accesses__gt=0)).order_by(
         "-num_of_accesses")
     watching = user_profile.playlists.filter(Q(marked_as="watching") & Q(is_in_db=True)).order_by("-num_of_accesses")
-    recently_accessed_playlists = user_profile.playlists.filter(is_in_db=True).filter(updated_at__gt=user_profile.updated_at).order_by("-updated_at")[:6]
+    recently_accessed_playlists = user_profile.playlists.filter(is_in_db=True).filter(
+        updated_at__gt=user_profile.updated_at).order_by("-updated_at")[:6]
     recently_added_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-created_at")[:6]
 
     #### FOR NEWLY JOINED USERS ######
@@ -217,6 +225,26 @@ def all_playlists(request, playlist_type):
         playlist_type_display = playlist_type.lower().replace("-", " ")
     elif playlist_type.lower() == "home":  # displays cards of all playlist types
         return render(request, 'playlists_home.html')
+    elif playlist_type.lower() == "random":  # randomize playlist
+        if request.method == "POST":
+            playlists_type = request.POST["playlistsType"]
+            if playlists_type == "All":
+                playlists = request.user.profile.playlists.all().filter(is_in_db=True)
+            elif playlists_type == "Favorites":
+                playlists = request.user.profile.playlists.all().filter(Q(is_favorite=True) & Q(is_in_db=True))
+            elif playlists_type == "Watching":
+                playlists = request.user.profile.playlists.filter(Q(marked_as="watching") & Q(is_in_db=True))
+            elif playlists_type == "Plan to Watch":
+                playlists = request.user.profile.playlists.filter(Q(marked_as="plan-to-watch") & Q(is_in_db=True))
+            else:
+                return redirect('/playlists/home')
+
+            if playlists.count() == 0:
+                messages.warning(request, f"No playlists in {playlists_type}")
+                return redirect('home')
+            random_playlist = random.choice(playlists)
+            return redirect(f'/playlist/{random_playlist.playlist_id}')
+        return render(request, 'playlists_home.html')
     else:
         return redirect('home')
 
@@ -224,6 +252,45 @@ def all_playlists(request, playlist_type):
                                                   "playlist_type": playlist_type,
                                                   "playlist_type_display": playlist_type_display})
 
+
+@login_required
+def all_videos(request, videos_type):
+    """
+    To implement this need to redesign the database
+    Currently videos -> playlist -> user.profile
+
+    Need to do
+    user.profile <- videos <- playlistItem -> playlist
+    many ways actually
+    """
+    videos_type = videos_type.lower()
+
+    if videos_type == "" or videos_type == "all":
+        playlists = request.user.profile.playlists.all().filter(is_in_db=True)
+        videos_type_display = "All Videos"
+    elif videos_type == "user-owned":  # YT playlists owned by user
+        playlists = request.user.profile.playlists.all().filter(Q(is_user_owned=True) & Q(is_in_db=True))
+        videos_type_display = "All Videos in your YouTube Playlists"
+    elif videos_type == "imported":  # YT playlists (public) owned by others
+        playlists = request.user.profile.playlists.all().filter(Q(is_user_owned=False) & Q(is_in_db=True))
+        videos_type_display = "Imported YouTube Playlists Videos"
+    elif videos_type == "favorites":  # YT playlists (public) owned by others
+        playlists = request.user.profile.playlists.all().filter(Q(is_favorite=True) & Q(is_in_db=True))
+        videos_type_display = "Favorite Videos"
+    elif videos_type == "watched":  # YT playlists (public) owned by others
+        playlists = request.user.profile.playlists.all().filter(Q(is_favorite=True) & Q(is_in_db=True))
+        videos_type_display = "Watched Videos"
+    elif videos_type == 'hidden-videos':  # YT playlists (public) owned by others
+        playlists = request.user.profile.playlists.all().filter(Q(is_favorite=True) & Q(is_in_db=True))
+        videos_type_display = "Hidden Videos"
+    elif videos_type.lower() == "home":  # displays cards of all playlist types
+        return render(request, 'videos_home.html')
+    else:
+        return redirect('home')
+
+    return render(request, 'all_playlists.html', {"playlists": playlists,
+                                                  "videos_type": videos_type,
+                                                  "videos_type_display": videos_type_display})
 
 @login_required
 def order_playlist_by(request, playlist_id, order_by):
@@ -282,7 +349,8 @@ def order_playlist_by(request, playlist_id, order_by):
     return HttpResponse(loader.get_template("intercooler/videos.html").render({"playlist": playlist,
                                                                                "videos": videos,
                                                                                "videos_details": videos_details,
-                                                                               "display_text": display_text}))
+                                                                               "display_text": display_text,
+                                                                               "order_by": order_by}))
 
 
 @login_required
@@ -443,6 +511,7 @@ def search_playlists(request, playlist_type):
 
 
 #### MANAGE VIDEOS #####
+@login_required
 def mark_video_favortie(request, playlist_id, video_id):
     video = request.user.profile.playlists.get(playlist_id=playlist_id).videos.get(video_id=video_id)
 
@@ -456,6 +525,7 @@ def mark_video_favortie(request, playlist_id, video_id):
         return HttpResponse('<i class="fas fa-heart" style="color: #fafa06"></i>')
 
 
+@login_required
 def mark_video_watched(request, playlist_id, video_id):
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
     video = playlist.videos.get(video_id=video_id)
@@ -473,6 +543,8 @@ def mark_video_watched(request, playlist_id, video_id):
             f'<i class="fas fa-check-circle" hx-get="/playlist/{playlist_id}/get-watch-message" hx-trigger="load" hx-target="#playlist-watch-message"></i>')
 
     generateWatchingMessage(playlist)
+
+
 ###########
 @login_required
 def search(request):
@@ -609,16 +681,49 @@ def manage_create_playlist(request):
 
 
 @login_required
-def load_more_videos(request, playlist_id, page):
+def load_more_videos(request, playlist_id, order_by, page):
     playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
-    videos = playlist.videos.order_by("video_position")[50 * page:]
+
+    if order_by == "all":
+        videos = playlist.videos.order_by("video_position")
+    elif order_by == "favorites":
+        videos = playlist.videos.filter(is_favorite=True).order_by("video_position")
+    elif order_by == "popularity":
+        videos = playlist.videos.order_by("-like_count")
+    elif order_by == "date-published":
+        videos = playlist.videos.order_by("-published_at")
+    elif order_by == "views":
+        videos = playlist.videos.order_by("-view_count")
+    elif order_by == "has-cc":
+        videos = playlist.videos.filter(has_cc=True).order_by("video_position")
+    elif order_by == "duration":
+        videos = playlist.videos.order_by("-duration_in_seconds")
+    elif order_by == 'new-updates':
+        videos = []
+        if playlist.has_new_updates:
+            recently_updated_videos = playlist.videos.filter(video_details_modified=True)
+
+            for video in recently_updated_videos:
+                if video.video_details_modified_at + datetime.timedelta(hours=12) < datetime.datetime.now(
+                        pytz.utc):  # expired
+                    video.video_details_modified = False
+                    video.save()
+
+            if recently_updated_videos.count() == 0:
+                playlist.has_new_updates = False
+                playlist.save()
+            else:
+                videos = recently_updated_videos.order_by("video_position")
+    elif order_by == 'unavailable-videos':
+        videos = playlist.videos.filter(Q(is_unavailable_on_yt=True) & Q(was_deleted_on_yt=True))
 
     return HttpResponse(loader.get_template("intercooler/videos.html")
         .render(
         {
             "playlist": playlist,
-            "videos": videos,
-            "page": page + 1}))
+            "videos": videos[50 * page:],  # only send 50 results per page
+            "page": page + 1,
+            "order_by": order_by}))
 
 
 @login_required
@@ -790,7 +895,11 @@ def update_playlist(request, playlist_id, type):
 
 @login_required
 def view_playlist_settings(request, playlist_id):
-    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+    try:
+        playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+    except apps.main.models.Playlist.DoesNotExist:
+        messages.error(request, "No such playlist found!")
+        return redirect('home')
 
     return render(request, 'view_playlist_settings.html', {"playlist": playlist})
 
@@ -903,3 +1012,18 @@ def remove_playlist_tag(request, playlist_id, tag_name):
         return HttpResponse("Whoops >w<")
 
     return HttpResponse("")
+
+
+@login_required
+def delete_playlist(request, playlist_id):
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
+
+    if not playlist.is_user_owned:  # if playlist trying to delete isn't user owned
+        playlist.delete()  # just delete it from untrue
+    else:
+        # delete it from YouTube first then from UnTube
+        pass
+
+    messages.success(request, "Successfully deleted playlist from UnTube.")
+
+    return redirect('home')

@@ -17,6 +17,7 @@ urlpatterns = [
     path("<slug:playlist_id>/<slug:video_id>/video-details/favorite", views.mark_video_favortie, name='mark_video_favorite'),
     path('<slug:playlist_id>/<slug:video_id>/video-details/watched', views.mark_video_watched, name='mark_video_watched'),
     path("from/<slug:playlist_id>/delete-videos/<slug:command>", views.delete_videos, name='delete_videos'),
+    path("videos/<slug:videos_type>", views.all_videos, name='all_videos'),
 
     ### STUFF RELATED TO ONE PLAYLIST
     path("playlist/<slug:playlist_id>", views.view_playlist, name='playlist'),
@@ -27,13 +28,14 @@ urlpatterns = [
          name='mark_playlist_as'),
     path("playlist/<slug:playlist_id>/update/<slug:type>", views.update_playlist, name="update_playlist"),
     path("playlist/<slug:playlist_id>/update-settings", views.update_playlist_settings, name="update_playlist_settings"),
-    path("playlist/<slug:playlist_id>/load-more-videos/<int:page>", views.load_more_videos, name="load_more_videos"),
+    path("playlist/<slug:playlist_id>/<slug:order_by>/load-more-videos/<int:page>", views.load_more_videos, name="load_more_videos"),
     path("playlist/<slug:playlist_id>/create-tag", views.create_playlist_tag, name="create_playlist_tag"),
     path("playlist/<slug:playlist_id>/add-tag", views.add_playlist_tag, name="add_playlist_tag"),
     path("playlist/<slug:playlist_id>/remove-tag/<str:tag_name>", views.remove_playlist_tag, name="remove_playlist_tag"),
     path("playlist/<slug:playlist_id>/get-tags", views.get_playlist_tags, name="get_playlist_tags"),
     path("playlist/<slug:playlist_id>/get-unused-tags", views.get_unused_playlist_tags, name="get_unused_playlist_tags"),
     path("playlist/<slug:playlist_id>/get-watch-message", views.get_watch_message, name="get_watch_message"),
+    path("playlist/<slug:playlist_id>/delete", views.delete_playlist, name="delete_playlist"),
 
     ### STUFF RELATED TO PLAYLISTS IN BULK
     path("search/playlists/<slug:playlist_type>", views.search_playlists, name="search_playlists"),
@@ -48,5 +50,4 @@ urlpatterns = [
     path("manage/view/<slug:page>", views.manage_view_page, name='manage_view_page'),  # views the import pl, create pl, create untube pl pages
     path("manage/import", views.manage_import_playlists, name="manage_import_playlists"),
     path("manage/create", views.manage_create_playlist, name="manage_create_playlist")
-
 ]
