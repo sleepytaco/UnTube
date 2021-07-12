@@ -176,7 +176,7 @@ def all_playlists(request, playlist_type):
     "none", "watching", "plan-to-watch"
     """
     playlist_type = playlist_type.lower()
-
+    watching = False
     if playlist_type == "" or playlist_type == "all":
         playlists = request.user.profile.playlists.all().filter(is_in_db=True)
         playlist_type_display = "All Playlists"
@@ -192,6 +192,8 @@ def all_playlists(request, playlist_type):
     elif playlist_type.lower() in ["watching", "plan-to-watch"]:
         playlists = request.user.profile.playlists.filter(Q(marked_as=playlist_type.lower()) & Q(is_in_db=True))
         playlist_type_display = playlist_type.lower().replace("-", " ")
+        if playlist_type.lower() == "watching":
+            watching = True
     elif playlist_type.lower() == "home":  # displays cards of all playlist types
         return render(request, 'playlists_home.html')
     elif playlist_type.lower() == "random":  # randomize playlist
@@ -219,7 +221,8 @@ def all_playlists(request, playlist_type):
 
     return render(request, 'all_playlists.html', {"playlists": playlists,
                                                   "playlist_type": playlist_type,
-                                                  "playlist_type_display": playlist_type_display})
+                                                  "playlist_type_display": playlist_type_display,
+                                                  "watching": watching})
 
 
 @login_required
@@ -324,17 +327,22 @@ def order_playlist_by(request, playlist_id, order_by):
 
 @login_required
 def order_playlists_by(request, playlist_type, order_by):
+    watching = False
+
     if playlist_type == "" or playlist_type.lower() == "all":
         playlists = request.user.profile.playlists.all()
-        playlist_type_display = "All Playlists"
     elif playlist_type.lower() == "favorites":
         playlists = request.user.profile.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True))
-        playlist_type_display = "Favorites"
     elif playlist_type.lower() in ["watching", "plan-to-watch"]:
         playlists = request.user.profile.playlists.filter(Q(marked_as=playlist_type.lower()) & Q(is_in_db=True))
-        playlist_type_display = "Watching"
+        if playlist_type.lower() == "watching":
+            watching = True
+    elif playlist_type.lower() == "imported":
+        playlists = request.user.profile.playlists.filter(Q(is_user_owned=False) & Q(is_in_db=True))
+    elif playlist_type.lower() == "user-owned":
+        playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
     else:
-        return redirect('home')
+        return HttpResponse("Not found.")
 
     if order_by == 'recently-accessed':
         playlists = playlists.order_by("-updated_at")
@@ -344,9 +352,7 @@ def order_playlists_by(request, playlist_type, order_by):
         playlists = playlists.order_by("-video_count")
 
     return HttpResponse(loader.get_template("intercooler/playlists.html")
-                        .render({"playlists": playlists,
-                                 "playlist_type_display": playlist_type_display,
-                                 "playlist_type": playlist_type}))
+                        .render({"playlists": playlists, "watching": watching}))
 
 
 @login_required
@@ -441,47 +447,43 @@ def search_playlists(request, playlist_type):
     # print(request.POST)  # prints <QueryDict: {'search': ['aa']}>
 
     search_query = request.POST["search"]
+    watching = False
 
     if playlist_type == "all":
         try:
             playlists = request.user.profile.playlists.all().filter(Q(name__startswith=search_query) & Q(is_in_db=True))
         except:
             playlists = request.user.profile.playlists.all()
-        playlist_type_display = "All Playlists"
     elif playlist_type == "user-owned":  # YT playlists owned by user
         try:
             playlists = request.user.profile.playlists.filter(
                 Q(name__startswith=search_query) & Q(is_user_owned=True) & Q(is_in_db=True))
         except:
             playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
-        playlist_type_display = "Your YouTube Playlists"
     elif playlist_type == "imported":  # YT playlists (public) owned by others
         try:
             playlists = request.user.profile.playlists.filter(
                 Q(name__startswith=search_query) & Q(is_user_owned=False) & Q(is_in_db=True))
         except:
             playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
-        playlist_type_display = "Imported Playlists"
     elif playlist_type == "favorites":  # YT playlists (public) owned by others
         try:
             playlists = request.user.profile.playlists.filter(
                 Q(name__startswith=search_query) & Q(is_favorite=True) & Q(is_in_db=True))
         except:
             playlists = request.user.profile.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True))
-        playlist_type_display = "Your Favorites"
     elif playlist_type in ["watching", "plan-to-watch"]:
         try:
             playlists = request.user.profile.playlists.filter(
                 Q(name__startswith=search_query) & Q(marked_as=playlist_type) & Q(is_in_db=True))
         except:
             playlists = request.user.profile.playlists.all().filter(Q(marked_as=playlist_type) & Q(is_in_db=True))
-        playlist_type_display = playlist_type.replace("-", " ")
+        if playlist_type == "watching":
+            watching = True
 
     return HttpResponse(loader.get_template("intercooler/playlists.html")
                         .render({"playlists": playlists,
-                                 "playlist_type_display": playlist_type_display,
-                                 "playlist_type": playlist_type,
-                                 "search_query": search_query}))
+                                 "watching": watching}))
 
 
 #### MANAGE VIDEOS #####
@@ -523,7 +525,7 @@ def mark_video_watched(request, playlist_id, video_id):
 @login_required
 def search(request):
     if request.method == "GET":
-        return render(request, 'search_untube_page.html')
+        return render(request, 'search_untube_page.html', {"playlists": request.user.profile.playlists.all()})
     else:
         return render('home')
 

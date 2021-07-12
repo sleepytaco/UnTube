@@ -1,79 +1,91 @@
 
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">{{ playlist_type_display|title }} <span class="badge bg-primary rounded-pill">{{ playlists.count }}</span></h1>
+{% if watching %}
+       <div class="row row-cols-1 row-cols-md-3 g-4 text-dark">
+        {% for playlist in playlists %}
+        <div class="col">
+            <div class="card">
+                <a style="background-color: #1A4464;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+                    <div class="card-body">
+                <h5 class="card-title text-white">
+                   {{ playlist.name }}
+                    {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                    {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                </h5>
+                <p class="card-text">
+                    <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
+                    <span class="badge bg-light text-black-50">{{ playlist.playlist_duration }} </span>
 
-            <div class="btn-toolbar mb-2 mb-md-0">
-                  <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    Sort By
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" hx-get="{% url 'order_playlists_by' playlist_type 'playlist-duration-in-seconds' %}" hx-trigger="click" hx-target="#search-results">Duration</a></li>
-                    <li><a class="dropdown-item" hx-get="{% url 'order_playlists_by' playlist_type 'video-count' %}" hx-trigger="click" hx-target="#search-results"># Videos</a></li>
-                    <li><a class="dropdown-item" hx-get="{% url 'order_playlists_by' playlist_type 'recently-accessed' %}" hx-trigger="click" hx-target="#search-results">Recently Accessed</a></li>
-                  </ul>
-            </div>
-
-        </div>
-
-        <div class="">
-            <input class="form-control border border-secondary" type="text"
-       name="search" placeholder="Begin to search playlists..."
-                   value="{{ search_query }}"
-       hx-post="{% url 'search_playlists' playlist_type %}"
-       hx-trigger="keyup changed delay:1s"
-       hx-target="#search-results"
-       hx-indicator=".htmx-indicator" autofocus onfocus="this.setSelectionRange(this.value.length,this.value.length);">
-            <br>
-        </div>
-
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-                {% if playlists %}
-                {% for playlist in playlists %}
-                <div class="col">
-                    <div class="card" style="background-color: #515355;">
-                        <a style="background-color: #1A4464;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
-
-                            <div class="card-body">
-
-                                <h5 class="card-title text-white">
-                                    {{ playlist.name }}
-
-                                </h5>
-
-                                <p class="card-text">
-                                    {% if playlist.is_user_owned %}<small><span class="badge bg-light text-black-50">OWNED</span></small>{% else %}<small><span class="badge bg-light text-black-50">IMPORTED</span></small>{% endif %}
-                                    {% if playlist.is_private_on_yt %}<small><span class="badge bg-secondary text-white">Private</span></small> {% endif %}
-                                    {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-black-50">YT</span></small> {% endif %}
-                                </p>
-
-                                {% if playlist.tags.all %}
-<p class="card-text">
-    <span class="d-flex justify-content-start flex-wrap">
-        <small>
-        <span style="color: #eed868;" class="me-lg-1 mb-lg-1">
-            <i class="fas fa-tags"></i>
-        </span>
-        </small>
-        {% for tag in playlist.tags.all %}
-            <span class="badge rounded-pill bg-info mb-lg-1 me-lg-1 text-black-50">
-                {{ tag.name }}
-            </span>
-        {% endfor %}
-    </span>
-</p>
-{% endif %}
-                                <small>
-                                    <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
-                                    <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
-                                </small>
-                            </div>
-                        </a>
-                    </div>
+                    {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white-50">{{ playlist.get_watch_time_left }} left</span>{% endif %}
+                </p>
+                    {% if playlist.tags.all %}
+                <small>
+                <i class="fas fa-tags fa-sm" style="color: yellow"></i>
+                    {% for tag in playlist.tags.all %}
+                        <span class="badge rounded-pill bg-primary mb-lg-1">
+                            {{ tag.name }}
+                        </span>
+                    {% endfor %}
+                </small>
+                    {% endif %}
                 </div>
-                {% endfor %}
-
-                {% else %}
-                <h5 class="text-white align-content-center">Nothing found :(</h5>
-                {% endif %}
+                </a>
             </div>
-    <br>
+        </div>
+
+        {% endfor %}
+    </div>
+
+{% else %}
+<div class="row row-cols-1 row-cols-md-3 g-4">
+        {% if playlists %}
+        {% for playlist in playlists %}
+        <div class="col">
+            <div class="card" style="background-color: #515355;">
+                <a style="background-color: #1A4464;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+
+                    <div class="card-body">
+
+                        <h5 class="card-title text-white">
+                            {{ playlist.name }}
+
+                        </h5>
+
+                        <p class="card-text">
+                            {% if playlist.is_user_owned %}<small><span class="badge bg-light text-black-50">OWNED</span></small>{% else %}<small><span class="badge bg-light text-black-50">IMPORTED</span></small>{% endif %}
+                            {% if playlist.is_private_on_yt %}<small><span class="badge bg-secondary text-white">Private</span></small> {% endif %}
+                            {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-black-50">YT</span></small> {% endif %}
+                            {% if playlist.marked_as == "watching" %}<small><span class="badge bg-primary text-white">WATCHING</span></small>{% endif %}
+                        </p>
+
+                        {% if playlist.tags.all %}
+                            <p class="card-text">
+                            <span class="d-flex justify-content-start flex-wrap">
+                            <small>
+                            <span style="color: #eed868;" class="me-lg-1 mb-lg-1">
+                                <i class="fas fa-tags"></i>
+                            </span>
+                            </small>
+                            {% for tag in playlist.tags.all %}
+                                <span class="badge rounded-pill bg-info mb-lg-1 me-lg-1 text-black-50">
+                                    {{ tag.name }}
+                                </span>
+                            {% endfor %}
+                            </span>
+                            </p>
+                        {% endif %}
+                        <small>
+                            <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
+                            <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                        </small>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <h5 class="text-dark align-content-center">Nothing playlists found :(</h5>
+        {% endif %}
+    </div>
+{% endif %}
+<br>

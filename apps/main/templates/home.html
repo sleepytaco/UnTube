@@ -69,7 +69,7 @@
                             {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
                         </h5>
                         <p class="card-text">
-                            <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}info{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
+                            <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
 
                             {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white">{{ playlist.get_watch_time_left }} left</span>{% endif %}
                         </p>

@@ -2,7 +2,6 @@
 {% extends 'base.html' %}
 {% block content %}
 
-    <div id="search-results">
 
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 mb-3">
             <h1 class="h2"><span style="border-bottom: 3px #ffffff dashed;">{{ playlist_type_display|title }}</span> <span class="badge bg-primary rounded-pill">{{ playlists.count }}</span></h1>
@@ -32,62 +31,16 @@
         </div>
 
         {% if playlists %}
-        <div class="">
             <input   class="form-control border border-secondary" type="text"
-       name="search" placeholder="Begin to search playlists..."
-       hx-post="{% url 'search_playlists' playlist_type %}"
-       hx-trigger="keyup changed delay:500ms"
-       hx-target="#search-results"
-       hx-indicator=".htmx-indicator">
+                   name="search" placeholder="Begin to search playlists..."
+                   hx-post="{% url 'search_playlists' playlist_type %}"
+                   hx-trigger="keyup changed delay:700ms"
+                   hx-target="#search-results"
+                   hx-indicator=".htmx-indicator">
           <br>
-        </div>
 
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-                {% for playlist in playlists %}
-                <div class="col">
-                    <div class="card" style="background-color: #515355;">
-                        <a style="background-color: #1A4464;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action text-white-50" aria-current="true">
-
-                            <div class="card-body">
-
-                                <h5 class="card-title text-white">
-                                    {{ playlist.name }}
-
-                                </h5>
-                                <p class="card-text">
-                                    {% if playlist.is_user_owned %}<small><span class="badge bg-light text-black-50">OWNED</span></small>{% else %}<small><span class="badge bg-light text-black-50">IMPORTED</span></small>{% endif %}
-
-                                    {% if playlist.is_private_on_yt %}<small><span class="badge bg-secondary text-white">Private</span></small> {% endif %}
-                                    {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-black-50">YT</span></small> {% endif %}
-
-                                </p>
-                                {% if playlist.tags.all %}
-                                <p class="card-text">
-                                    <span class="d-flex justify-content-start flex-wrap">
-                                        <small>
-                                        <span style="color: #eed868;" class="me-lg-1 mb-lg-1">
-                                            <i class="fas fa-tags"></i>
-                                        </span>
-                                        </small>
-                                        {% for tag in playlist.tags.all %}
-                                            <span class="badge rounded-pill bg-info mb-lg-1 me-lg-1 text-black-50">
-                                                {{ tag.name }}
-                                            </span>
-                                        {% endfor %}
-                                    </span>
-                                </p>
-                                {% endif %}
-                                <small>
-                                    <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
-                                    <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
-                                </small>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-                {% endfor %}
-
-
+        <div id="search-results">
+            {% include 'intercooler/playlists.html' %}
         </div>
         {% else %}
               <div class="card bg-dark text-white mb-3">
@@ -121,9 +74,5 @@
 
         {% endif %}
         <br>
-
-    </div>
-
-
 
 {% endblock %}
