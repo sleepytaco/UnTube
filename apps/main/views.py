@@ -77,13 +77,33 @@ def home(request):
 
         print("TESTING")
 
+    user_playlists = request.user.profile.playlists.filter(is_in_db=True)
+    total_num_playlists = user_playlists.count()
+
+    statistics = {
+        "public_x": 0,
+        "private_x": 0,
+        "favorites_x": 0,
+        "watching_x": 0,
+        "imported_x": 0
+    }
+
+    if total_num_playlists != 0:
+        # x means  percentage
+        statistics["public_x"] = round(user_playlists.filter(is_private_on_yt=False).count() / total_num_playlists, 1) * 100
+        statistics["private_x"] = round(user_playlists.filter(is_private_on_yt=True).count() / total_num_playlists, 1) * 100
+        statistics["favorites_x"] = round(user_playlists.filter(is_favorite=True).count() / total_num_playlists, 1) * 100
+        statistics["watching_x"] = round(user_playlists.filter(marked_as="watching").count() / total_num_playlists, 1) * 100
+        statistics["imported_x"] = round(user_playlists.filter(is_user_owned=False).count() / total_num_playlists, 1) * 100
+
     return render(request, 'home.html', {"channel_found": channel_found,
                                          "playlist": playlist,
                                          "videos": videos,
                                          "user_playlists": user_playlists,
                                          "watching": watching,
                                          "recently_accessed_playlists": recently_accessed_playlists,
-                                         "recently_added_playlists": recently_added_playlists})
+                                         "recently_added_playlists": recently_added_playlists,
+                                         "statistics": statistics})
 
 
 @login_required
@@ -327,6 +347,12 @@ def order_playlist_by(request, playlist_id, order_by):
 
 @login_required
 def order_playlists_by(request, playlist_type, order_by):
+    print("GET", request.GET)
+    print("POST", request.POST)
+    print("CONTENT PARAMS", request.content_params)
+    print("HEAD", request.headers)
+    print("BODY", request.body)
+
     watching = False
 
     if playlist_type == "" or playlist_type.lower() == "all":
@@ -398,13 +424,20 @@ def playlists_home(request):
 def delete_videos(request, playlist_id, command):
     video_ids = request.POST.getlist("video-id", default=[])
 
+    print(request.POST)
+    num_vids = len(video_ids)
+    extra_text = " "
+    if num_vids == 0:
+        return HttpResponse("<h5>Select some videos first!</h5><hr>")
+
+    if 'confirm before deleting' in request.POST:
+        if request.POST['confirm before deleting'] == 'False':
+            command = "confirmed"
+
     if command == "confirm":
         print(video_ids)
-        num_vids = len(video_ids)
-        extra_text = " "
-        if num_vids == 0:
-            return HttpResponse("<h5>Select some videos first!</h5><hr>")
-        elif num_vids == request.user.profile.playlists.get(playlist_id=playlist_id).videos.all().count():
+
+        if num_vids == request.user.profile.playlists.get(playlist_id=playlist_id).videos.all().count():
             delete_text = "ALL VIDEOS"
             extra_text = " This will not delete the playlist itself, will only make the playlist empty. "
         else:
@@ -412,21 +445,24 @@ def delete_videos(request, playlist_id, command):
         return HttpResponse(
             f"""<h5>
                 Are you sure you want to delete {delete_text} from your YouTube playlist?{extra_text}This cannot be undone.</h5>
-                <button hx-post="/from/{playlist_id}/delete-videos/confirmed" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-outline-danger btn-sm" id="select-all-btn">Confirm</button>
+                <button hx-post="/from/{playlist_id}/delete-videos/confirmed" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-outline-danger btn-sm">Confirm</button>
                 <hr>
             """)
     elif command == "confirmed":
         print(video_ids)
         return HttpResponse(
-            f'<div class="spinner-border text-light" role="status" hx-post="/from/{playlist_id}/delete-videos/start" hx-trigger="load" hx-swap="outerHTML"></div>')
+            """
+            <div class="spinner-border text-light" role="status" hx-post="/from/""" + playlist_id + """/delete-videos/start" hx-trigger="load" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" hx-vals="{'confirm before deleting': '""" + request.POST['confirm before deleting'] + """'}"></div><hr>
+            """)
     elif command == "start":
+        print("Deleting", len(video_ids), "videos")
         Playlist.objects.deletePlaylistItems(request.user, playlist_id, video_ids)
         # playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
         # playlist.has_playlist_changed = True
         # playlist.save(update_fields=['has_playlist_changed'])
         return HttpResponse(f"""
         <h5 hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:3s" hx-target="#checkforupdates">
-            Done deleting videos from your playlist on YouTube. Playlist on UnTube will update soon.
+            Done deleting selected videos from your playlist on YouTube. Playlist on UnTube will update soon.
         </h5>
         <hr>
         """)
@@ -710,8 +746,9 @@ def update_playlist_settings(request, playlist_id):
     message_type = "success"
     message_content = "Saved!"
 
+    print(request.POST)
+    playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
     if "user_label" in request.POST:
-        playlist = request.user.profile.playlists.get(playlist_id=playlist_id)
         playlist.user_label = request.POST["user_label"]
         playlist.save(update_fields=['user_label'])
 
@@ -719,6 +756,18 @@ def update_playlist_settings(request, playlist_id):
             .render(
             {"message_type": message_type,
              "message_content": message_content}))
+
+    if 'confirm before deleting' in request.POST:
+        playlist.confirm_before_deleting = True
+    else:
+        playlist.confirm_before_deleting = False
+
+    if 'hide videos' in request.POST:
+        playlist.hide_unavailable_videos = True
+    else:
+        playlist.hide_unavailable_videos = False
+
+    playlist.save(update_fields=['hide_unavailable_videos', 'confirm_before_deleting'])
 
     valid_title = request.POST['playlistTitle'].replace(">", "greater than").replace("<", "less than")
     valid_description = request.POST['playlistDesc'].replace(">", "greater than").replace("<", "less than")

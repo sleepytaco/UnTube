@@ -70,13 +70,13 @@
                         <div class="col-sm-9 text-white">
 
                             <div class="mb-3 form-check form-switch">
-                            <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
+                            <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" {% if playlist.hide_unavailable_videos %}checked{% endif %}>
                             <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
                             </div>
 
 
                             <div class="mb-3 form-check form-switch">
-                            <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" checked>
+                            <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" {% if playlist.confirm_before_deleting %}checked{% endif %}>
                             <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
                             </div>
                         </div>

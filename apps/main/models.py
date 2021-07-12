@@ -972,9 +972,10 @@ class PlaylistManager(models.Manager):
                 pl_request = youtube.playlistItems().delete(
                     id=playlist_item_id
                 )
-
+                print(pl_request)
                 try:
                     pl_response = pl_request.execute()
+                    print(pl_response)
                 except googleapiclient.errors.HttpError as e:  # failed to delete playlist item
                     # possible causes:
                     # playlistItemsNotAccessible (403)
@@ -1093,11 +1094,12 @@ class Playlist(models.Model):
 
     has_playlist_changed = models.BooleanField(default=False)  # determines whether playlist was modified online or not
 
-    # for UI
-    view_in_grid_mode = models.BooleanField(default=False)  # if False, videso will be showed in a list
-
     # set playlist manager
     objects = PlaylistManager()
+
+    # playlist settings
+    hide_unavailable_videos = models.BooleanField(default=False)
+    confirm_before_deleting = models.BooleanField(default=True)
 
     # for import
     is_in_db = models.BooleanField(default=False)  # is true when all the videos of a playlist have been imported
@@ -1119,7 +1121,8 @@ class Playlist(models.Model):
         return self.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False)).count()
 
     def get_watched_videos_count(self):
-        return self.videos.filter(Q(is_marked_as_watched=True) & Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False)).count()
+        return self.videos.filter(
+            Q(is_marked_as_watched=True) & Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False)).count()
 
     # diff of time from when playlist was first marked as watched and playlist reached 100% completion
     def get_finish_time(self):
@@ -1152,6 +1155,7 @@ class Playlist(models.Model):
                 Q(is_unavailable_on_yt=True) | Q(was_deleted_on_yt=True)).count() == self.video_count:
             all_vids_unavailable = True
         return all_vids_unavailable
+
 
 class Video(models.Model):
     playlist_item_id = models.CharField(max_length=100)  # the item id of the playlist this video beo
@@ -1234,3 +1238,9 @@ class PlaylistItem(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class Pin(models.Model):
+    type = models.CharField(max_length=100)  # "playlist", "video"
+    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
+    video = models.ForeignKey(Video, on_delete=models.CASCADE)

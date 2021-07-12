@@ -53,11 +53,19 @@
                     </span>
                     {% endif %}
                 </span>
+                <span id="">
+                    <span class="badge bg-dark">
+                        <i class="fas fa-map-pin"></i>
+                    </span>
+                </span>
             </h4>
         </div>
         <p class="mb-1">
             {% if playlist.description %}
-            <h5>{{ playlist.description|truncatewords:"50"|linebreaksbr }}</h5>
+            <h5 class="overflow-auto" {% if playlist.description|length > 750 %} style="height: 150px;"{% endif %}>
+                {{ playlist.description|linebreaksbr }}
+            </h5>
+
             {% else %}
             <h5>No description</h5>
             {% endif %}
@@ -323,11 +331,14 @@
           <div class="collapse border-danger" id="deleteItemsCollapse">
               <div class="card card-body bg-dark text-white-50">
                   <div id="delete-videos-confirm-box">
+                      {% if not playlist.confirm_before_deleting %}
+                          <h5>Note: You have set confirm before deleting to False. Buttons below will take effect immediately when clicked.</h5>
+                          <hr>
+                      {% endif %}
                     </div>
-                <br>
                   <div class="d-flex justify-content-start">
                       <div class="btn-group me-2">
-                        <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-primary">
+                        <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-vals='{"confirm before deleting": "{{ playlist.confirm_before_deleting }}"}' hx-target="#delete-videos-confirm-box" type="button" class="btn btn-primary">
                             Delete Selected
                         </button>
                       </div>

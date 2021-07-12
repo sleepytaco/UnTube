@@ -27,7 +27,10 @@ class Profile(models.Model):
 
     # preferences
     open_search_new_tab = models.BooleanField(default=True)  # open search page in new tab by default
-    hide_deleted_private_videos = models.BooleanField(default=False)
+
+    # global playlist preferences (this will make all playlists)
+    hide_unavailable_videos = models.BooleanField(default=False)
+    confirm_before_deleting = models.BooleanField(default=True)
 
     # manage user
     objects = ProfileManager()

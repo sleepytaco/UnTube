@@ -107,7 +107,7 @@
 
                 <div class="row">
                     <div class="col-sm-3">
-                        <h6 class="mb-0">Preferences</h6>
+                        <h6 class="mb-0">Global Preferences</h6>
                     </div>
                     <div class="col-sm-9 text-white">
                         <div class="mb-3 form-check form-switch">
@@ -121,13 +121,13 @@
                         </div>
 
                         <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
+                        <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" {% if profile.hide_unavailable_videos %}checked{% endif %}>
                         <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
                         </div>
 
 
                         <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" checked>
+                        <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" {% if profile.confirm_before_deleting  %}checked{% endif %}>
                         <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
                         </div>
                     </div>
