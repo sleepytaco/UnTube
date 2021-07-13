@@ -82,4 +82,21 @@
         {% endif %}
     </div>
 
+    <button class="scrollToTopBtn sticky-top">
+<i class="fa fa-angle-double-up fa-lg"></i></button>
+
+    <script type="application/javascript">
+
+        function triggerSubmit() {
+            var startsWithCB = document.getElementById("starts-with-cb");
+            var containsCB = document.getElementById("contains-cb");
+
+            if (startsWithCB.checked) {
+                startsWithCB.click();
+            } else {
+                containsCB.click();
+            }
+        }
+    </script>
+
 {% endblock %}

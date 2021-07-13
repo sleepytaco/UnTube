@@ -2,7 +2,7 @@
 {% with all_videos_unavailable=playlist.all_videos_unavailable percent_complete=playlist.get_percent_complete %}
 <div class="py-2 bg-light rounded-3">
   <div class="d-flex justify-content-center">
-      <span class="h3 {% if percent_complete == 0 or all_videos_unavailable %}w-75{% endif %}" style="color: #70777E">
+      <span class="h3 ms-3 {% if percent_complete == 0 or all_videos_unavailable %}w-75{% endif %}" style="color: #70777E">
           {% if percent_complete == 0 or all_videos_unavailable %}
               <i class="fas fa-sun fa-spin" style="color: {% if not all_videos_unavailable %}#d0bc0b{% else %}red{% endif %};"></i>
               Yay, you marked a playlist as watching! {% if all_videos_unavailable %}However, there's no videos in this playlist you can mark as 'watched' :({% else %}This message will keep updating as you mark videos as watched. Good luck!{% endif %}

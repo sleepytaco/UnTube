@@ -40,7 +40,7 @@
                     </small> </h2>
                 <h6>by {{ playlist.channel_name }}</h6>
             </span>
-            <h4>
+                        <h4>
                 <span id="notice-div">
                     {% if playlist.marked_as != "none" %}
                     <span class="badge bg-success text-white" >
@@ -59,6 +59,7 @@
                     </span>
                 </span>
             </h4>
+
         </div>
         <p class="mb-1">
             {% if playlist.description %}
@@ -70,7 +71,7 @@
             <h5>No description</h5>
             {% endif %}
         </p>
-        <h6 class="h6 text-uppercase">
+        <h6 class="h6 text-uppercase overflow-auto">
             <span class="badge bg-light text-black-50">{% if playlist.is_user_owned %}OWNED{% else %}IMPORTED{% endif %}</span>
 
             <span class="badge bg-light text-black-50">{{ playlist.video_count }} VIDEOS</span>
@@ -93,13 +94,14 @@
         <h6 class="h6 pt-1">
 
             Tags:
-            <span class="text-uppercase">
+            <span class="text-uppercase" >
                 <span id="playlist-tags">
                 {% for tag in playlist_tags %}
-                    <span id="tag-{{ tag.name|slugify }}">
-                    <span class="badge rounded-pill bg-info mb-lg-1">
+                    <span id="tag-{{ tag.name|slugify }}" class="mb-2">
+                    <span class="badge rounded-pill bg-info mb-lg-2">
                         <a href="{% url 'tagged_playlists' tag.name %}" style="text-decoration: none; color: white">{{ tag.name }} </a>
-                        <a class="ms-1" hx-post="{% url 'remove_playlist_tag' playlist.playlist_id tag.name %}" hx-trigger="click" hx-target="#tag-{{ tag.name|slugify }}"><i class="fas fa-times-circle"></i></a></span>
+                        <a class="ms-1" hx-post="{% url 'remove_playlist_tag' playlist.playlist_id tag.name %}" hx-trigger="click" hx-target="#tag-{{ tag.name|slugify }}"><i class="fas fa-times-circle"></i></a>
+                    </span>
                     </span>
                 {% endfor %}
                 </span>
@@ -158,7 +160,7 @@
                 </div>
                 -->
                 {% if videos.count != 0 %}
-                <div class="btn-group me-2">
+                <div class="btn-group me-2 mb-2">
                     <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                         Sort By
                     </button>
@@ -179,7 +181,7 @@
                 {% endif %}
 
 
-                    <div class="btn-group me-2">
+                    <div class="btn-group me-2 mb-2">
                         <button type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             Mark As
                         </button>
@@ -193,15 +195,15 @@
         </div>
 
         <div class="bd-highlight">
-            <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-toolbar mb-2 mb-md-0 overflow-auto">
 
-                    <div class="btn-group me-2">
+                    <div class="btn-group me-2 mb-2">
                         <a hx-get="{% url 'update_playlist' playlist.playlist_id 'manual' %}" hx-target="#view_playlist" class="btn btn-secondary">
                             <i class="fas fa-sync"></i>
                         </a>
                     </div>
 
-                    <div class="btn-group me-2">
+                    <div class="btn-group me-2 mb-2">
 
                         <button class="btn btn-warning" type="button" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'favorite' %}" hx-target="#playlist-fav">
                             <div id="playlist-fav">
@@ -215,14 +217,14 @@
                     </div>
 
 
-                    <div class="btn-group me-2">
+                    <div class="btn-group me-2 mb-2">
                         <a href="{% url 'view_playlist_settings' playlist.playlist_id %}" class="btn btn-primary">
                             <i class="fas fa-cog"></i>
                         </a>
                     </div>
 
                     {% if videos.count != 0 %}
-                    <div class="btn-group me-2">
+                    <div class="btn-group me-2 mb-2">
                         <button type="button" class="btn btn-light" onclick="row1_hide()">Manage</button>
                     </div>
                     {% endif %}
@@ -235,17 +237,17 @@
             <div class="me-auto bd-highlight">
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <div id="select-all-btn">
-                        <div class="btn-group me-2">
+                        <div class="btn-group me-2 mb-2">
                         <button type="button" class="btn btn-info" id="select-all-btn">Select All</button>
                     </div>
                     </div>
                     <div id="deselect-all-btn" style="display: none">
-                        <div class="btn-group me-2">
+                        <div class="btn-group me-2 mb-2">
                         <button type="button" class="btn btn-info" id="select-all-btn">De-select All</button>
                         </div>
                     </div>
 
-                    <div class="btn-group me-2">
+                    <div class="btn-group me-2 mb-2">
                         <!-- <button type="submit" form="my-form" class="btn btn-outline-success" data-bs-toggle="dropdown" aria-expanded="false">
                             Move
                         </button> -->
@@ -263,7 +265,7 @@
                     </div>
                     -->
                     {% if playlist.is_user_owned %}
-                    <div class="btn-group me-2">
+                    <div class="btn-group me-2 mb-2">
                         <button class="btn btn-danger" data-bs-toggle="collapse" data-bs-target="#deleteItemsCollapse" aria-expanded="false" aria-controls="deleteItemsCollapse">
                             Delete Videos
                         </button>
@@ -276,12 +278,16 @@
 
             <div class="bd-highlight">
             <div class="btn-toolbar mb-2 mb-md-0">
-
-                    <div class="btn-group me-2">
-                        <button type="button" class="btn btn-light" onclick="row1_show()" id="manageBtn">Manage</button>
-                    </div>
-
+                <div class="btn-group me-2 mb-2">
+                    <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#deleteItemsCollapse" aria-expanded="false" aria-controls="deleteItemsCollapse">
+                        <i class="fa fa-history"></i> History
+                    </button>
                 </div>
+                <div class="btn-group me-2 mb-2">
+                    <button type="button" class="btn btn-light" onclick="row1_show()" id="manageBtn">Manage</button>
+                </div>
+
+            </div>
         </div>
 
         </div>
@@ -295,7 +301,7 @@
       <div class="d-flex justify-content-start">
 
 
-          <div class="col-md-7 text-dark">
+          <div class="col-md-8 text-dark">
                 <select class="visually-hidden" onchange="triggerSubmit()"
                      id="choices-multiple-remove-button" name="playlist-tags" placeholder="Select Playlists" multiple>
                     {% for pl in user_owned_playlists %}
@@ -371,6 +377,7 @@
 
 
     <div class="table-responsive" id="videos-div">
+
         <br>
         {% if videos %}
         <div class="list-group" id="video-checkboxes">
@@ -378,7 +385,7 @@
 
             <li id="{{ video.playlist_item_id }}" onclick="selectVideo(this);" {% if forloop.last and videos.count > 50 %}hx-get="{% url 'load_more_videos' playlist.playlist_id order_by|default:"all" page|default:"1" %}"
     hx-trigger="revealed"
-    hx-swap="afterend" hx-indicator="#load-more-videos-spinner" {% endif %} class="list-group-item d-flex justify-content-between align-items-center bg-transparent" style="background-color: #40B3A2">
+    hx-swap="afterend" hx-indicator="#load-more-videos-spinner" {% endif %} class="list-group-item d-flex justify-content-between align-items-center bg-transparent videos" style="background-color: #40B3A2">
 
         {% if video.is_unavailable_on_yt and not video.was_deleted_on_yt %}
 
@@ -511,7 +518,133 @@
 
     </div>
 
+    <button class="scrollToTopBtn sticky-top">
+    <i class="fa fa-angle-double-up fa-lg"></i></button>
 
+
+    <script type="application/javascript">
+
+            // when a video list item is clicked on, it gets checked and its bg turns red
+            function selectVideo(video) {
+                if ($('#row2').is(':visible')) {
+                    var videoCB = document.getElementById("video-" + video.id);
+
+                    if (videoCB.checked) {
+                        video.classList.remove("bg-danger");
+                        video.classList.add("bg-transparent");
+                        videoCB.checked = false;
+                    } else {
+                        video.classList.remove("bg-transparent");
+                        video.classList.add("bg-danger");
+                        videoCB.checked = true;
+                    }
+                }
+            }
+
+
+            var moveCopyBtn = document.getElementById('move-copy-vids-btn');
+            var moveCopyCollapse = document.getElementById('moveItemsToCollapse');
+            var bsMoveCopyCollapse = new bootstrap.Collapse(moveCopyCollapse, {
+                toggle: false
+            });
+            var deleteBtn = document.getElementById('delete-vids-btn');
+            var deleteCollapse = document.getElementById('deleteItemsCollapse');
+            var bsDeleteCollapse = new bootstrap.Collapse(deleteCollapse, {
+                toggle: false
+            });
+
+
+            document.getElementById('manageBtn').addEventListener('click', function () {                document.getElementById("delete-videos-confirm-box").innerHTML = "";
+                document.getElementById("delete-videos-confirm-box").innerHTML = "";
+                bsMoveCopyCollapse.hide();
+                bsDeleteCollapse.hide();
+            });
+            moveCopyCollapse.addEventListener('show.bs.collapse', function () {
+                    bsDeleteCollapse.hide();
+            });
+            deleteCollapse.addEventListener('show.bs.collapse', function () {
+                    bsMoveCopyCollapse.hide();
+            });
+
+            <!-- end -->
+
+
+            document.getElementById('select-all-btn').onclick = function() {
+                document.getElementById('select-all-btn').style.display = "none";
+                document.getElementById('deselect-all-btn').style.display = "block";
+
+                var checkboxes = document.getElementsByClassName('video-checkboxes');
+                for (var checkbox of checkboxes) {
+                    checkbox.checked = true;
+                }
+
+                var listItems = document.getElementsByClassName('videos'); //Cache the collection here, so that even a new element added with the same class later we can avoid querying this again by using the cached collection.
+                 for(var i=0, len=listItems.length; i<len; i++)
+                {
+                    if(listItems[i].classList.contains("bg-transparent")){
+                        listItems[i].classList.remove("bg-transparent");
+                        listItems[i].classList.add("bg-danger");
+                    }
+                }
+            }
+            document.getElementById('deselect-all-btn').onclick = function() {
+                document.getElementById('deselect-all-btn').style.display = "none";
+                document.getElementById('select-all-btn').style.display = "block";
+
+                var checkboxes = document.getElementsByClassName('video-checkboxes');
+                for (var checkbox of checkboxes) {
+                    checkbox.checked = false;
+                }
+
+                var listItems = document.getElementsByClassName('videos'); //Cache the collection here, so that even a new element added with the same class later we can avoid querying this again by using the cached collection.
+                 for(var i=0, len=listItems.length; i<len; i++)
+                {
+                    if(listItems[i].classList.contains("bg-danger")){
+                        listItems[i].classList.remove("bg-danger");
+                        listItems[i].classList.add("bg-transparent");
+                    }
+                }
+            }
+
+             function row1_hide() {
+                 document.getElementById("row1").style.display = "none";
+                 var checkboxes = document.getElementsByClassName('video-checkboxes'); //Cache the collection here, so that even a new element added with the same class later we can avoid querying this again by using the cached collection.
+                 for(var i=0, len=checkboxes.length; i<len; i++)
+                {
+                    //checkboxes[i].style.display = "block";
+                    checkboxes[i].checked = false;
+                }
+                 document.getElementById("row2").style.display = "block";
+             }
+
+             function row1_show() {
+                 document.getElementById("row1").style.display = "block";
+                 var checkboxes = document.getElementsByClassName('video-checkboxes'); //Cache the collection here, so that even a new element added with the same class later we can avoid querying this again by using the cached collection.
+                 for(var i=0, len=checkboxes.length; i<len; i++)
+                {
+                    checkboxes[i].style.display = "none";
+                    checkboxes[i].checked = false;
+                }
+                document.getElementById("row2").style.display = "none";
+                 var listItems = document.getElementsByClassName('videos'); //Cache the collection here, so that even a new element added with the same class later we can avoid querying this again by using the cached collection.
+                 for(var i=0, len=listItems.length; i<len; i++)
+                {
+                    if(listItems[i].classList.contains("bg-danger")){
+                        listItems[i].classList.remove("bg-danger");
+                        listItems[i].classList.add("bg-transparent");
+                    }
+                }
+             }
+
+             function select_all_checkboxes(source) {
+              checkboxes = document.getElementsByClassName('big-checkbox');
+              for(var i=0, n=checkboxes.length;i<n;i++) {
+                checkboxes[i].checked = source.checked;
+              }
+            }
+
+
+    </script>
     <!--
       <script src="{% static 'youtube-audio-player/iframe-api.js' %}"></script>
   <script src="{% static 'youtube-audio-player/yt.min.js' %}"></script>

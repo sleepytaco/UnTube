@@ -138,7 +138,11 @@ def view_playlist(request, playlist_id):
     # specific playlist requested
     if user_profile.playlists.filter(Q(playlist_id=playlist_id) & Q(is_in_db=True)).count() != 0:
         playlist = user_profile.playlists.get(playlist_id__exact=playlist_id)
-        playlist.num_of_accesses += 1
+        # playlist.num_of_accesses += 1
+        # only note down that the playlist as been viewed when 5mins has passed since the last access
+        if playlist.last_accessed_on + datetime.timedelta(minutes=5) < datetime.datetime.now(pytz.utc):
+            playlist.num_of_accesses += 1
+            playlist.last_accessed_on = datetime.datetime.now(pytz.utc)
         playlist.save()
     else:
         messages.error(request, "No such playlist found!")

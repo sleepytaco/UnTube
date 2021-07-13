@@ -634,6 +634,7 @@ class PlaylistManager(models.Manager):
 
                     video.is_duplicate = True
                     playlist.has_duplicate_videos = True
+                    video_ids.append(video_id)
                     video.save()
 
             while True:
@@ -689,6 +690,9 @@ class PlaylistManager(models.Manager):
 
                             video.is_duplicate = True
                             playlist.has_duplicate_videos = True
+
+                            video_ids.append(video_id)
+
                             video.save()
                 except AttributeError:
                     break
@@ -815,6 +819,7 @@ class PlaylistManager(models.Manager):
                         video_ids.append(video_id)
                         current_video_ids.remove(video_id)
                     else:
+                        video_ids.append(video_id)
                         video.is_duplicate = True
                         playlist.has_duplicate_videos = True
 
@@ -887,7 +892,9 @@ class PlaylistManager(models.Manager):
                             if video_id in current_video_ids:
                                 video.is_duplicate = False
                                 current_video_ids.remove(video_id)
+                                video_ids.append(video_id)
                             else:
+                                video_ids.append(video_id)
                                 video.is_duplicate = True
                                 playlist.has_duplicate_videos = True
 
@@ -1088,6 +1095,7 @@ class Playlist(models.Model):
                                  max_length=100)  # can be set to "none", "watching", "on-hold", "plan-to-watch"
     is_favorite = models.BooleanField(default=False, blank=True)  # to mark playlist as fav
     num_of_accesses = models.IntegerField(default="0")  # tracks num of times this playlist was opened by user
+    last_accessed_on = models.DateTimeField(default=datetime.datetime.now)
     is_private_on_yt = models.BooleanField(default=False)
     is_user_owned = models.BooleanField(default=True)  # represents YouTube playlist owned by user
     has_duplicate_videos = models.BooleanField(default=False)  # duplicate videos will not be shown on site

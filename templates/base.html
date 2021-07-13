@@ -13,7 +13,11 @@
         <title>UnTube - A Youtube Playlist Manager</title>
 
         <style type="text/css">
+            html {
+                scroll-behavior: smooth;
+            }
             body {
+                margin: 0;
                 background: linear-gradient(-45deg, #e2b968, #68af5b, #8a97bc, #d69ab2);
                 //background: linear-gradient(-45deg, #B2A3FF, #84bcf3, #AE876B, #B0E7AE);
                 //background: linear-gradient(-45deg, #0645a4, #2480cd, #84bcf3, #b7d6f7);
@@ -35,11 +39,55 @@
             }
 
 
-            #btn-back-to-top {
-              position: fixed;
+            .scrollToTopBtn {
+              background-color: black;
+              border: none;
+              border-radius: 50%;
+              color: white;
+              cursor: pointer;
+              font-size: 16px;
+              line-height: 58px;
+              width: 58px;
+
+              /* place it at the bottom right corner */
+              position: relative;
               bottom: 20px;
-              right: 20px;
-              display: none;
+                right: 0px;
+              left: 30px;
+
+              /* hide with opacity */
+              opacity: 0;
+              /* also add a translate effect */
+              transform: translateY(100px);
+              /* and a transition */
+              transition: all .5s ease
+            }
+
+            .showBtn {
+              opacity: 1;
+              transform: translateY(0)
+            }
+
+
+
+             #btn-back-to-top {
+              display: none; /* Hidden by default */
+              position: fixed; /* Fixed/sticky position */
+              bottom: 20px; /* Place the button at the bottom of the page */
+              right: 30px; /* Place the button 30px from the right */
+              z-index: 99999; /* Make sure it does not overlap */
+              border: none; /* Remove borders */
+              outline: none; /* Remove outline */
+              background-color: red; /* Set a background color */
+              color: white; /* Text color */
+              cursor: pointer; /* Add a mouse pointer on hover */
+              padding: 15px; /* Some padding */
+              border-radius: 10px; /* Rounded corners */
+              font-size: 18px; /* Increase font size */
+            }
+
+            #btn-back-to-top:hover {
+              background-color: #555; /* Add a dark-grey background on hover */
             }
 
             .big-checkbox {width: 30px; height: 30px;}
@@ -52,7 +100,12 @@
         <link href="{% static 'bootstrap5.0.1/css/bootstrap.min.css' %}" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.css">
 
-
+        <script src="{% static 'htmx/htmx.min.js' %}" type="application/javascript"></script>
+        <script src="{% static 'clipboard.js/clipboard.min.js' %}" type="application/javascript"></script>
+        <script src="{% static 'jquery3.6.0/js/jquery-3.6.0.min.js' %}" type="application/javascript"></script>
+        <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.min.js' %}" type="application/javascript"></script>
+        <script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
+        <script src="{% static 'htmx/extensions/class-tools.js' %}" type="application/javascript"></script>
     </head>
     <body class="text-dark" style="font-family: 'Fredoka One', monospace; filter: contrast(80%);">
 
@@ -112,18 +165,26 @@
                         <!--
                         <input class="form-control border border-secondary bg-dark text-white-50 me-lg-2 bg-dark mb-1" id="unTubeSearchBar" type="text" placeholder="Search UnTube">
                         -->
-                        <a class="nav-link btn-lg me-1 mt-1" href="{% url 'search' %}" {% if user.profile.open_search_new_tab %}target="_blank"{% endif %}>
+                        <a class="nav-link btn-lg me-1 mt-2" href="{% url 'search' %}" {% if user.profile.open_search_new_tab %}target="_blank"{% endif %}>
                             <i class="fas fa-search"></i>
                         </a>
 
-                        <a href="{% url 'profile' %}" class="mt-1">
-                        <img src="https://robohash.org/{{ user.username }}.png?set=set{{ user.profile.robohash_set }}" alt="{{ user.username }}" class="border border-3 border-primary rounded-circle me-2" width="42" height="42">
-                        </a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="quickViewDropdown" role="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                                <img src="https://robohash.org/{{ user.username }}.png?set=set{{ user.profile.robohash_set }}" alt="{{ user.username }}" class="border border-3 border-primary rounded-circle" width="42" height="42">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="quickViewDropdown" style="z-index: 1021;">
+                                <li class="dropdown-item overflow-auto">Welcome, <span style="border-bottom: 3px #020000 dashed;">{{ user.username }}</span></li>
+                                <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
+
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'log_out' %}">Log out</a></li>
+                            </ul>
+                        </li>
+
 
                     </div>
-                    <a class="btn btn-outline-danger" href="{% url 'log_out' %}">
-                      Log out
-                    </a>
                 </div>
             </div>
         </nav>
@@ -144,160 +205,67 @@
                 {% endif %}
                 {% block content %}
                 {% endblock %}
+
                 </main>
             </div>
+
         </div>
 
         <br>
 
 
-        <script src="{% static 'htmx/htmx.min.js' %}" type="application/javascript"></script>
-        <script src="{% static 'clipboard.js/clipboard.min.js' %}" type="application/javascript"></script>
-        <script src="{% static 'jquery3.6.0/js/jquery-3.6.0.min.js' %}" type="application/javascript"></script>
-        <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.min.js' %}" type="application/javascript"></script>
-        <script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
-        <!-- <script src="{% static 'htmx/extensions/class-tools.js' %}" type="application/javascript"></script> -->
-
 
         <script type="application/javascript">
+
             $(document).ready(function(){
 
+                // multiple choices select search box
                 var multipleCancelButton = new Choices('#choices-multiple-remove-button', {
-                removeItemButton: true,
+                    removeItemButton: true,
                 });
 
             });
 
-            function selectVideo(video) {
-                console.log(video.id);
-                console.log("video-" + video.id);
-                var videoCB = document.getElementById("video-" + video.id);
-                videoCB.checked = !videoCB.checked;  // uncheck video if check and vice versa
-            }
+            // copy functionality
+            var clipboard = new ClipboardJS('.copy-btn');
 
-            function triggerSubmit() {
-                var startsWithCB = document.getElementById("starts-with-cb");
-                var containsCB = document.getElementById("contains-cb");
-
-                if (startsWithCB.checked) {
-                    startsWithCB.click();
-                } else {
-                    containsCB.click();
-                }
-            }
-
-
+            // send csrf_token when htmx does a post request
             document.body.addEventListener('htmx:configRequest', (event) => {
-            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
-          })
+                event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+              })
+
+
+            var scrollToTopBtn = document.querySelector(".scrollToTopBtn")
+            var rootElement = document.documentElement
+
+            function handleScroll() {
+              // Do something on scroll
+              var scrollTotal = rootElement.scrollHeight - rootElement.clientHeight
+              if ((rootElement.scrollTop / scrollTotal ) > 0.10) {
+                // Show button
+                scrollToTopBtn.classList.add("showBtn")
+              } else {
+                // Hide button
+                scrollToTopBtn.classList.remove("showBtn");
+              }
+            }
+
+            function scrollToTop() {
+              // Scroll to top logic
+              rootElement.scrollTo({
+                top: 0,
+                behavior: "smooth"
+              })
+            }
+            scrollToTopBtn.addEventListener("click", scrollToTop)
+            document.addEventListener("scroll", handleScroll)
+
+
+
 
             // window.onbeforeunload = function() {
         //return "Dude, are you sure you want to leave? Think of the kittens!";
             //}
-
-                 var moveCopyBtn = document.getElementById('move-copy-vids-btn');
-            var moveCopyCollapse = document.getElementById('moveItemsToCollapse');
-            var bsMoveCopyCollapse = new bootstrap.Collapse(moveCopyCollapse, {
-                toggle: false
-            });
-            var deleteBtn = document.getElementById('delete-vids-btn');
-            var deleteCollapse = document.getElementById('deleteItemsCollapse');
-            var bsDeleteCollapse = new bootstrap.Collapse(deleteCollapse, {
-                toggle: false
-            });
-
-
-            document.getElementById('manageBtn').addEventListener('click', function () {                document.getElementById("delete-videos-confirm-box").innerHTML = "";
-                document.getElementById("delete-videos-confirm-box").innerHTML = "";
-                bsMoveCopyCollapse.hide();
-                bsDeleteCollapse.hide();
-            });
-            moveCopyCollapse.addEventListener('show.bs.collapse', function () {
-                    bsDeleteCollapse.hide();
-            });
-            deleteCollapse.addEventListener('show.bs.collapse', function () {
-                    bsMoveCopyCollapse.hide();
-            });
-
-            <!-- end -->
-
-
-            document.getElementById('select-all-btn').onclick = function() {
-                document.getElementById('select-all-btn').style.display = "none";
-                document.getElementById('deselect-all-btn').style.display = "block";
-
-                var checkboxes = document.getElementsByClassName('video-checkboxes');
-                for (var checkbox of checkboxes) {
-                    checkbox.checked = true;
-                }
-            }
-            document.getElementById('deselect-all-btn').onclick = function() {
-                document.getElementById('deselect-all-btn').style.display = "none";
-                document.getElementById('select-all-btn').style.display = "block";
-
-                var checkboxes = document.getElementsByClassName('video-checkboxes');
-                for (var checkbox of checkboxes) {
-                    checkbox.checked = false;
-                }
-            }
-
-             function row1_hide() {
-                 document.getElementById("row1").style.display = "none";
-                 var checkboxes = document.getElementsByClassName('video-checkboxes'); //Cache the collection here, so that even a new element added with the same class later we can avoid querying this again by using the cached collection.
-                 for(var i=0, len=checkboxes.length; i<len; i++)
-                {
-                    checkboxes[i].style.display = "block";
-                    checkboxes[i].checked = false;
-                }
-                 document.getElementById("row2").style.display = "block";
-             }
-
-             function row1_show() {
-                 document.getElementById("row1").style.display = "block";
-                 var checkboxes = document.getElementsByClassName('video-checkboxes'); //Cache the collection here, so that even a new element added with the same class later we can avoid querying this again by using the cached collection.
-                 for(var i=0, len=checkboxes.length; i<len; i++)
-                {
-                    checkboxes[i].style.display = "none";
-                }
-                document.getElementById("row2").style.display = "none";
-             }
-
-             function select_all_checkboxes(source) {
-              checkboxes = document.getElementsByClassName('big-checkbox');
-              for(var i=0, n=checkboxes.length;i<n;i++) {
-                checkboxes[i].checked = source.checked;
-              }
-            }
-
-
-            var clipboard = new ClipboardJS('.copy-btn');
-
-
-            //Get the button
-            let mybutton = document.getElementById("btn-back-to-top");
-
-            // When the user scrolls down 20px from the top of the document, show the button
-            window.onscroll = function () {
-              scrollFunction();
-            };
-
-            function scrollFunction() {
-              if (
-                document.body.scrollTop > 150 ||
-                document.documentElement.scrollTop > 150
-              ) {
-                mybutton.style.display = "block";
-              } else {
-                mybutton.style.display = "none";
-              }
-            }
-            // When the user clicks on the button, scroll to the top of the document
-            mybutton.addEventListener("click", backToTop);
-
-            function backToTop() {
-              document.body.scrollTop = 0;
-              document.documentElement.scrollTop = 0;
-            }
 
         </script>
 

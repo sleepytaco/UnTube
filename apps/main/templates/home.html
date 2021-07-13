@@ -52,62 +52,6 @@
             </div>
             {% endif %}
 
-            <div class="row row-cols-1 row-cols-md-4 g-4 text-dark d-flex justify-content-center">
-                <div class="col">
-                    <div class="card">
-                        <a style="background: linear-gradient(-45deg, #ae6ba3, #ab7b91, #bc8a9a, #d69aa1); background-size: 400% 400%; animation: gradient 7s ease infinite;" href="#" class="list-group-item list-group-item-action" aria-current="true">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-center h1">
-                                    <i class="fas fa-map-pin"></i>
-                                </div>
-                                <div class="d-flex justify-content-center h1">
-                                    YOUR
-                                </div>
-                                <div class="d-flex justify-content-center h1">
-                                    PINS
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card">
-                        <a style="background: linear-gradient(-45deg, #0645a4, #2480cd, #84bcf3, #b7d6f7); background-size: 400% 400%; animation: gradient 7s ease infinite;" href="#" class="list-group-item list-group-item-action" aria-current="true">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-center h1">
-                                    <i class="fas fa-thumbs-up"></i>
-                                </div>
-                                <div class="d-flex justify-content-center h1">
-                                    LIKED
-                                </div>
-                                <div class="d-flex justify-content-center h1">
-                                    VIDEOS
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card">
-                        <a style="background: linear-gradient(-45deg, #e2b968, #68af5b, #8a97bc, #d69ab2); background-size: 400% 400%; animation: gradient 7s ease infinite;" href="#" class="list-group-item list-group-item-action" aria-current="true">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-center h1">
-                                    <i class="fas fa-history"></i>
-                                </div>
-                                <div class="d-flex justify-content-center h1">
-                                    YOUR
-                                </div>
-                                <div class="d-flex justify-content-center h1">
-                                    ACTIVITY
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-
-            </div>
-            <br>
-
             {% if watching %}
                 <div class="border border-5 rounded-3 border-primary p-3">
                     <h3><span style="border-bottom: 3px #ffffff dashed;">Continue Watching</span><i class="fas fa-fire-alt ms-2" style="color: #d24646"></i></h3>
@@ -167,38 +111,73 @@
 
 
 
-           <div class="row text-dark mt-0 d-flex justify-content-evenly">
+           <div class="row text-dark mt-0 align-items-center">
                 <div class="col">
-                  <div class="card bg-dark text-white">
-                        <div class="card-body">
-                          <h6 class="d-flex align-items-center mb-3"><span class="text-info me-2">{{ user.profile.playlists.count }}</span>Playlists Statistics</h6>
-
-                          <small>Public <span class="text-warning ms-1">{{ statistics.public_x }}%</span></small>
-                          <div class="progress mb-3" style="height: 5px">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ statistics.public_x }}%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-
-                          <small>Private <span class="text-warning ms-1">{{ statistics.private_x }}%</span></small>
-                          <div class="progress mb-3" style="height: 5px">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ statistics.private_x }}%" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                          <small>Favorites <span class="text-warning ms-1">{{ statistics.favorites_x }}%</span></small>
-                          <div class="progress mb-3" style="height: 5px">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ statistics.favorites_x }}%" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                          <small>Watching <span class="text-warning ms-1">{{ statistics.watching_x }}%</span></small>
-                          <div class="progress mb-3" style="height: 5px">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ statistics.watching_x }}%" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                          <small>Imported <span class="text-warning ms-1">{{ statistics.imported_x }}%</span></small>
-                          <div class="progress mb-3" style="height: 5px">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ statistics.imported_x }}%" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="card" style="background: linear-gradient(-45deg, #aaae6b, #7b8eab, #bc8a9a, #d69aa1); background-size: 400% 400%; animation: gradient 7s ease infinite;">
+                                <a href="#" class="list-group-item bg-transparent list-group-item-action" aria-current="true">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-center h1">
+                                            <i class="fas fa-map-pin" style="color:#c22929"></i>
+                                        </div>
+                                        <div class="d-flex justify-content-center h1">
+                                            YOUR
+                                        </div>
+                                        <div class="d-flex justify-content-center h1">
+                                            PINS
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
                         </div>
-                      </div>
+                        <div class="col">
+                            <div class="card" style="background: linear-gradient(-45deg, #0645a4, #2480cd, #84bcf3, #b7d6f7); background-size: 400% 400%; animation: gradient 7s ease infinite;">
+                                <a href="#" class="list-group-item list-group-item-action bg-transparent" aria-current="true">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-center h1">
+                                            <i class="fas fa-heart" style="color: indianred"></i>
+                                        </div>
+                                        <div class="d-flex justify-content-center h1">
+                                            LIKED
+                                        </div>
+                                        <div class="d-flex justify-content-center h1">
+                                            VIDEOS
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Implement later
+                    <div class="row mt-3">
+                        <div class="col">
 
+                        </div>
+                        <div class="col-6">
+                        <div class="card">
+                            <a style="background: linear-gradient(-45deg, #e2b968, #68af5b, #8a97bc, #d69ab2); background-size: 400% 400%; animation: gradient 7s ease infinite;" href="#" class="list-group-item list-group-item-action" aria-current="true">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-center h1">
+                                        <i class="fas fa-history"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-center h1">
+                                        YOUR
+                                    </div>
+                                    <div class="d-flex justify-content-center h1">
+                                        ACTIVITY
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        </div>
+                        <div class="col">
+
+                        </div>
+                    </div>
+                    -->
                 </div>
-               <div class="col">
+               <div class="col-8">
                   <div class="card bg-transparent text-black border border-5 rounded-3 border-success p-3">
                         <div class="card-body">
                               <h3><span style="border-bottom: 3px #ffffff dashed;">Most viewed playlists</span> <a href="{% url 'all_playlists' 'all' %}" class="pt-1"><i class="fas fa-binoculars"></i> </a></h3>
@@ -206,8 +185,8 @@
                                 <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
                                     {% for playlist in user_playlists|slice:"0:3" %}
                                     <div class="col">
-                                        <div class="card">
-                                            <a style="background-color: #4790c7;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+                                        <div class="card overflow-auto" style="background-color: #4790c7;">
+                                            <a href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item bg-transparent list-group-item-action" aria-current="true">
                                                 <div class="card-body">
                                             <h5 class="card-title">
                                                #{{ forloop.counter }} <br><br>{{ playlist.name }}
@@ -249,8 +228,8 @@
                     <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
                         {% for playlist in recently_added_playlists %}
                         <div class="col">
-                            <div class="card">
-                                <a style="background-color: #958a44;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+                            <div class="card overflow-auto" style="background-color: #958a44;">
+                                <a href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item bg-transparent list-group-item-action" aria-current="true">
                                     <div class="card-body">
                                 <h5 class="card-title">
                                    {{ playlist.name }}
@@ -282,8 +261,8 @@
                     <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
                         {% for playlist in recently_accessed_playlists %}
                         <div class="col">
-                            <div class="card">
-                                <a style="background-color: #357779;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+                            <div class="card overflow-auto" style="background-color: #357779;">
+                                <a  href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item bg-transparent list-group-item-action" aria-current="true">
                                     <div class="card-body">
                                 <h5 class="card-title">
                                    {{ playlist.name }}

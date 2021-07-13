@@ -10,10 +10,10 @@ from django.db.models import Q
 def getHumanizedTimeString(seconds):
     return humanize.precisedelta(
         datetime.timedelta(seconds=seconds)).upper(). \
-        replace(" month,".upper(), "m.").replace(" months,".upper(), "m.").replace(" days,".upper(), "d.").replace(
-        " day,".upper(), "d.").replace(" hours,".upper(), "hrs.").replace(" hour,".upper(), "hr.").replace(
+        replace(" month".upper(), "m.").replace(" months".upper(), "m.").replace(" days".upper(), "d.").replace(
+        " day".upper(), "d.").replace(" hours".upper(), "hrs.").replace(" hour".upper(), "hr.").replace(
         " minutes".upper(), "mins.").replace(
-        "and".upper(), "").replace(" seconds".upper(), "secs.").replace(" second".upper(), "sec.")
+        "and".upper(), "").replace(" seconds".upper(), "secs.").replace(" second".upper(), "sec.").replace(",", "")
 
 
 # input => ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", ..., "100"]  <- array of 100 video ids
