@@ -13,6 +13,10 @@ class ProfileManager(models.Manager):
         pass
 
 
+class Untube(models.Model):
+    page_likes = models.IntegerField(default=0)
+
+
 # extension of the built in User model made by Django
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -36,7 +40,8 @@ class Profile(models.Model):
     objects = ProfileManager()
     show_import_page = models.BooleanField(default=True)  # shows the user tips for a week
     yt_channel_id = models.CharField(max_length=420, default='')
-    import_in_progress = models.BooleanField(default=False)  # if True, will not let the user access main site until they import their YT playlists
+    import_in_progress = models.BooleanField(
+        default=False)  # if True, will not let the user access main site until they import their YT playlists
     imported_yt_playlists = models.BooleanField(default=False)  # True if user imported all their YT playlists
 
     # google api token details
@@ -53,7 +58,6 @@ class Profile(models.Model):
     create_playlist_type = models.CharField(max_length=50, default="")
     create_playlist_add_vids_from_collection = models.CharField(max_length=50, default="")
     create_playlist_add_vids_from_links = models.CharField(max_length=50, default="")
-
 
 
 # as soon as one User object is created, create an associated profile object

@@ -8,13 +8,23 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.contrib import messages
 from apps.main.models import Playlist
+from .models import Untube
 from django.template import loader
 
 
 # Create your views here.
 def index(request):
+    if Untube.objects.all().count() == 0:
+        untube = Untube.objects.create()
+        untube.save()
+
+    if not request.session.exists(request.session.session_key):
+        request.session.create()
+        request.session['liked_untube'] = False
+
     if request.user.is_anonymous:
-        return render(request, 'index.html')
+        return render(request, 'index.html', {"likes": Untube.objects.all().first().page_likes,
+                                              "users_joined": User.objects.all().count()})
     else:
         return redirect('home')
 
@@ -275,4 +285,36 @@ def user_playlists_updates(request, action):
 
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-la bel="Close"></button>
         </div>
+        """)
+
+
+### FOR INDEX.HTML
+@require_POST
+def like_untube(request):
+    untube = Untube.objects.all().first()
+    untube.page_likes += 1
+    untube.save()
+
+    request.session['liked_untube'] = True
+    request.session.save()
+
+    return HttpResponse(f"""
+            <a hx-post="/unlike-untube/" hx-swap="outerHTML" style="text-decoration: none; color: black">
+            <i class="fas fa-heart" style="color: #d02e2e"></i> {untube.page_likes} likes (p.s glad you liked it!)
+          </a>
+    """)
+
+@require_POST
+def unlike_untube(request):
+    untube = Untube.objects.all().first()
+    untube.page_likes -= 1
+    untube.save()
+
+    request.session['liked_untube'] = False
+    request.session.save()
+
+    return HttpResponse(f"""
+                <a hx-post="/like-untube/" hx-swap="outerHTML" style="text-decoration: none; color: black">
+                <i class="fas fa-heart"></i> {untube.page_likes} likes (p.s :/)
+              </a>
         """)

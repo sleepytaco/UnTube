@@ -4,6 +4,9 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name='index'),
+    path("like-untube/", views.like_untube, name="like_untube"),
+    path("unlike-untube/", views.unlike_untube, name="unlike_untube"),
+
     path("profile/", views.profile, name='profile'),
     path("logout/", views.log_out, name='log_out'),
     path("update/settings", views.update_settings, name='update_settings'),

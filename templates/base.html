@@ -16,14 +16,15 @@
             html {
                 scroll-behavior: smooth;
             }
+
             body {
                 margin: 0;
-                background: linear-gradient(-45deg, #e2b968, #68af5b, #8a97bc, #d69ab2);
+                //background: linear-gradient(-45deg, #e2b968, #68af5b, #8a97bc, #d69ab2);
                 //background: linear-gradient(-45deg, #B2A3FF, #84bcf3, #AE876B, #B0E7AE);
                 //background: linear-gradient(-45deg, #0645a4, #2480cd, #84bcf3, #b7d6f7);
                 //background: linear-gradient(-45deg, #AE876B, #ABA27B, #A7BC8A, #A3D69A);
-                background-size: 400% 400%;
-                animation: gradient 10s ease infinite;
+                //background-size: 400% 400%;
+                //animation: gradient 10s ease infinite;
                 }
 
             @keyframes gradient {
@@ -107,7 +108,7 @@
         <script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
         <script src="{% static 'htmx/extensions/class-tools.js' %}" type="application/javascript"></script>
     </head>
-    <body class="text-dark" style="font-family: 'Fredoka One', monospace; filter: contrast(80%);">
+    <body class="text-dark" style="font-family: 'Fredoka One', monospace; background-color: #FDF4DC;">
 
 
         {% if user.profile.show_import_page %}
@@ -174,7 +175,7 @@
                                 <img src="https://robohash.org/{{ user.username }}.png?set=set{{ user.profile.robohash_set }}" alt="{{ user.username }}" class="border border-3 border-primary rounded-circle" width="42" height="42">
                             </a>
                             <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="quickViewDropdown" style="z-index: 1021;">
-                                <li class="dropdown-item overflow-auto">Welcome, <span style="border-bottom: 3px #020000 dashed;">{{ user.username }}</span></li>
+                                <li class="dropdown-item overflow-auto">Logged in as <span style="border-bottom: 3px #020000 dashed;">{{ user.username }}</span></li>
                                 <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
                                 <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
 

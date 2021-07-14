@@ -12,7 +12,7 @@ def getHumanizedTimeString(seconds):
         datetime.timedelta(seconds=seconds)).upper(). \
         replace(" month".upper(), "m.").replace(" months".upper(), "m.").replace(" days".upper(), "d.").replace(
         " day".upper(), "d.").replace(" hours".upper(), "hrs.").replace(" hour".upper(), "hr.").replace(
-        " minutes".upper(), "mins.").replace(
+        " minutes".upper(), "mins.").replace(" minute".upper(), "min.").replace(
         "and".upper(), "").replace(" seconds".upper(), "secs.").replace(" second".upper(), "sec.").replace(",", "")
 
 

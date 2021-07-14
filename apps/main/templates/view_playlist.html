@@ -463,7 +463,7 @@
                     <i class="far fa-copy" aria-hidden="true"></i>
                 </button>
                 <button class="btn btn-sm  btn-primary mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasBottom" hx-get="{% url 'video_details' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-details"><i class="fas fa-info"></i></button>
-                <button class="btn btn-sm  btn-warning mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForVideoNotes" aria-controls="offcanvasBottom" hx-get="{% url 'video_notes' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-notes">Notes</button>
+                <!-- <button class="btn btn-sm  btn-warning mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForVideoNotes" aria-controls="offcanvasBottom" hx-get="{% url 'video_notes' playlist.playlist_id video.video_id %}" hx-trigger="click" hx-target="#video-notes">Notes</button> -->
                 <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist.playlist_id video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
                     <div id="video-{{ forloop.counter }}-fav">
                         {% if video.is_favorite %}

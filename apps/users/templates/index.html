@@ -1,13 +1,9 @@
-{% load crispy_forms_tags %}
 {% load socialaccount %}
 {% load static %}
 
 <!doctype html>
 <html lang="en">
   <head>
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes"> -->
-    <link rel="icon" href="{% static 'fontawesome-free-5.15.3-web/svgs/solid/underline.svg' %}">
-
     <meta charset="utf-8">
     <meta name="keywords" content="youtube, playlists, videos, delete videos, delete playlists, delete multiple videos, move multiple videos, merge playlists, video manager, playlist manager, youtube playlists, untube, google">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,76 +11,246 @@
     <meta name="author" content="Mohammed Abu Bakar Khan">
     <title>UnTube - A Youtube Playlist Manager</title>
 
-      <style type="text/css">
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/carousel/">
 
-            body {
-                background: linear-gradient(-45deg, #B2A3FF, #84bcf3, #AE876B, #B0E7AE);
-                //background: linear-gradient(-45deg, #0645a4, #2480cd, #84bcf3, #b7d6f7);
-                //background: linear-gradient(-45deg, #AE876B, #ABA27B, #A7BC8A, #A3D69A);
-                background-size: 400% 400%;
-                animation: gradient 10s ease infinite;
-                }
-
-            @keyframes gradient {
-                0% {
-                    background-position: 0% 50%;
-                }
-                50% {
-                    background-position: 100% 50%;
-                }
-                100% {
-                    background-position: 0% 50%;
-                }
-            }
-
-      </style>
 
       <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
-        <link href="{% static 'fontawesome-free-5.15.3-web/css/all.min.css' %}" rel="stylesheet">
+      <link href="{% static 'fontawesome-free-5.15.3-web/css/all.min.css' %}" rel="stylesheet">
+
 
     <!-- Bootstrap core CSS -->
-    <link href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'bootstrap5.0.1/css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <style>
+
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+
+            <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
+
 
     <!-- Custom styles for this template -->
-    <link href="https://getbootstrap.com/docs/4.0/examples/cover/cover.css" rel="stylesheet">
-
+    <link href="{% static 'css/carousel.css' %}" rel="stylesheet">
   </head>
-<body style="font-family: 'Fredoka One'">
+  <body style="font-family: 'Fredoka One',serif; background-color: #FDF4DC;">
 
-    <div class="cover-container d-flex h-100 p-3 mx-auto flex-column text-center">
-      <header class="masthead mb-auto">
-          {% for message in messages %}
-                  <div class="alert alert-success alert-success fade show" role="alert">
-                      {{ message }}
-                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                  </div>
-          {% endfor %}
 
-      </header>
+<main>
 
-      <main role="main" class="inner cover">
-        <h1 class="cover-heading">UnTube</h1>
-        <p class="lead">UnTube is a simple Youtube playlist manager. Modify and keep track of your YouTube playlists with ease.</p>
-        <p class="lead">
-            <br>
-            <a class="btn btn-danger" href="{% provider_login_url 'google' %}">Login with Google</a>
 
-        </p>
-      </main>
+      <div class="container py-4">
 
-      <footer class="mastfoot mt-auto">
-        <div class="inner text-white">
-          <h5>Made with <i class="fas fa-heart" style="color: #e25555;"></i> & <i class="fas fa-mug-hot" style="color: brown;"></i> in Django</h5>
-        </div>
-      </footer>
+
+    <div class="p-5 mb-4 bg-light rounded-3">
+      <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">UnTube: A YouTube Playlist Manager</h1>
+        <p class="col-md-8 fs-4">UnTube is a simple Youtube playlist manager to help you modify and keep track of your YouTube playlists with ease.</p>
+
+          <a class="btn btn-danger btn-lg" href="{% provider_login_url 'google' %}">Login with Google</a>
+          <a class="btn btn-primary btn-lg" href="#more">Tell me more</a>
+      </div>
     </div>
 
-<!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://getbootstrap.com/docs/4.0/assets/js/vendor/popper.min.js"></script>
-    <script src="https://getbootstrap.com/docs/4.0/dist/js/bootstrap.min.js"></script>
+          <footer class="mastfoot mt-auto">
+        <div class="d-flex justify-content-center text-dark">
+            <h5>Made with <i class="fas fa-heart" style="color: #e25555;"></i> & <i class="fas fa-mug-hot" style="color: brown;"></i> by <a href="https://github.com/sleepytaco" target="_blank" style="text-decoration: none;"><span style="border-bottom: 3px #d56b6b dashed;">Mohammed Khan</span></a> </h5>
+        </div>
+      </footer>
 
+      </div>
+
+  <!-- Marketing messaging and featurettes
+  ================================================== -->
+  <!-- Wrap the rest of the page in another container to center all the content. -->
+
+  <div class="container marketing">
+
+
+
+    <!-- START THE FEATURETTES -->
+
+    <hr class="featurette-divider" id="more">
+
+
+    <div class="row featurette">
+        <div class="col-md-7 order-md-2">
+            <h1>UnTube automatically gets statistics for every playlist.</h1>
+            <p class="lead">For every playlist, statistics like playlist duration, number of unavailable videos, or whether the playlist has any duplicate videos are automatically generated.</p>
+        </div>
+
+        <div class="col-md-5 order-md-1">
+            <div class="text-center">
+                <img src="{% static 'assets/imgs/playlist_stats.PNG' %}" class="rounded" style="max-width:100%; height: auto">
+            </div>
+        </div>
+    </div>
+
+
+    <hr class="featurette-divider">
+
+    <div class="row featurette">
+        <div class="col-md-7">
+            <h1 class="">Ideal for people with a lot of playlists on YouTube.</h1>
+            <p class="lead">UnTube offers features like bulk deletion as well as copying and moving videos from one playlist to multiple other playlists at once.</p>
+        </div>
+        <div class="col-md-5">
+            <div class="text-center">
+                <img src="{% static 'assets/imgs/features.gif' %}" class="rounded" style="max-width:100%; height: auto">
+            </div>
+        </div>
+    </div>
+
+
+    <hr class="featurette-divider">
+
+      <div class="row featurette">
+        <div class="col-md-7 order-md-2">
+            <h1 class="">Organize and search for playlists and videos in your collection.</h1>
+            <p class="lead">
+                UnTube organizes your playlists into specific categories. Further, you can create your own categories by tagging playlists.
+                Since UnTube stores a reference to all the videos in your playlists, you can easily search for the videos you want.
+            </p>
+        </div>
+
+        <div class="col-md-5 order-md-1">
+            <div class="text-center">
+                <img src="{% static 'assets/imgs/organize.gif' %}" class="rounded" style="max-width:100%; height: auto">
+            </div>
+        </div>
+    </div>
+
+
+
+  <hr class="featurette-divider">
+
+    <div class="row featurette">
+      <div class="col-md-7">
+        <h1 class="">Mark playlists as watching</h1>
+        <p class="lead">A small tool to keep track of the duration left for a playlist by letting you mark videos as watched.
+            Might serve as a motivator to finish any kind of academic playlist <i class="far fa-smile-wink fa-lg"></i> </p>
+      </div>
+      <div class="col-md-5">
+        <div class="text-center">
+          <img src="{% static 'assets/imgs/watching.gif' %}" class="rounded" style="    max-width:100%; height: auto">
+        </div>
+      </div>
+    </div>
+
+    <hr class="featurette-divider">
+
+      <div class="row featurette">
+        <div class="col-md-7 order-md-2">
+            <h1 class="">
+            And lastly, you can import playlists you do not own into your collection.</h1>
+            <p class="lead">
+            All the features above would still apply to playlists you do not own.
+            That means you can mark imported playlists as watching, tag them and also copy videos from imported playlists
+            into your own playlists.
+        </p>
+        </div>
+
+        <div class="col-md-5 order-md-1">
+            <div class="text-center">
+                <img src="{% static 'assets/imgs/import.gif' %}" class="rounded" style="max-width:100%; height: auto">
+            </div>
+        </div>
+    </div>
+
+          <hr class="featurette-divider">
+
+
+      <div class="row featurette justify-content-center">
+
+
+        <div class="col-md d-flex flex-column justify-content-center">
+<h1>
+    Some more features:
+</h1>
+  <h3>
+      <span style="border-bottom: 4px #c2d56b dashed;">merging multiple playlists into one</span>,
+  </h3>
+<h3>
+      <span style="border-bottom: 4px #c2d56b dashed;">deleting multiple playlists at once</span>,
+  </h3>
+    <h3>
+      <span style="border-bottom: 4px #c2d56b dashed;">auto-update your playlists with YouTube</span>,
+  </h3>
+    <h3>
+      <span style="border-bottom: 4px #c2d56b dashed;">pin and like playlists/videos</span>,
+  </h3>
+    <h3>
+      <span style="border-bottom: 4px #c2d56b dashed;">storing names of videos that go unavailable</span>
+  </h3>
+</div>
+        <div class="col-md d-flex flex-column justify-content-center">
+            <h1>About:</h1>
+            <h3>
+                This app was made possible because of the <a href="https://developers.google.com/youtube/v3/" target="_blank" style="text-decoration: none;"><span style="border-bottom: 4px #d56b80 dashed;">YouTube Data API</span></a>. By logging in with Google I get access to your
+                public Google account information <i class="fa fa-plus"></i> the permission to modify your YouTube data. That means you can manage
+                your private playlists on UnTube.
+            </h3>
+                </div>
+    </div>
+
+    <hr class="featurette-divider">
+
+
+    <!-- /END THE FEATURETTES -->
+
+  </div><!-- /.container -->
+
+
+  <!-- FOOTER -->
+  <footer class="container">
+    <p class="float-end h4 text-dark"><a href="#" style="color: black"><i class="fas fa-angle-double-up fa-lg"></i></a></p>
+      <p class="text-dark">
+          <i class="far fa-copyright"></i> 2021–2022
+          <a href="https://github.com/sleepytaco" target="_blank" style="text-decoration: none; color: black">
+              Mohammed Khan
+          </a>
+          <!--
+          <small><i class="fas fa-circle fa-sm"></i></small>
+          Loved what I made?
+          <a href="https://www.buymeacoffee.com/mohammedabkhan" style="text-decoration: none" target="_blank">
+              <span style="border-bottom: 3px #d56b6b dashed;">You can support me by buying me some coffee <i class="far fa-smile"></i> </span>
+          </a>
+          -->
+                    <small><i class="fas fa-circle fa-sm"></i></small>
+        <i class="fab fa-github fa-lg" style="color: black;"></i>
+          <small><i class="fas fa-circle fa-sm"></i></small>
+          <a {% if request.session.liked_untube %}hx-post="{% url 'unlike_untube' %}"{% else %}hx-post="{% url 'like_untube' %}"{% endif %} hx-trigger="click" hx-swap="outerHTML" style="text-decoration: none; color: black">
+            <i class="fas fa-heart" {% if request.session.liked_untube %}style="color: #d02e2e"{% endif %}></i> {{ likes }} likes {% if not request.session.liked_untube %}(click it){% endif %}
+          </a>
+                          <small><i class="fas fa-circle fa-sm"></i></small>
+
+                <a href="#" style="text-decoration: none; color: black">
+                <i class="fas fa-users"></i> {{ users_joined }} users joined
+                    </a>
+
+      </p>
+  </footer>
+</main>
+
+    <script src="{% static 'htmx/htmx.min.js' %}" type="application/javascript"></script>
+    <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.min.js' %}" type="application/javascript"></script>
+
+    <script type="application/javascript">
+        // send csrf_token when htmx does a post request
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+          })
+    </script>
   </body>
 </html>
