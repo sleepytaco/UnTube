@@ -51,12 +51,19 @@
 
 
       <div class="container py-4">
-
+            {% if messages %}
+                    {% for message in messages %}
+                      <div class="alert alert-success alert-dismissible fade show" role="alert">
+                          {{ message }}
+                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endfor %}
+                {% endif %}
 
     <div class="p-5 mb-4 bg-light rounded-3">
       <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold">UnTube: A YouTube Playlist Manager</h1>
-        <p class="col-md-8 fs-4">UnTube is a simple Youtube playlist manager to help you modify and keep track of your YouTube playlists with ease.</p>
+        <h1 class="display-5 fw-bold">UnTube</h1>
+        <p class="col-md-8 fs-4">A simple Youtube playlist manager to help you modify and keep track of your YouTube playlists with ease.</p>
 
           <a class="btn btn-danger btn-lg" href="{% provider_login_url 'google' %}">Login with Google</a>
           <a class="btn btn-primary btn-lg" href="#more">Tell me more</a>

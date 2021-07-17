@@ -2,11 +2,9 @@ import datetime
 import humanize
 import re
 
+
 # given amount of seconds makes it into this 54 MINUTES AND 53 SECONDS (from humanize) then
 # perform a bunch of replace operations to make it look like 54mins. 53secs.
-from django.db.models import Q
-
-
 def getHumanizedTimeString(seconds):
     return humanize.precisedelta(
         datetime.timedelta(seconds=seconds)).upper(). \

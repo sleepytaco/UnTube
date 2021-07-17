@@ -31,7 +31,7 @@ def index(request):
 
 @login_required
 def profile(request):
-    user_playlists = request.user.profile.playlists.all()
+    user_playlists = request.user.playlists.all()
     watching = user_playlists.filter(marked_as="watching")
 
     total_num_playlists = user_playlists.count()
@@ -52,7 +52,9 @@ def profile(request):
         statistics["watching_x"] = round(user_playlists.filter(marked_as="watching").count() / total_num_playlists, 1) * 100
         statistics["imported_x"] = round(user_playlists.filter(is_user_owned=False).count() / total_num_playlists, 1) * 100
 
-    return render(request, 'profile.html', {"statistics": statistics,
+    return render(request, 'profile.html', {
+                                            "total_num_playlists": total_num_playlists,
+                                            "statistics": statistics,
                                             "watching": watching})
 
 
@@ -148,7 +150,7 @@ def start_import(request):
 
         request.user.save()
 
-    result = Playlist.objects.getAllPlaylistsFromYT(request.user)
+    result = Playlist.objects.initializePlaylist(request.user)
     channel_found = True
     if result["status"] == -1:
         print("User has no YT channel")
@@ -193,10 +195,10 @@ def continue_import(request):
     if request.user.profile.import_in_progress is False:
         return redirect('home')
 
-    num_of_playlists = request.user.profile.playlists.all().count()
+    num_of_playlists = request.user.playlists.all().count()
 
     try:
-        remaining_playlists = request.user.profile.playlists.filter(is_in_db=False)
+        remaining_playlists = request.user.playlists.filter(is_in_db=False)
         playlists_imported = num_of_playlists - remaining_playlists.count() + 1
         playlist = remaining_playlists.order_by("created_at")[0]
         playlist_name = playlist.name
@@ -230,10 +232,11 @@ def continue_import(request):
 @login_required
 def user_playlists_updates(request, action):
     if action == 'check-for-updates':
-        user_playlists_on_UnTube = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
+        user_playlists_on_UnTube = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
 
-        result = Playlist.objects.getAllPlaylistsFromYT(request.user)
+        result = Playlist.objects.initializePlaylist(request.user)
 
+        print(result)
         youtube_playlist_ids = result["playlist_ids"]
         untube_playlist_ids = []
         for playlist in user_playlists_on_UnTube:
@@ -244,7 +247,7 @@ def user_playlists_updates(request, action):
         for pl_id in untube_playlist_ids:
             if pl_id not in youtube_playlist_ids:  # ie this playlist was deleted on youtube
                 deleted_playlist_ids.append(pl_id)
-                pl = request.user.profile.playlists.get(playlist_id__exact=pl_id)
+                pl = request.user.playlists.get(playlist_id__exact=pl_id)
                 deleted_playlist_names.append(f"{pl.name} (had {pl.video_count} videos)")
                 pl.delete()
 
@@ -252,7 +255,7 @@ def user_playlists_updates(request, action):
             print("No new updates")
             playlists = []
         else:
-            playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False))
+            playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False))
             print(
                 f"New updates found! {playlists.count()} newly added and {len(deleted_playlist_ids)} playlists deleted!")
             print(deleted_playlist_names)
@@ -261,7 +264,7 @@ def user_playlists_updates(request, action):
             {"playlists": playlists,
              "deleted_playlist_names": deleted_playlist_names}))
     elif action == 'init-update':
-        unimported_playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).count()
+        unimported_playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).count()
 
         return HttpResponse(f"""
         <div hx-get="/updates/user-playlists/start-update" hx-trigger="load" hx-target="#user-pl-updates">
@@ -274,7 +277,7 @@ def user_playlists_updates(request, action):
         </div>
         """)
     elif action == 'start-update':
-        unimported_playlists = request.user.profile.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False))
+        unimported_playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False))
 
         for playlist in unimported_playlists:
             Playlist.objects.getAllVideosForPlaylist(request.user, playlist.playlist_id)
