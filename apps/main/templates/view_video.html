@@ -1,0 +1,215 @@
+
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+    <script src="{% static 'htmx/extensions/class-tools.js' %}" type="application/javascript"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+    <div id="view_video">
+        {% if playlist.has_playlist_changed %}
+
+        {% else %}
+
+
+            <div class="card text-white bg-dark" style="max-width: 100%;">
+                <div class="row g-0">
+                    <div class="col-md-4 p-3">
+                        <img  class="img-fluid rounded-3" src="{{ video.thumbnail_url }}" style="max-width:100%; height: auto;   object-fit: cover;">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h2 class="card-title text-white">
+                                    <a href="https://www.youtube.com/watch?v={{ video.video_id }}" target="_blank" style="color: white; text-decoration: none">{{ video.name }}</a>
+                                    <br><small class="h4">{% if video.user_label %}a.k.a <span style="border-bottom: 3px #ffffff dashed;"> {{ video.user_label }}</span>{% endif %}</small>
+                                </h2>
+                                <h4>
+                                    <span id="notice-div">
+                                        {% if video.is_marked_as_watched %}
+                                            <span class="badge bg-success text-white" >
+                                            
+                                                <i class="fas fa-fire-alt me-1"></i> marked watched
+                                            </span>
+                                        {% endif %}
+                                    </span>
+                                    <span id="">
+                                        <span class="badge bg-dark">
+                                            <i class="fas fa-map-pin"></i>
+                                        </span>
+                                    </span>
+                                </h4>
+                            </div>
+                            <h6>by {{ video.channel_name }}</h6>
+                            <p class="card-text">
+                                {% if video.description %}
+                                    <h5 class="overflow-auto" {% if video.description|length > 750 %} style="height: 250px;"{% endif %}>
+                                        {{ video.description|linebreaksbr|urlize  }}
+                                    </h5>
+
+                                {% else %}
+                                    <h5>No description</h5>
+                                {% endif %}
+                            </p>
+
+
+                            <h6 class="h6 text-uppercase overflow-auto text-black-50">
+                                <span class="badge bg-secondary">{{ video.duration }}</span>
+                                {% if video.has_cc %}<span class="badge bg-danger">CC</span>{% endif %}
+                                {% if video.published_at %}<span class="badge bg-secondary">Video uploaded on {{ video.published_at }}</span>{% endif %}
+                                <span class="badge bg-primary text-white"><i class="fas fa-eye"></i> {% if video.view_count == -1 %}HIDDEN{% else %}{{ video.view_count|intcomma }}{% endif %}</span>
+                                <span class="badge bg-warning text-black-50"><i class="fas fa-thumbs-up"></i> {% if video.like_count == -1 %}HIDDEN{% else %}{{ video.like_count|intcomma }}{% endif %}</span>
+                                <span class="badge bg-warning text-black-50"><i class="fas fa-thumbs-down"></i> {% if video.dislike_count == -1 %}HIDDEN{% else %}{{ video.dislike_count|intcomma }}{% endif %}</span>
+                                <span class="badge bg-info text-black-50"><i class="fas fa-comments"></i> {% if video.comment_count == -1 %}HIDDEN{% else %}{{ video.comment_count|intcomma }}{% endif %} </span>
+                                {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}<span class="badge bg-light text-black-50">UNAVAILABLE</span>{% endif %}
+                                <span class="badge bg-light text-black-50"><a href="#found-in" style="text-decoration: none; color: grey"> Found in {{ video.playlistitem_set.count }} playlists</a></span>
+
+
+                            </h6>
+                            <p class="card-text"><small class="text-white-50">Last updated {{ video.updated_at|naturaltime }}</small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <br>
+
+        {% endif %}
+
+
+    </div>
+
+    <div class="row">
+        <div class="col-6">
+         <iframe width="100%" height="100%" src="//www.youtube.com/embed/{{ video.video_id }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        <div class="col-6">
+            <div class="row">
+                <div class="col-6">
+                        <h4>Your notes for this video
+
+                    </h4>
+                </div>
+                <div class="col d-flex justify-content-end pt-2">
+
+                    <span id="notes-save-status" class="text-success">
+                    </span>
+                </div>
+            </div>
+
+            <div >
+                <textarea name="video-notes-text-area"
+                          hx-post="{% url 'video_notes' video.video_id %}"
+                          hx-trigger="keyup changed delay:2s"
+                          hx-target="#notes-save-status"
+                          class="form-control"
+                          id="video-notes-text-area"
+                          placeholder="Enter here"
+                          rows="13">
+                    {{ video.user_notes }}
+                </textarea>
+
+                <div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+      <br>
+
+    <div class="">
+        <h3><span style="border-bottom: 3px #497ce2 dashed;">Video found in the following playlist(s)</span><i class="fas fa-binoculars ms-2" style="color: #4669d2"></i></h3>
+        <div id="found-in" class="row row-cols-1 row-cols-md-4 g-4 text-dark mt-0" data-masonry='{"percentPosition": true }'>
+            {% for playlist in video.playlists.all %}
+                <div class="col">
+
+                    <div class="card" style="background-color: #EFEFEF;">
+                        <img  class="bd-placeholder-img card-img-top" src="{{ playlist.thumbnail_url }}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
+
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: black">{{ playlist.name }}</a></h5>
+                            <p class="card-text">
+                                <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
+                                {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white">{{ playlist.get_watch_time_left }} left</span>{% endif %}
+                            </p>
+                            <p class="card-text">
+                                {% if playlist.tags.all %}
+                                    <small>
+                                        <i class="fas fa-tags fa-sm" style="color: black"></i>
+                                        {% for tag in playlist.tags.all %}
+                                            <span class="badge rounded-pill bg-primary mb-lg-1">
+                                                {{ tag.name }}
+                                            </span>
+                                        {% endfor %}
+                                    </small>
+                                {% endif %}
+                            </p>
+                            <p class="card-text"><small class="text-muted">Last watched {{ playlist.last_watched|naturalday }}</small></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!--
+        <div class="col">
+            <div class="card">
+                <a style="background-color: #7e89c2;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+                    <div class="card-body">
+                <h5 class="card-title">
+                   {{ playlist.name }}
+                    {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                    {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                </h5>
+                <p class="card-text">
+                    <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
+
+                    {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white">{{ playlist.get_watch_time_left }} left</span>{% endif %}
+                </p>
+                    {% if playlist.tags.all %}
+                <small>
+                <i class="fas fa-tags fa-sm" style="color: yellow"></i>
+                    {% for tag in playlist.tags.all %}
+                        <span class="badge rounded-pill bg-primary mb-lg-1">
+                            {{ tag.name }}
+                        </span>
+                    {% endfor %}
+                </small>
+                    {% endif %}
+                </div>
+                </a>
+            </div>
+        </div> -->
+                <!--
+            {% if forloop.counter == 3 %}
+                {% if watching.count|add:"-3" != 0 %}
+                <div class="col">
+                    <div class="card">
+                        <a style="background-color: #7e89c2;" href="{% url 'all_playlists' 'watching' %}" class="list-group-item list-group-item-action" aria-current="true">
+                            <div class="card-body">
+
+                                <p class="card-text">
+                                    <h3>+ {{ watching.count|add:"-3" }} more</h3>
+                                </p>
+                             </div>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
+            -->
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+    <!-- Initialize Quill editor -->
+    <script>
+      var quill = new Quill('#editor', {
+        theme: 'snow'
+      });
+    </script>
+{% endblock %}

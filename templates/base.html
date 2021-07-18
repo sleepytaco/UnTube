@@ -195,7 +195,7 @@
                 <main class="ms-lg-auto px-lg-5">
                 {% if messages %}
                     {% for message in messages %}
-                      <div class="alert alert-success alert-dismissible fade show" role="alert">
+                      <div class="alert alert-{% if message.tags == "error" %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
                           {{ message }}
                           <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                       </div>
@@ -216,7 +216,6 @@
         <script src="{% static 'clipboard.js/clipboard.min.js' %}" type="application/javascript"></script>
         <script async src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/gh/bbbootstrap/libraries@main/choices.min.js"></script>
-        <script src="{% static 'htmx/extensions/class-tools.js' %}" type="application/javascript"></script>
 
         <script type="application/javascript">
 

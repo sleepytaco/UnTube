@@ -1,7 +1,6 @@
 
 {% extends 'base.html' %}
 {% block content %}
-    <br>
     {% if user.profile.imported_yt_playlists %}
     <div hx-get="{% url 'user_playlists_updates' 'check-for-updates' %}" hx-trigger="load" hx-swap="outerHTML">
 

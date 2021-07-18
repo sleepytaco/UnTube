@@ -317,6 +317,8 @@ class PlaylistManager(models.Manager):
                                 'statistics'] else -1
                             vid.dislike_count = item['statistics']['dislikeCount'] if 'dislikeCount' in item[
                                 'statistics'] else -1
+                            vid.comment_count = item['statistics']['commentCount'] if 'commentCount' in item[
+                                'statistics'] else -1
                             vid.yt_player_HTML = item['player']['embedHtml'] if 'embedHtml' in item['player'] else ''
                             vid.save()
 
@@ -688,6 +690,8 @@ class PlaylistManager(models.Manager):
                         'statistics'] else -1
                     vid.dislike_count = item['statistics']['dislikeCount'] if 'dislikeCount' in item[
                         'statistics'] else -1
+                    vid.comment_count = item['statistics']['commentCount'] if 'commentCount' in item[
+                        'statistics'] else -1
                     vid.yt_player_HTML = item['player']['embedHtml'] if 'embedHtml' in item['player'] else ''
                     vid.save()
 
@@ -721,7 +725,7 @@ class PlaylistManager(models.Manager):
 
         # if its been a week since the last full scan, do a full playlist scan
         # basically checks all the playlist video for any updates
-        if playlist.last_full_scan_at + datetime.timedelta(minutes=10) < datetime.datetime.now(pytz.utc):
+        if playlist.last_full_scan_at + datetime.timedelta(minutes=2) < datetime.datetime.now(pytz.utc):
             print("DOING A FULL SCAN")
             current_video_ids = [playlist_item.video_id for playlist_item in playlist.playlist_items.all()]
             current_playlist_item_ids = [playlist_item.playlist_item_id for playlist_item in
@@ -740,8 +744,6 @@ class PlaylistManager(models.Manager):
 
                 # execute the above request, and store the response
                 pl_response = pl_request.execute()
-
-                print("PL ITEM", pl_response)
 
                 for item in pl_response['items']:
                     playlist_item_id = item['id']
@@ -769,8 +771,6 @@ class PlaylistManager(models.Manager):
                     try:
                         pl_request = youtube.playlistItems().list_next(pl_request, pl_response)
                         pl_response = pl_request.execute()
-
-                        print("PL ITEM", pl_response)
 
                         for item in pl_response['items']:
                             playlist_item_id = item['id']
@@ -971,6 +971,7 @@ class PlaylistManager(models.Manager):
 
                     playlist_item = playlist.playlist_items.get(playlist_item_id=playlist_item_id)
                     playlist_item.video_position = item['snippet']['position']
+                    playlist_item.save(update_fields=['video_position'])
 
                     # check if the video became unavailable on youtube
                     if not playlist_item.video.is_unavailable_on_yt and not playlist_item.video.was_deleted_on_yt:
@@ -1074,6 +1075,7 @@ class PlaylistManager(models.Manager):
                             current_playlist_item_ids.remove(playlist_item_id)
                             playlist_item = playlist.playlist_items.get(playlist_item_id=playlist_item_id)
                             playlist_item.video_position = item['snippet']['position']
+                            playlist_item.save(update_fields=['video_position'])
 
                             # check if the video became unavailable on youtube
                             if not playlist_item.video.is_unavailable_on_yt and not playlist_item.video.was_deleted_on_yt:
@@ -1139,6 +1141,8 @@ class PlaylistManager(models.Manager):
                     vid.like_count = item['statistics']['likeCount'] if 'likeCount' in item[
                         'statistics'] else -1
                     vid.dislike_count = item['statistics']['dislikeCount'] if 'dislikeCount' in item[
+                        'statistics'] else -1
+                    vid.comment_count = item['statistics']['commentCount'] if 'commentCount' in item[
                         'statistics'] else -1
                     vid.yt_player_HTML = item['player']['embedHtml'] if 'embedHtml' in item['player'] else ''
                     vid.save()

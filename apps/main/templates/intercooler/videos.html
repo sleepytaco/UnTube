@@ -19,8 +19,9 @@
                           <img src="https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg" class="img-fluid" alt="">
                       </div>
                         <div class="ms-4">
-                            <a class="link-dark" href="https://www.youtube.com/watch?v={{ playlist_item.video.video_id }}&list={{ playlist.playlist_id }}" target="_blank">
-                                {{ playlist_item.video_position }}. {{ playlist_item.video.name }}
+                            {{ playlist_item.video_position }}.
+                            <a class="link-dark" href="{% url 'video' playlist_item.video.video_id %}">
+                                 {{ playlist_item.video.name }}
                             </a>
                             <br><br>
                         </div>
@@ -38,7 +39,7 @@
 
                         {% if playlist_item.video.is_unavailable_on_yt or playlist_item.video.was_deleted_on_yt %}
                             {{ playlist_item.video_position }}.
-                            <a class="link-dark" href="https://www.youtube.com/watch?v={{ playlist_item.video.video_id }}&list={{ playlist.playlist_id }}" target="_blank">
+                            <a class="link-dark" href="{% url 'video' playlist_item.video.video_id %}">
                                 {{ playlist_item.video.name|truncatewords:"16" }}
                             </a>
                             <br>
@@ -47,15 +48,15 @@
                             <br><br>
                         {% else %}
                             {{ playlist_item.video_position }}.
-                            <a class="link-dark" href="https://www.youtube.com/watch?v={{ playlist_item.video.video_id }}&list={{ playlist.playlist_id }}" target="_blank">
+                            <a class="link-dark" href="{% url 'video' playlist_item.video.video_id %}">
                                 {{ playlist_item.video.name|truncatewords:"16" }}
                             </a> by {{ playlist_item.video.channel_name }} <br>
                             <span class="badge bg-secondary">{{ playlist_item.video.duration }}</span>
                             {% if playlist_item.video.has_cc %}<span class="badge bg-secondary">CC</span>{% endif %}
                             {% if playlist_item.video.published_at %}<span class="badge bg-secondary">{{ playlist_item.video.published_at }}</span>{% endif %}
-                          {% if playlist_item.video.view_count %}<span class="badge bg-info">{{ playlist_item.video.view_count|intword|intcomma }} views</span>{% endif %}
-
+                            {% if playlist_item.video.view_count %}<span class="badge bg-info">{{ playlist_item.video.view_count|intword|intcomma }} views</span>{% endif %}
                             {% if playlist_item.video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}
+                            {% if playlist_item.video.playlists.count|add:"-1" != 0 %}<span class="badge bg-dark"><a href="{% url 'video' playlist_item.video.video_id %}#found-in" style="text-decoration: none; color: white">found in {{ playlist_item.video.playlists.count|add:"-1" }} other playlists</a></span>{% endif %}
                             {% if playlist_item.video.video_details_modified %}<span class="badge bg-danger">{% if playlist_item.video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}ADDED{% endif %} {{ playlist_item.video.created_at|naturaltime|upper }}</span>{% endif %}<br>
                             <br>
                         {% endif %}
@@ -66,7 +67,7 @@
                 </div>
                 <div class="ms-5">
                 {% if playlist_item.video.is_unavailable_on_yt or playlist_item.video.was_deleted_on_yt %}
-                <button class="btn btn-sm  btn-warning mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForVideoNotes" aria-controls="offcanvasBottom" hx-get="{% url 'video_notes' playlist.playlist_id playlist_item.video.video_id %}" hx-trigger="click" hx-target="#video-notes">Notes</button>
+                <a class="btn btn-sm  btn-primary mb-1" href="{% url 'video' playlist_item.video.video_id %}"><i class="fas fa-info"></i></a>
                 <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist.playlist_id playlist_item.video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
                     <div id="video-{{ forloop.counter }}-fav">
                         {% if playlist_item.video.is_favorite %}
@@ -78,13 +79,12 @@
                 </button>
                 {% else %}
 
-                <a class="btn btn-sm btn-info mb-1" type="button" href="https://www.youtube.com/watch?v={{ playlist_item.video.video_id }}" class="btn btn-info me-1" target="_blank"><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+                <a class="btn btn-sm btn-info mb-1" type="button" href="https://www.youtube.com/watch?v={{ playlist_item.video.video_id }}&list={{ playlist.playlist_id }}" class="btn btn-info me-1" target="_blank"><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
                 <input class="form-control me-1 visually-hidden" id="video-{{ playlist_item.video.video_id }}" value="https://www.youtube.com/watch?v={{ playlist_item.video.video_id }}">
                 <button class="copy-btn btn btn-sm  btn-success mb-1" data-clipboard-target="#video-{{ playlist_item.video.video_id }}">
                     <i class="far fa-copy" aria-hidden="true"></i>
                 </button>
-                <button class="btn btn-sm  btn-primary mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasWithBackdrop" aria-controls="offcanvasBottom" hx-get="{% url 'video_details' playlist.playlist_id playlist_item.video.video_id %}" hx-trigger="click" hx-target="#video-details"><i class="fas fa-info"></i></button>
-                <button class="btn btn-sm  btn-warning mb-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasForVideoNotes" aria-controls="offcanvasBottom" hx-get="{% url 'video_notes' playlist.playlist_id playlist_item.video.video_id %}" hx-trigger="click" hx-target="#video-notes">Notes</button>
+                <a class="btn btn-sm  btn-primary mb-1" href="{% url 'video' playlist_item.video.video_id %}"><i class="fas fa-info"></i></a>
                 <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist.playlist_id playlist_item.video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
                     <div id="video-{{ forloop.counter }}-fav">
                         {% if playlist_item.video.is_favorite %}

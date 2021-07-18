@@ -1,9 +1,13 @@
 import datetime
 import random
+
+import bleach
 import pytz
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.html import strip_tags
+
 import apps
 from apps.main.models import Playlist, Tag
 from django.contrib.auth.decorators import login_required  # redirects user to settings.LOGIN_URL
@@ -88,27 +92,39 @@ def home(request):
 
 
 @login_required
-def view_video(request, playlist_id, video_id):
-    video = request.user.playlists.get(playlist_id=playlist_id).videos.get(video_id=video_id)
-    print(video.name)
-    return HttpResponse(loader.get_template("intercooler/video_details.html").render({"video": video}))
+def view_video(request, video_id):
+    if request.user.videos.filter(video_id=video_id).exists():
+        video = request.user.videos.get(video_id=video_id)
+        if video.is_unavailable_on_yt or video.was_deleted_on_yt:
+            messages.error(request, "Video went private/deleted on YouTube!")
+            return redirect('home')
+
+        return render(request, 'view_video.html', {"video": video})
+    else:
+        messages.error(request, "No such video in your UnTube collection!")
+        return redirect('home')
+
 
 
 @login_required
-def video_notes(request, playlist_id, video_id):
-    video = request.user.playlists.get(playlist_id=playlist_id).videos.get(video_id=video_id)
+@require_POST
+def video_notes(request, video_id):
+    print(request.POST)
+    if request.user.videos.filter(video_id=video_id).exists():
+        video = request.user.videos.get(video_id=video_id)
 
-    if request.method == "POST":
         if 'video-notes-text-area' in request.POST:
-            video.user_notes = request.POST['video-notes-text-area']
-            video.save()
-            return HttpResponse(loader.get_template("intercooler/messages.html").render(
-                {"message_type": "success", "message_content": "Saved!"}))
-    else:
-        print("GET VIDEO NOTES")
+            video.user_notes = bleach.clean(request.POST['video-notes-text-area'], tags=['br'])
+            video.save(update_fields=['user_notes', 'user_label'])
+            # messages.success(request, 'Saved!')
 
-    return HttpResponse(loader.get_template("intercooler/video_notes.html").render({"video": video,
-                                                                                    "playlist_id": playlist_id}))
+        return HttpResponse("""
+            <div hx-ext="class-tools">
+                <div classes="add visually-hidden:2s">Saved!</div>
+            </div>
+        """)
+    else:
+        return HttpResponse('No such video in your UnTube collection!')
 
 
 @login_required
@@ -142,7 +158,7 @@ def view_playlist(request, playlist_id):
             playlist.has_new_updates = False
             playlist.save()
 
-    playlist_items = playlist.playlist_items.order_by("video_position")
+    playlist_items = playlist.playlist_items.select_related('video').order_by("video_position")
 
     user_created_tags = Tag.objects.filter(created_by=request.user)
     playlist_tags = playlist.tags.all()
@@ -212,7 +228,7 @@ def all_playlists(request, playlist_type):
                 return redirect('/playlists/home')
 
             if not playlists.exists():
-                messages.warning(request, f"No playlists in {playlists_type}")
+                messages.info(request, f"No playlists in {playlists_type}")
                 return redirect('/playlists/home')
             random_playlist = random.choice(playlists)
             return redirect(f'/playlist/{random_playlist.playlist_id}')
@@ -274,9 +290,9 @@ def order_playlist_by(request, playlist_id, order_by):
     videos_details = ""
 
     if order_by == "all":
-        playlist_items = playlist.playlist_items.order_by("video_position")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("video_position")
     elif order_by == "favorites":
-        playlist_items = playlist.playlist_items.filter(video__is_favorite=True).order_by("video_position")
+        playlist_items = playlist.playlist_items.select_related('video').filter(video__is_favorite=True).order_by("video_position")
         videos_details = "Sorted by Favorites"
         display_text = "No favorites yet!"
     elif order_by == "popularity":
@@ -300,7 +316,7 @@ def order_playlist_by(request, playlist_id, order_by):
         videos_details = "Sorted by New Updates"
         display_text = "No new updates! Note that deleted videos will not show up here."
         if playlist.has_new_updates:
-            recently_updated_videos = playlist.playlist_items.filter(video__video_details_modified=True)
+            recently_updated_videos = playlist.playlist_items.select_related('video').filter(video__video_details_modified=True)
 
             for playlist_item in recently_updated_videos:
                 if playlist_item.video.video_details_modified_at + datetime.timedelta(hours=12) < datetime.datetime.now(
@@ -434,9 +450,10 @@ def delete_videos(request, playlist_id, command):
             """)
     elif command == "confirmed":
         print(video_ids)
+        url = f"/from/{playlist_id}/delete-videos/start"
         return HttpResponse(
-            """
-            <div class="spinner-border text-light" role="status" hx-post="/from/""" + playlist_id + """/delete-videos/start" hx-trigger="load" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" hx-vals="{'confirm before deleting': '""" + request.POST['confirm before deleting'] + """'}"></div><hr>
+            f"""
+            <div class="spinner-border text-light" role="status" hx-post="{url}" hx-trigger="load" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box"></div><hr>
             """)
     elif command == "start":
         print("Deleting", len(video_ids), "videos")
@@ -573,7 +590,7 @@ def search_UnTube(request):
 
         if search_query != "":
             for playlist in all_playlists:
-                pl_items = playlist.playlist_items.filter(Q(video__name__istartswith=search_query) | Q(video__user_label__istartswith=search_query) & Q(is_duplicate=False))
+                pl_items = playlist.playlist_items.select_related('video').filter(Q(video__name__istartswith=search_query) | Q(video__user_label__istartswith=search_query) & Q(is_duplicate=False))
 
                 if pl_items.exists():
                     for v in pl_items.all():
@@ -584,7 +601,7 @@ def search_UnTube(request):
 
         if search_query != "":
             for playlist in all_playlists:
-                pl_items = playlist.playlist_items.filter(Q(video__name__icontains=search_query) | Q(video__user_label__istartswith=search_query) & Q(is_duplicate=False))
+                pl_items = playlist.playlist_items.select_related('video').filter(Q(video__name__icontains=search_query) | Q(video__user_label__istartswith=search_query) & Q(is_duplicate=False))
 
                 if pl_items.exists():
                     for v in pl_items.all():
@@ -688,10 +705,10 @@ def load_more_videos(request, playlist_id, order_by, page):
 
     playlist_items = None
     if order_by == "all":
-        playlist_items = playlist.playlist_items.order_by("video_position")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("video_position")
         print(f"loading page 1: {playlist_items.count()} videos")
     elif order_by == "favorites":
-        playlist_items = playlist.playlist_items.filter(video__is_favorite=True).order_by("video_position")
+        playlist_items = playlist.playlist_items.select_related('video').filter(video__is_favorite=True).order_by("video_position")
     elif order_by == "popularity":
         videos = playlist.videos.order_by("-like_count")
     elif order_by == "date-published":
@@ -705,7 +722,7 @@ def load_more_videos(request, playlist_id, order_by, page):
     elif order_by == 'new-updates':
         playlist_items = []
         if playlist.has_new_updates:
-            recently_updated_videos = playlist.playlist_items.filter(video__video_details_modified=True)
+            recently_updated_videos = playlist.playlist_items.select_related('video').filter(video__video_details_modified=True)
 
             for playlist_item in recently_updated_videos:
                 if playlist_item.video.video_details_modified_at + datetime.timedelta(hours=12) < datetime.datetime.now(
@@ -896,7 +913,7 @@ def update_playlist(request, playlist_id, type):
             playlist_changed_text.append(f"\n{len(deleted_playlist_item_ids)} deleted")
 
         for playlist_item_id in deleted_playlist_item_ids:
-            playlist_item = playlist.playlist_items.get(playlist_item_id=playlist_item_id)
+            playlist_item = playlist.playlist_items.select_related('video').get(playlist_item_id=playlist_item_id)
             playlist_changed_text.append(f"--> {playlist_item.video.name}")
             playlist_item.delete()
 

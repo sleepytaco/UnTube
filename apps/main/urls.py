@@ -7,13 +7,16 @@ urlpatterns = [
     # path("", views.index, name='index'),
     # path("login/", views.log_in, name='log_in'),
 
+    ### STUFF RELATED TO INDIVIDUAL VIDEOS
+    path("video/<slug:video_id>", views.view_video, name='video'),
+    path("video/<slug:video_id>/notes", views.video_notes, name='video_notes'),
+
     ### STUFF RELATED TO WHOLE SITE
     path("search", views.search, name="search"),
     path("search/UnTube/", views.search_UnTube, name="search_UnTube"),
 
-    ### STUFF RELATED TO VIDEO(S)
+    ### STUFF RELATED TO VIDEO(S) INSIDE PLAYLISTS
     path("<slug:playlist_id>/<slug:video_id>/video-details", views.view_video, name='video_details'),
-    path("<slug:playlist_id>/<slug:video_id>/video-details/notes", views.video_notes, name='video_notes'),
     path("<slug:playlist_id>/<slug:video_id>/video-details/favorite", views.mark_video_favortie, name='mark_video_favorite'),
     path('<slug:playlist_id>/<slug:video_id>/video-details/watched', views.mark_video_watched, name='mark_video_watched'),
     path("from/<slug:playlist_id>/delete-videos/<slug:command>", views.delete_videos, name='delete_videos'),
