@@ -30,7 +30,7 @@
             <div class="card text-white" style="max-width: 100%; background-color: #1A4464;">
                 <div class="row g-0">
                     <div class="col-md-4 p-3">
-                        <img  class="img-fluid rounded-3" src="{{ playlist.thumbnail_url }}" style="max-width:100%; height: auto;   object-fit: cover;">
+                        <img  class="img-fluid rounded-3" src="{{ playlist_items.0.video.thumbnail_url }}" style="max-width:100%; height: auto;   object-fit: cover;">
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
@@ -62,7 +62,7 @@
                             <h6>by {{ playlist.channel_name }}</h6>
                             <p class="card-text">
                                 {% if playlist.description %}
-                                    <h5 class="overflow-auto" {% if playlist.description|length > 750 %} style="height: 150px;"{% endif %}>
+                                    <h5 class="overflow-auto" style="max-height: 350px;">
                                         {{ playlist.description|linebreaksbr|urlize  }}
                                     </h5>
 
@@ -160,7 +160,7 @@
                                 </div>
                             </h6>
 
-                            <p class="card-text"><small class="text-white-50">Last updated {{ playlist.updated_at|naturalday }}</small></p>
+                            <p class="card-text text-white-50"><small>Last updated {{ playlist.updated_at|naturalday }}</small> &bullet; <small>{{ playlist.num_of_accesses }} clicks </small></p>
                         </div>
                     </div>
                 </div>
@@ -216,7 +216,7 @@
                                     </button>
                                     <ul class="dropdown-menu">
                                         {% for channel in channels.1 %}
-                                        <li><button class="dropdown-item" hx-get="" hx-trigger="click" hx-target="#videos-div">{{ channel }}</button></li>
+                                        <li><a class="dropdown-item" hx-get="{% url 'order_playlist_by' playlist.playlist_id 'channel' %}" hx-vals='{"channel-name": "{{ channel }}"}' hx-trigger="click" hx-target="#videos-div">{{ channel }}</a></li>
                                         {% endfor %}
                                     </ul>
                                     {% endwith %}

@@ -44,7 +44,7 @@
                             <h6>by {{ video.channel_name }}</h6>
                             <p class="card-text">
                                 {% if video.description %}
-                                    <h5 class="overflow-auto" {% if video.description|length > 750 %} style="height: 250px;"{% endif %}>
+                                    <h5 class="overflow-auto" style="max-height: 350px;">
                                         {{ video.description|linebreaksbr|urlize  }}
                                     </h5>
 
@@ -54,21 +54,20 @@
                             </p>
 
 
-                            <h6 class="h6 text-uppercase overflow-auto text-black-50">
-                                <span class="badge bg-secondary">{{ video.duration }}</span>
-                                {% if video.has_cc %}<span class="badge bg-danger">CC</span>{% endif %}
-                                {% if video.published_at %}<span class="badge bg-secondary">Video uploaded on {{ video.published_at }}</span>{% endif %}
-                                <span class="badge bg-primary text-white"><i class="fas fa-eye"></i> {% if video.view_count == -1 %}HIDDEN{% else %}{{ video.view_count|intcomma }}{% endif %}</span>
-                                <span class="badge bg-warning text-black-50"><i class="fas fa-thumbs-up"></i> {% if video.like_count == -1 %}HIDDEN{% else %}{{ video.like_count|intcomma }}{% endif %}</span>
-                                <span class="badge bg-warning text-black-50"><i class="fas fa-thumbs-down"></i> {% if video.dislike_count == -1 %}HIDDEN{% else %}{{ video.dislike_count|intcomma }}{% endif %}</span>
-                                <span class="badge bg-info text-black-50"><i class="fas fa-comments"></i> {% if video.comment_count == -1 %}HIDDEN{% else %}{{ video.comment_count|intcomma }}{% endif %} </span>
-                                {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}<span class="badge bg-light text-black-50">UNAVAILABLE</span>{% endif %}
-                                <span class="badge bg-light text-black-50"><a href="#found-in" style="text-decoration: none; color: grey"> Found in {{ video.playlistitem_set.count }} playlists</a></span>
+                            <h6 class="h5 text-uppercase overflow-auto text-black-50">
+                                <span class="badge bg-success mb-1">{{ video.duration }}</span>
+                                {% if video.has_cc %}<span class="badge bg-danger mb-1">CC</span>{% endif %}
+                                {% if video.published_at %}<span class="badge bg-secondary mb-1">Video uploaded on {{ video.published_at }}</span>{% endif %}
+                                <span class="badge bg-primary text-white mb-1"><i class="fas fa-eye"></i> {% if video.view_count == -1 %}HIDDEN{% else %}{{ video.view_count|intcomma }}{% endif %}</span>
+                                <span class="badge bg-warning text-black-50 mb-1"><i class="fas fa-thumbs-up"></i> {% if video.like_count == -1 %}HIDDEN{% else %}{{ video.like_count|intcomma }}{% endif %}</span>
+                                <span class="badge bg-warning text-black-50 mb-1"><i class="fas fa-thumbs-down"></i> {% if video.dislike_count == -1 %}HIDDEN{% else %}{{ video.dislike_count|intcomma }}{% endif %}</span>
+                                <span class="badge bg-info text-black-50 mb-1"><i class="fas fa-comments"></i> {% if video.comment_count == -1 %}HIDDEN{% else %}{{ video.comment_count|intcomma }}{% endif %} </span>
+                                {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}<span class="badge bg-light text-black-50 mb-1">UNAVAILABLE</span>{% endif %}
+                                <span class="badge bg-light text-black-50 mb-1"><a href="#found-in" style="text-decoration: none; color: grey"> Found in {{ video.playlistitem_set.count }} playlists</a></span>
 
 
                             </h6>
-                            <p class="card-text"><small class="text-white-50">Last updated {{ video.updated_at|naturaltime }}</small></p>
-                        </div>
+                            <p class="card-text text-white-50"><small>Last updated {{ video.video_details_modified_at|naturalday }}</small> &bullet; <small>{{ video.num_of_accesses }} clicks </small></p>                        </div>
                     </div>
                 </div>
             </div>

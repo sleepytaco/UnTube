@@ -95,9 +95,13 @@ def home(request):
 def view_video(request, video_id):
     if request.user.videos.filter(video_id=video_id).exists():
         video = request.user.videos.get(video_id=video_id)
+
         if video.is_unavailable_on_yt or video.was_deleted_on_yt:
             messages.error(request, "Video went private/deleted on YouTube!")
             return redirect('home')
+
+        video.num_of_accesses += 1
+        video.save(update_fields=['num_of_accesses'])
 
         return render(request, 'view_video.html', {"video": video})
     else:
@@ -297,20 +301,20 @@ def order_playlist_by(request, playlist_id, order_by):
         display_text = "No favorites yet!"
     elif order_by == "popularity":
         videos_details = "Sorted by Popularity"
-        videos = playlist.videos.order_by("-like_count")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("-video__like_count")
     elif order_by == "date-published":
         videos_details = "Sorted by Date Published"
-        videos = playlist.videos.order_by("-published_at")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("-published_at")
     elif order_by == "views":
         videos_details = "Sorted by View Count"
-        videos = playlist.videos.order_by("-view_count")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("-video__view_count")
     elif order_by == "has-cc":
         videos_details = "Filtered by Has CC"
-        videos = playlist.videos.filter(has_cc=True).order_by("video_position")
+        playlist_items = playlist.playlist_items.select_related('video').filter(video__has_cc=True).order_by("video_position")
         display_text = "No videos in this playlist have CC :("
     elif order_by == "duration":
         videos_details = "Sorted by Video Duration"
-        videos = playlist.videos.order_by("-duration_in_seconds")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("-video__duration_in_seconds")
     elif order_by == 'new-updates':
         playlist_items = []
         videos_details = "Sorted by New Updates"
@@ -330,11 +334,15 @@ def order_playlist_by(request, playlist_id, order_by):
             else:
                 playlist_items = recently_updated_videos.order_by("video_position")
     elif order_by == 'unavailable-videos':
-        videos = playlist.videos.filter(Q(is_unavailable_on_yt=True) & Q(was_deleted_on_yt=True))
+        playlist_items = playlist.playlist_items.select_related('video').filter(Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=True))
         videos_details = "Sorted by Unavailable Videos"
         display_text = "None of the videos in this playlist have gone unavailable... yet."
+    elif order_by == 'channel':
+        channel_name = request.GET["channel-name"]
+        playlist_items = playlist.playlist_items.select_related('video').filter(video__channel_name=channel_name).order_by("video_position")
+        videos_details = f"Sorted by Channel '{channel_name}'"
     else:
-        return redirect('home')
+        return HttpResponse("Something went wrong :(")
 
     return HttpResponse(loader.get_template("intercooler/videos.html").render({"playlist": playlist,
                                                                                "playlist_items": playlist_items,
@@ -710,15 +718,15 @@ def load_more_videos(request, playlist_id, order_by, page):
     elif order_by == "favorites":
         playlist_items = playlist.playlist_items.select_related('video').filter(video__is_favorite=True).order_by("video_position")
     elif order_by == "popularity":
-        videos = playlist.videos.order_by("-like_count")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("-video__like_count")
     elif order_by == "date-published":
-        videos = playlist.videos.order_by("-published_at")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("-published_at")
     elif order_by == "views":
-        videos = playlist.videos.order_by("-view_count")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("-video__view_count")
     elif order_by == "has-cc":
-        videos = playlist.videos.filter(has_cc=True).order_by("video_position")
+        playlist_items = playlist.playlist_items.select_related('video').filter(video__has_cc=True).order_by("video_position")
     elif order_by == "duration":
-        videos = playlist.videos.order_by("-duration_in_seconds")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("-video__duration_in_seconds")
     elif order_by == 'new-updates':
         playlist_items = []
         if playlist.has_new_updates:
@@ -736,7 +744,11 @@ def load_more_videos(request, playlist_id, order_by, page):
             else:
                 playlist_items = recently_updated_videos.order_by("video_position")
     elif order_by == 'unavailable-videos':
-        videos = playlist.videos.filter(Q(is_unavailable_on_yt=True) & Q(was_deleted_on_yt=True))
+        playlist_items = playlist.playlist_items.select_related('video').filter(Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=True))
+    elif order_by == 'channel':
+        channel_name = request.GET["channel-name"]
+        playlist_items = playlist.playlist_items.select_related('video').filter(
+            video__channel_name=channel_name).order_by("video_position")
 
     return HttpResponse(loader.get_template("intercooler/videos.html")
         .render(

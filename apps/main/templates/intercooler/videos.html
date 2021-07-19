@@ -5,7 +5,7 @@
 <div class="list-group" id="video-checkboxes">
     {% if playlist_items %}
       {% for playlist_item in playlist_items|slice:"0:50" %}
-                <li {% if forloop.last and playlist_items.count > 50 %}hx-get="{% url 'load_more_videos' playlist.playlist_id order_by|default:"all" page|default:"1" %}"
+                <li id="{{ playlist_item.playlist_item_id }}" onclick="selectVideo(this);"  {% if forloop.last and playlist_items.count > 50 %}hx-get="{% url 'load_more_videos' playlist.playlist_id order_by|default:"all" page|default:"1" %}"
     hx-trigger="revealed"
     hx-swap="afterend" hx-indicator="#load-more-videos-spinner"{% endif %} class="list-group-item d-flex justify-content-between align-items-center bg-transparent" style="background-color: #40B3A2">
 
@@ -13,13 +13,13 @@
 
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ playlist_item.video.video_id }}" name="video-id">
+                        <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ playlist_item.video.video_id }}" id="video-{{ playlist_item.playlist_item_id }}" name="video-id">
                     </div>
                       <div class="ms-4" style="max-width: 115px; max-height: 100px;">
                           <img src="https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg" class="img-fluid" alt="">
                       </div>
                         <div class="ms-4">
-                            {{ playlist_item.video_position }}.
+                            {{ playlist_item.video_position|add:"1" }}.
                             <a class="link-dark" href="{% url 'video' playlist_item.video.video_id %}">
                                  {{ playlist_item.video.name }}
                             </a>
@@ -30,7 +30,7 @@
 
                 <div class="d-flex justify-content-between align-items-center" >
                     <div>
-                        <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ playlist_item.video.video_id }}" name="video-id">
+                        <input class="video-checkboxes" style="display: none" type="checkbox" value="{{ playlist_item.video.video_id }}" id="video-{{ playlist_item.playlist_item_id }}" name="video-id">
                     </div>
                       <div class="ms-4" style="max-width: 115px; max-height: 100px;">
                           <img src="{% if playlist_item.video.thumbnail_url %}{{ playlist_item.video.thumbnail_url }}{% else %}https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg{% endif %}" class="img-fluid" alt="">
@@ -38,7 +38,7 @@
                         <div class="ms-4">
 
                         {% if playlist_item.video.is_unavailable_on_yt or playlist_item.video.was_deleted_on_yt %}
-                            {{ playlist_item.video_position }}.
+                            {{ playlist_item.video_position|add:"1" }}.
                             <a class="link-dark" href="{% url 'video' playlist_item.video.video_id %}">
                                 {{ playlist_item.video.name|truncatewords:"16" }}
                             </a>
@@ -47,7 +47,7 @@
                             {% if playlist_item.video.video_details_modified %}<span class="badge bg-danger">{% if playlist_item.video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}ADDED{% endif %} {{ playlist_item.video.updated_at|naturaltime|upper }}</span>{% endif %}
                             <br><br>
                         {% else %}
-                            {{ playlist_item.video_position }}.
+                            {{ playlist_item.video_position|add:"1" }}.
                             <a class="link-dark" href="{% url 'video' playlist_item.video.video_id %}">
                                 {{ playlist_item.video.name|truncatewords:"16" }}
                             </a> by {{ playlist_item.video.channel_name }} <br>
