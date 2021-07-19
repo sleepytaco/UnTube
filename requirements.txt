@@ -1,4 +1,5 @@
 asgiref==3.3.4
+bleach==3.3.1
 cachetools==4.2.2
 certifi==2020.12.5
 cffi==1.14.5
@@ -19,6 +20,7 @@ django-polymorphic==3.0.0
 django-sekizai==2.0.0
 django-treebeard==4.5.1
 djangocms-admin-style==2.0.2
+djhtml==1.4.9
 easy-thumbnails==2.7.1
 ecdsa==0.14.1
 google-api-core==1.28.0
@@ -56,4 +58,5 @@ sqlparse==0.4.1
 Unidecode==1.1.2
 uritemplate==3.0.1
 urllib3==1.26.5
+webencodings==0.5.1
 whitenoise==5.2.0
