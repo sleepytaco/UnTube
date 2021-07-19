@@ -42,7 +42,162 @@
             </div>
         {% endif %}
 
-        {% if watching %}
+
+        <div class="row">
+
+            <div class="col-6 mb-4">
+                <div class="card bg-transparent text-dark">
+                    <div class="card-body">
+                        <h6 class="d-flex align-items-center mb-3"><span class="text-primary me-2">{{ user.playlists.count }}</span>Playlists Statistics</h6>
+                        <div class="d-flex align-items-center mb-3">
+
+                            <canvas id="overall-playlists-distribution" data-url="{% url 'overall_playlists_distribution' %}">
+
+                            </canvas>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 mb-4">
+                <div class="card bg-transparent text-dark">
+                    <div class="card-body">
+                        <h6 class="d-flex align-items-center mb-3"><span class="text-primary me-2">{{ watching.count }}</span>
+                            {% if watching.count > 0 %}
+                            Playlist{% if watching.count > 1 %}s{% endif %} Watching: Percent Complete Chart
+                            {% else %}
+                            Watching: Mark playlists as watching to view their completeness % here!
+                            {% endif %}
+                        </h6>
+                        <div class="d-flex align-items-center mb-3">
+
+                            <canvas id="watching-playlists-percent-distribution" data-url="{% url 'watching_playlists_percent_distribution' %}">
+
+                            </canvas>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row" ><!--data-masonry='{"percentPosition": true }'-->
+            {% for playlist in user_playlists|slice:"0:3" %}
+                <div class="col-sm-6 col-lg-4 mb-4">
+                    <div class="card card-cover h-100 overflow-hidden text-white gradient-bg-3 rounded-5 shadow-lg" style="">
+                        <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
+                            <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: #fafafa">{{ playlist.name }}</a> </h2>
+                            <ul class="d-flex list-unstyled mt-auto">
+                                <li class="me-auto">
+                                    <img src="{{ playlist.thumbnail_url }}" alt="Bootstrap" width="32" height="32" class="rounded-circle border border-white">
+                                </li>
+                                <li class="d-flex align-items-center me-3">
+                                    <small>by {{ playlist.channel_name }}</small>
+                                </li>
+                                <li class="d-flex align-items-center">
+                                    <i class="fas fa-eye me-1"></i>
+                                    <small>{{ playlist.num_of_accesses }} clicks</small>
+
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- FULL IMAGE CARD: might be useful
+            <div class="col-sm-6 col-lg-4 mb-4">
+                <div class="card">
+                    <svg class="bd-placeholder-img card-img" width="100%" height="260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Card image" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#868e96"/><text x="50%" y="50%" fill="#dee2e6" dy=".3em">Card image</text></svg>
+
+                </div>
+            </div>
+            -->
+        </div>
+
+        <br>
+
+                   <div class="row text-dark mt-0 align-items-center">
+                <div class="col">
+                    <div class="card card-cover h-100 overflow-hidden text-white bg-dark rounded-5 shadow-lg" style="">
+                        <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
+                            <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">All/Your Pins <i class="fas fa-thumbtack" style="color: red"></i> </h2>
+                        </div>
+                    </div>
+                    <!-- Implement later
+                    <div class="row mt-3">
+                        <div class="col">
+
+                        </div>
+                        <div class="col-6">
+                        <div class="card">
+                            <a style="background: linear-gradient(-45deg, #e2b968, #68af5b, #8a97bc, #d69ab2); background-size: 400% 400%; animation: gradient 7s ease infinite;" href="#" class="list-group-item list-group-item-action" aria-current="true">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-center h1">
+                                        <i class="fas fa-history"></i>
+                                    </div>
+                                    <div class="d-flex justify-content-center h1">
+                                        YOUR
+                                    </div>
+                                    <div class="d-flex justify-content-center h1">
+                                        ACTIVITY
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        </div>
+                        <div class="col">
+
+                        </div>
+                    </div>
+                    -->
+                </div>
+               <div class="col-8">
+                  <div class="card bg-transparent border border-0 text-black">
+                        <div class="card-body">
+                              <h3><span style="border-bottom: 3px #a35a5a dashed;">Most viewed playlists</span> <a href="{% url 'all_playlists' 'all' %}" class="pt-1"><i class="fas fa-binoculars"></i> </a></h3>
+                                {% if user_playlists %}
+                                <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
+                                    {% for playlist in user_playlists|slice:"0:3" %}
+                                    <div class="col">
+                                        <div class="card overflow-auto" style="background-color: #4790c7;">
+                                            <a href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item bg-transparent list-group-item-action" aria-current="true">
+                                                <div class="card-body">
+                                            <h5 class="card-title">
+                                               #{{ forloop.counter }} <br><br>{{ playlist.name }}
+                                                {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                                                {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                                            </h5>
+                                            <small>
+                                                <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
+                                                <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                                                <span class="badge bg-secondary rounded-pill">{{ playlist.num_of_accesses }} clicks </span>
+
+                                            </small>
+                                            </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+
+                                </div>
+
+                                {% else %}
+                                    <br>
+                                <h5>Nothing to see here... yet.</h5>
+                                {% endif %}
+
+
+                        </div>
+                      </div>
+                </div>
+            </div>
+
+        <br>
+                        {% if watching %}
+
             <div class="border border-5 rounded-3 border-primary p-3">
                 <h3><span style="border-bottom: 3px #e24949 dashed;">Continue Watching</span><i class="fas fa-fire-alt ms-2" style="color: #d24646"></i></h3>
                 <div class="row row-cols-1 row-cols-md-4 g-4 text-dark mt-0" data-masonry='{"percentPosition": true }'>
@@ -128,120 +283,6 @@
             <br>
         {% endif %}
 
-
-        <div class="row" ><!--data-masonry='{"percentPosition": true }'-->
-            {% for playlist in user_playlists|slice:"0:3" %}
-                <div class="col-sm-6 col-lg-4 mb-4">
-                    <div class="card card-cover h-100 overflow-hidden text-white gradient-bg rounded-5 shadow-lg" style="">
-                        <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
-                            <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: #fafafa">{{ playlist.name }}</a> </h2>
-                            <ul class="d-flex list-unstyled mt-auto">
-                                <li class="me-auto">
-                                    <img src="{{ playlist.thumbnail_url }}" alt="Bootstrap" width="32" height="32" class="rounded-circle border border-white">
-                                </li>
-                                <li class="d-flex align-items-center me-3">
-                                    <small>by {{ playlist.channel_name }}</small>
-                                </li>
-                                <li class="d-flex align-items-center">
-                                    <i class="fas fa-eye me-1"></i>
-                                    <small>{{ playlist.num_of_accesses }} clicks</small>
-
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-
-            <div class="col-sm-6 col-lg-4 mb-4">
-                <div class="card">
-                    <svg class="bd-placeholder-img card-img-top" width="100%" height="200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#868e96"/><text x="50%" y="50%" fill="#dee2e6" dy=".3em">Image cap</text></svg>
-
-                    <div class="card-body">
-                        <h5 class="card-title">Card title that wraps to a new line</h5>
-                        <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-                    </div>
-                </div>
-            </div>
-
-        <div class="col-sm-6 col-lg-4 mb-4">
-                <div class="card bg-dark text-white">
-                    <div class="card-body">
-                        <h6 class="d-flex align-items-center mb-3"><span class="text-info me-2">{{ user.playlists.count }}</span>Playlists Statistics</h6>
-                        <div class="d-flex align-items-center mb-3">
-
-                            <canvas id="overall-playlists-distribution" data-url="{% url 'overall_playlists_distribution' %}">
-
-                            </canvas>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-sm-6 col-lg-4 mb-4">
-                <div class="card">
-                    <svg class="bd-placeholder-img card-img-top" width="100%" height="200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#868e96"/><text x="50%" y="50%" fill="#dee2e6" dy=".3em">Image cap</text></svg>
-
-                    <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <p class="card-text">This card has supporting text below as a natural lead-in to additional content.</p>
-                        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-                    </div>
-                </div>
-            </div>
-
-        <div class="col-sm-6 col-lg-4 mb-4">
-                <div class="card p-3">
-                    <figure class="p-3 mb-0">
-                        <blockquote class="blockquote">
-                            <p>A well-known quote, contained in a blockquote element.</p>
-                        </blockquote>
-                        <figcaption class="blockquote-footer mb-0 text-muted">
-                            Someone famous in <cite title="Source Title">Source Title</cite>
-                        </figcaption>
-                    </figure>
-                </div>
-            </div>
-
-            <div class="col-sm-6 col-lg-4 mb-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <p class="card-text">This card has a regular title and short paragraph of text below it.</p>
-                        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-4 mb-4">
-                <div class="card">
-                    <svg class="bd-placeholder-img card-img" width="100%" height="260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Card image" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#868e96"/><text x="50%" y="50%" fill="#dee2e6" dy=".3em">Card image</text></svg>
-
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-4 mb-4">
-                <div class="card p-3 text-end">
-                    <figure class="mb-0">
-                        <blockquote class="blockquote">
-                            <p>A well-known quote, contained in a blockquote element.</p>
-                        </blockquote>
-                        <figcaption class="blockquote-footer mb-0 text-muted">
-                            Someone famous in <cite title="Source Title">Source Title</cite>
-                        </figcaption>
-                    </figure>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-4 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <p class="card-text">This is another card with title and supporting text below. This card has some additional content to make it slightly taller overall.</p>
-                        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <br>
 
         <div class="row text-dark mt-0 d-flex justify-content-evenly">
@@ -315,6 +356,8 @@
 
 
         <br>
+
+
         <br>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 
@@ -322,12 +365,12 @@
 
                     $(function () {
 
-                  var $populationChart = $("#overall-playlists-distribution");
+                  var $overallPlaylists = $("#overall-playlists-distribution");
                   $.ajax({
-                    url: $populationChart.data("url"),
+                    url: $overallPlaylists.data("url"),
                     success: function (data) {
 
-                      var ctx = $populationChart[0].getContext("2d");
+                      var ctx = $overallPlaylists[0].getContext("2d");
                        var coloR = [];
 
                      var dynamicColors = function() { // generate random color
@@ -353,6 +396,63 @@
                           }]
                         },
                         options: {
+                          responsive: true,
+                          legend: {
+                            position: 'right',
+                              display: true
+                          },
+                          title: {
+                            display: false,
+                              text: 'Video Count Distribution per Channel',
+                              fontSize: 20,
+                              fontColor: '#fff',
+                          },
+
+                        }
+                      });
+
+                    }
+                  });
+                   
+                    var $watchingPlaylists = $("#watching-playlists-percent-distribution");
+                  $.ajax({
+                    url: $watchingPlaylists.data("url"),
+                    success: function (data) {
+
+                      var ctx = $watchingPlaylists[0].getContext("2d");
+                       var coloR = [];
+
+                     var dynamicColors = function() { // generate random color
+                            var r = Math.floor(Math.random() * 255);
+                            var g = Math.floor(Math.random() * 255);
+                            var b = Math.floor(Math.random() * 255);
+                            return "rgb(" + r + "," + g + "," + b + ")";
+                         };
+
+                      for (var i in data.labels) {
+                          if (data.labels)
+                          coloR.push(dynamicColors());
+                     }
+
+                      new Chart(ctx, {
+                        type: 'polarArea',
+                        data: {
+                          labels: data.labels,
+                          datasets: [{
+                            label: 'Playlist Types',
+                            backgroundColor: coloR,
+                            data: data.data
+                          }]
+                        },
+                        options: {
+                            scale: {
+                              reverse: false,
+                              ticks: {
+                                min: 0,
+                                max: 100,
+                                interval: 10,
+                              }
+                            },
                           responsive: true,
                           legend: {
                             position: 'right',

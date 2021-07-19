@@ -55,3 +55,19 @@ def overall_playlists_distribution(request):
         'labels': labels,
         'data': data,
     })
+
+
+def watching_playlists_percent_distribution(request):
+    labels = []
+    data = []
+
+    watching_playlists = request.user.playlists.filter(Q(is_in_db=True) & Q(marked_as="watching"))
+
+    for playlist in watching_playlists:
+        labels.append(playlist.name)
+        data.append(playlist.get_percent_complete())
+
+    return JsonResponse(data={
+        'labels': labels,
+        'data': data,
+    })

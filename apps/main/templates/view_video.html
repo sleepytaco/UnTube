@@ -30,7 +30,7 @@
                                         {% if video.is_marked_as_watched %}
                                             <span class="badge bg-success text-white" >
                                             
-                                                <i class="fas fa-fire-alt me-1"></i> marked watched
+                                                <i class="fas fa-flag-checkered me-1"></i> marked watched
                                             </span>
                                         {% endif %}
                                     </span>
@@ -63,7 +63,7 @@
                                 <span class="badge bg-warning text-black-50 mb-1"><i class="fas fa-thumbs-down"></i> {% if video.dislike_count == -1 %}HIDDEN{% else %}{{ video.dislike_count|intcomma }}{% endif %}</span>
                                 <span class="badge bg-info text-black-50 mb-1"><i class="fas fa-comments"></i> {% if video.comment_count == -1 %}HIDDEN{% else %}{{ video.comment_count|intcomma }}{% endif %} </span>
                                 {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}<span class="badge bg-light text-black-50 mb-1">UNAVAILABLE</span>{% endif %}
-                                <span class="badge bg-light text-black-50 mb-1"><a href="#found-in" style="text-decoration: none; color: grey"> Found in {{ video.playlistitem_set.count }} playlists</a></span>
+                                <span class="badge bg-light text-black-50 mb-1"><a href="#found-in" style="text-decoration: none; color: grey"> Found in {{ video.playlistitem_set.count }} playlist{% if video.playlistitem_set.count > 1 %}s{% endif %}</a></span>
 
 
                             </h6>
@@ -121,7 +121,7 @@
       <br>
 
     <div class="">
-        <h3><span style="border-bottom: 3px #497ce2 dashed;">Video found in the following playlist(s)</span><i class="fas fa-binoculars ms-2" style="color: #4669d2"></i></h3>
+        <h3><span style="border-bottom: 3px #497ce2 dashed;">Video found in the following playlist{% if video.playlists.all.count > 1 %}s{% endif %}</span><i class="fas fa-binoculars ms-2" style="color: #4669d2"></i></h3>
         <div id="found-in" class="row row-cols-1 row-cols-md-4 g-4 text-dark mt-0" data-masonry='{"percentPosition": true }'>
             {% for playlist in video.playlists.all %}
                 <div class="col">

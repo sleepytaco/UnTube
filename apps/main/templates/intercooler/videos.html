@@ -54,9 +54,10 @@
                             <span class="badge bg-secondary">{{ playlist_item.video.duration }}</span>
                             {% if playlist_item.video.has_cc %}<span class="badge bg-secondary">CC</span>{% endif %}
                             {% if playlist_item.video.published_at %}<span class="badge bg-secondary">{{ playlist_item.video.published_at }}</span>{% endif %}
-                            {% if playlist_item.video.view_count %}<span class="badge bg-info">{{ playlist_item.video.view_count|intword|intcomma }} views</span>{% endif %}
-                            {% if playlist_item.video.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}
-                            {% if playlist_item.video.playlists.count|add:"-1" != 0 %}<span class="badge bg-dark"><a href="{% url 'video' playlist_item.video.video_id %}#found-in" style="text-decoration: none; color: white">found in {{ playlist_item.video.playlists.count|add:"-1" }} other playlists</a></span>{% endif %}
+                            <span class="badge bg-info text-black-50"><i class="fas fa-eye"></i> {% if playlist_item.video.view_count == -1 %}HIDDEN{% else %}{{ playlist_item.video.view_count|intword|intcomma }}{% endif %}</span>
+                            <span class="badge bg-warning text-black-50"><i class="fas fa-thumbs-up"></i> {% if playlist_item.video.like_count == -1 %}HIDDEN{% else %}{{ playlist_item.video.like_count|intword|intcomma }}{% endif %}</span>
+
+                            {% if playlist_item.video.playlists.count|add:"-1" != 0 %}<span class="badge bg-dark"><a href="{% url 'video' playlist_item.video.video_id %}#found-in" style="text-decoration: none; color: white">found in {{ playlist_item.video.playlists.count|add:"-1" }} other playlist{% if playlist_item.video.playlists.count|add:"-1" > 1 %}s{% endif %}</a></span>{% endif %}
                             {% if playlist_item.video.video_details_modified %}<span class="badge bg-danger">{% if playlist_item.video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}ADDED{% endif %} {{ playlist_item.video.created_at|naturaltime|upper }}</span>{% endif %}<br>
                             <br>
                         {% endif %}
