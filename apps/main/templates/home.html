@@ -42,19 +42,17 @@
             </div>
         {% endif %}
 
-
         <div class="row">
 
             <div class="col-6 mb-4">
                 <div class="card bg-transparent text-dark">
                     <div class="card-body">
-                        <h6 class="d-flex align-items-center mb-3"><span class="text-primary me-2">{{ user.playlists.count }}</span>Playlists Statistics</h6>
+                        <h6 class="d-flex align-items-center mb-3"><span class="text-primary me-2">{{ user.playlists.count }}</span>Playlists Statistics{% if user.playlists.count == 0 %}: You have no playlists in your UnTube!{% endif %}</h6>
                         <div class="d-flex align-items-center mb-3">
 
                             <canvas id="overall-playlists-distribution" data-url="{% url 'overall_playlists_distribution' %}">
 
                             </canvas>
-
                         </div>
                     </div>
                 </div>
@@ -65,9 +63,10 @@
                     <div class="card-body">
                         <h6 class="d-flex align-items-center mb-3"><span class="text-primary me-2">{{ watching.count }}</span>
                             {% if watching.count > 0 %}
-                            Playlist{% if watching.count > 1 %}s{% endif %} Watching: Percent Complete Chart
+                                Playlist{% if watching.count > 1 %}s{% endif %} Watching: Percent Complete Chart
+                                <small> <a class="btn btn-sm btn-success ms-2" href="#continue-watching">View</a></small>
                             {% else %}
-                            Watching: Mark playlists as watching to view their completeness % here!
+                                Watching: Mark playlists as watching to view their completeness % here!
                             {% endif %}
                         </h6>
                         <div class="d-flex align-items-center mb-3">
@@ -75,6 +74,8 @@
                             <canvas id="watching-playlists-percent-distribution" data-url="{% url 'watching_playlists_percent_distribution' %}">
 
                             </canvas>
+
+
 
                         </div>
                     </div>
@@ -91,7 +92,9 @@
                             <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: #fafafa">{{ playlist.name }}</a> </h2>
                             <ul class="d-flex list-unstyled mt-auto">
                                 <li class="me-auto">
-                                    <img src="{{ playlist.thumbnail_url }}" alt="Bootstrap" width="32" height="32" class="rounded-circle border border-white">
+                                    <h3>
+                                        <i class="fas fa-thumbtack" style="color: red"></i>
+                                    </h3>
                                 </li>
                                 <li class="d-flex align-items-center me-3">
                                     <small>by {{ playlist.channel_name }}</small>
@@ -119,14 +122,14 @@
 
         <br>
 
-                   <div class="row text-dark mt-0 align-items-center">
-                <div class="col">
-                    <div class="card card-cover h-100 overflow-hidden text-white bg-dark rounded-5 shadow-lg" style="">
-                        <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
-                            <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">All/Your Pins <i class="fas fa-thumbtack" style="color: red"></i> </h2>
-                        </div>
+        <div class="row text-dark mt-0 align-items-center">
+            <div class="col">
+                <div class="card card-cover h-100 overflow-hidden text-white bg-dark rounded-5 shadow-lg" style="">
+                    <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
+                        <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">All/Your Pins <i class="fas fa-thumbtack" style="color: red"></i> </h2>
                     </div>
-                    <!-- Implement later
+                </div>
+                <!-- Implement later
                     <div class="row mt-3">
                         <div class="col">
 
@@ -153,133 +156,178 @@
                         </div>
                     </div>
                     -->
-                </div>
-               <div class="col-8">
-                  <div class="card bg-transparent border border-0 text-black">
-                        <div class="card-body">
-                              <h3><span style="border-bottom: 3px #a35a5a dashed;">Most viewed playlists</span> <a href="{% url 'all_playlists' 'all' %}" class="pt-1"><i class="fas fa-binoculars"></i> </a></h3>
-                                {% if user_playlists %}
-                                <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
-                                    {% for playlist in user_playlists|slice:"0:3" %}
+            </div>
+            <div class="col-8">
+                <div class="card bg-transparent border border-0 text-black">
+                    <div class="card-body">
+                        <h3><span style="border-bottom: 3px #a35a5a dashed;">Most viewed playlists</span> <a href="{% url 'all_playlists' 'all' %}" class="pt-1"><i class="fas fa-binoculars"></i> </a></h3>
+                        {% if user_playlists %}
+                            <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
+                                {% for playlist in user_playlists|slice:"0:3" %}
                                     <div class="col">
                                         <div class="card overflow-auto" style="background-color: #4790c7;">
                                             <a href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item bg-transparent list-group-item-action" aria-current="true">
                                                 <div class="card-body">
-                                            <h5 class="card-title">
-                                               #{{ forloop.counter }} <br><br>{{ playlist.name }}
-                                                {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
-                                                {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
-                                            </h5>
-                                            <small>
-                                                <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
-                                                <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
-                                                <span class="badge bg-secondary rounded-pill">{{ playlist.num_of_accesses }} clicks </span>
+                                                    <h5 class="card-title">
+                                                        #{{ forloop.counter }} <br><br>{{ playlist.name }}
+                                                        {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                                                        {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                                                    </h5>
+                                                    <small>
+                                                        <span class="badge bg-primary rounded-pill">{{ playlist.video_count }} videos</span>
+                                                        <span class="badge bg-primary rounded-pill">{{ playlist.playlist_duration }} </span>
+                                                        <span class="badge bg-secondary rounded-pill">{{ playlist.num_of_accesses }} clicks </span>
 
-                                            </small>
-                                            </div>
+                                                    </small>
+                                                </div>
                                             </a>
                                         </div>
                                     </div>
-                                    {% endfor %}
+                                {% endfor %}
 
-                                </div>
+                            </div>
 
-                                {% else %}
-                                    <br>
-                                <h5>Nothing to see here... yet.</h5>
-                                {% endif %}
+                        {% else %}
+                            <br>
+                            <h5>Nothing to see here... yet.</h5>
+                        {% endif %}
 
 
-                        </div>
-                      </div>
+                    </div>
                 </div>
             </div>
+        </div>
 
         <br>
-                        {% if watching %}
 
-            <div class="border border-5 rounded-3 border-primary p-3">
-                <h3><span style="border-bottom: 3px #e24949 dashed;">Continue Watching</span><i class="fas fa-fire-alt ms-2" style="color: #d24646"></i></h3>
-                <div class="row row-cols-1 row-cols-md-4 g-4 text-dark mt-0" data-masonry='{"percentPosition": true }'>
-                    {% for playlist in watching %}
-                        <div class="col">
+        {% if watching %}
+            <div class="d-flex justify-content-between" id="continue-watching">
+                <h3>
+                    <span style="border-bottom: 3px #e24949 dashed;">Continue Watching</span>
+                    <i class="fas fa-fire-alt ms-2" style="color: #d24646"></i>
+                </h3>
+                {% if watching.count > 5 %}
 
-                            <div class="card" style="background-color: #EFEFEF;">
-                                <img  class="bd-placeholder-img card-img-top" src="{{ playlist.thumbnail_url }}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
+                    <h3 class="ms-2 me-1">
+                        <a href="{% url 'all_playlists' 'watching' %}" style="text-decoration: none; color: #4675d2">
+                            <i class="fas fa-search" style="color: #4675d2"></i>
+                        </a>
+                    </h3>
+                {% endif %}
 
-                                <div class="card-body">
-                                    <h5 class="card-title"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: black">{{ playlist.name }}</a></h5>
-                                    <p class="card-text">
-                                        <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
-                                        {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white">{{ playlist.get_watch_time_left }} left</span>{% endif %}
-                                    </p>
-                                    <p class="card-text">
-                                        {% if playlist.tags.all %}
-                                            <small>
-                                                <i class="fas fa-tags fa-sm" style="color: black"></i>
-                                                {% for tag in playlist.tags.all %}
-                                                    <span class="badge rounded-pill bg-primary mb-lg-1">
-                                                        {{ tag.name }}
-                                                    </span>
-                                                {% endfor %}
-                                            </small>
-                                        {% endif %}
-                                    </p>
-                                    <p class="card-text"><small class="text-muted">Last watched {{ playlist.last_watched|naturalday }}</small></p>
+            </div>
+
+
+            <br>
+
+            {% if watching.count > 4 %}
+                <div class="container-fluid overflow-auto border border-5 rounded-3 border-primary p-3">
+                    <div class="row flex-row g-3 flex-nowrap">
+                        {% for playlist in watching %}
+                            <div class="col">
+                                <div class="card" style="background-color: #EFEFEF; width: 275px; height: auto">
+                                    <img  class="bd-placeholder-img card-img-top" src="{{ playlist.thumbnail_url }}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
+
+                                    <div class="card-body">
+                                        <h5 class="card-title"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: black">{{ playlist.name }}</a></h5>
+                                        <p class="card-text">
+                                            <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
+                                            {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white">{{ playlist.get_watch_time_left }} left</span>{% endif %}
+                                        </p>
+                                        <!--
+                                <p class="card-text">
+                                    {% if playlist.tags.all %}
+                                        <small>
+                                            <i class="fas fa-tags fa-sm" style="color: black"></i>
+                                            {% for tag in playlist.tags.all %}
+                                                <span class="badge rounded-pill bg-primary mb-lg-1">
+                                                    {{ tag.name }}
+                                                </span>
+                                            {% endfor %}
+                                        </small>
+                                    {% endif %}
+                                </p>
+                                -->
+                                        <p class="card-text"><small class="text-muted">Last watched {{ playlist.last_watched|naturaltime }}</small></p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!--
-                <div class="col">
+                            <!--
+                    <div class="col">
                     <div class="card">
-                        <a style="background-color: #7e89c2;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
-                            <div class="card-body">
-                        <h5 class="card-title">
-                           {{ playlist.name }}
-                            {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
-                            {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
-                        </h5>
-                        <p class="card-text">
-                            <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
+                    <a style="background-color: #7e89c2;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
+                        <div class="card-body">
+                    <h5 class="card-title">
+                       {{ playlist.name }}
+                        {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                        {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
+                    </h5>
+                    <p class="card-text">
+                        <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
 
-                            {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white">{{ playlist.get_watch_time_left }} left</span>{% endif %}
-                        </p>
-                            {% if playlist.tags.all %}
-                        <small>
-                        <i class="fas fa-tags fa-sm" style="color: yellow"></i>
-                            {% for tag in playlist.tags.all %}
-                                <span class="badge rounded-pill bg-primary mb-lg-1">
-                                    {{ tag.name }}
-                                </span>
-                            {% endfor %}
-                        </small>
-                            {% endif %}
-                        </div>
-                        </a>
-                    </div>
-                </div> -->
-                        <!--
-                    {% if forloop.counter == 3 %}
-                        {% if watching.count|add:"-3" != 0 %}
-                        <div class="col">
-                            <div class="card">
-                                <a style="background-color: #7e89c2;" href="{% url 'all_playlists' 'watching' %}" class="list-group-item list-group-item-action" aria-current="true">
-                                    <div class="card-body">
-
-                                        <p class="card-text">
-                                            <h3>+ {{ watching.count|add:"-3" }} more</h3>
-                                        </p>
-                                     </div>
-                                </a>
-                            </div>
-                        </div>
+                        {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white">{{ playlist.get_watch_time_left }} left</span>{% endif %}
+                    </p>
+                        {% if playlist.tags.all %}
+                    <small>
+                    <i class="fas fa-tags fa-sm" style="color: yellow"></i>
+                        {% for tag in playlist.tags.all %}
+                            <span class="badge rounded-pill bg-primary mb-lg-1">
+                                {{ tag.name }}
+                            </span>
+                        {% endfor %}
+                    </small>
                         {% endif %}
+                    </div>
+                    </a>
+                    </div>
+                    </div> -->
+                            <!--
+                    {% if forloop.counter == 3 %}
+                    {% if watching.count|add:"-3" != 0 %}
+                    <div class="col">
+                        <div class="card">
+                            <a style="background-color: #7e89c2;" href="{% url 'all_playlists' 'watching' %}" class="list-group-item list-group-item-action" aria-current="true">
+                                <div class="card-body">
+
+                                    <p class="card-text">
+                                        <h3>+ {{ watching.count|add:"-3" }} more</h3>
+                                    </p>
+                                 </div>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
                     {% endif %}
                     -->
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
+            {% else %}
+
+                <div class="container-fluid overflow-auto border border-5 rounded-3 border-primary pb-4">
+
+                    <div class="row row-cols-1 row-cols-md-4 g-4 text-dark mt-0">
+                        {% for playlist in watching %}
+                            <div class="col">
+
+                                <div class="card" style="background-color: #EFEFEF;">
+                                    <img  class="bd-placeholder-img card-img-top" src="{{ playlist.thumbnail_url }}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
+
+                                    <div class="card-body">
+                                        <h5 class="card-title"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: black">{{ playlist.name }}</a></h5>
+                                        <p class="card-text">
+                                            <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
+                                            {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white">{{ playlist.get_watch_time_left }} left</span>{% endif %}
+                                        </p>
+                                        <p class="card-text"><small class="text-muted">Last watched {{ playlist.last_watched|naturaltime }}</small></p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
             <br>
         {% endif %}
 
@@ -363,115 +411,126 @@
 
         <script type="application/javascript">
 
-                    $(function () {
+            $(function () {
 
-                  var $overallPlaylists = $("#overall-playlists-distribution");
-                  $.ajax({
+                var $overallPlaylists = $("#overall-playlists-distribution");
+                $.ajax({
                     url: $overallPlaylists.data("url"),
                     success: function (data) {
 
-                      var ctx = $overallPlaylists[0].getContext("2d");
-                       var coloR = [];
+                        var ctx = $overallPlaylists[0].getContext("2d");
+                        var coloR = [];
 
-                     var dynamicColors = function() { // generate random color
+                        var dynamicColors = function() { // generate random color
                             var r = Math.floor(Math.random() * 255);
                             var g = Math.floor(Math.random() * 255);
                             var b = Math.floor(Math.random() * 255);
                             return "rgb(" + r + "," + g + "," + b + ")";
-                         };
+                        };
 
-                      for (var i in data.labels) {
-                          if (data.labels)
-                          coloR.push(dynamicColors());
-                     }
-
-                      new Chart(ctx, {
-                        type: 'pie',
-                        data: {
-                          labels: data.labels,
-                          datasets: [{
-                            label: 'Playlist Types',
-                            backgroundColor: coloR,
-                            data: data.data
-                          }]
-                        },
-                        options: {
-                          responsive: true,
-                          legend: {
-                            position: 'right',
-                              display: true
-                          },
-                          title: {
-                            display: false,
-                              text: 'Video Count Distribution per Channel',
-                              fontSize: 20,
-                              fontColor: '#fff',
-                          },
-
+                        for (var i in data.labels) {
+                            if (data.labels)
+                            coloR.push(dynamicColors());
                         }
-                      });
+
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    label: 'Playlist Types',
+                                    backgroundColor: coloR,
+                                    data: data.data
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                legend: {
+                                    position: 'right',
+                                    display: true
+                                },
+                                title: {
+                                    display: false,
+                                    text: 'Video Count Distribution per Channel',
+                                    fontSize: 20,
+                                    fontColor: '#fff',
+                                },
+                                tooltips: {
+                                    callbacks: {
+                                        label: function(tooltipItem, object) {
+                                              return object['labels'][tooltipItem['index']] + ": " + object['datasets'][0]['data'][tooltipItem['index']] + ' playlists';
+                                            }
+                                    }
+                                }
+
+
+                            }
+                        });
 
                     }
-                  });
-                   
-                    var $watchingPlaylists = $("#watching-playlists-percent-distribution");
-                  $.ajax({
+                });
+
+                var $watchingPlaylists = $("#watching-playlists-percent-distribution");
+                $.ajax({
                     url: $watchingPlaylists.data("url"),
                     success: function (data) {
 
-                      var ctx = $watchingPlaylists[0].getContext("2d");
-                       var coloR = [];
+                        var ctx = $watchingPlaylists[0].getContext("2d");
+                        var coloR = [];
 
-                     var dynamicColors = function() { // generate random color
+                        var dynamicColors = function() { // generate random color
                             var r = Math.floor(Math.random() * 255);
                             var g = Math.floor(Math.random() * 255);
                             var b = Math.floor(Math.random() * 255);
                             return "rgb(" + r + "," + g + "," + b + ")";
-                         };
+                        };
 
-                      for (var i in data.labels) {
-                          if (data.labels)
-                          coloR.push(dynamicColors());
-                     }
-
-                      new Chart(ctx, {
-                        type: 'polarArea',
-                        data: {
-                          labels: data.labels,
-                          datasets: [{
-                            label: 'Playlist Types',
-                            backgroundColor: coloR,
-                            data: data.data
-                          }]
-                        },
-                        options: {
-                            scale: {
-                              reverse: false,
-                              ticks: {
-                                min: 0,
-                                max: 100,
-                                interval: 10,
-                              }
-                            },
-                          responsive: true,
-                          legend: {
-                            position: 'right',
-                              display: true
-                          },
-                          title: {
-                            display: false,
-                              text: 'Video Count Distribution per Channel',
-                              fontSize: 20,
-                              fontColor: '#fff',
-                          },
-
+                        for (var i in data.labels) {
+                            if (data.labels)
+                            coloR.push(dynamicColors());
                         }
-                      });
+
+                        new Chart(ctx, {
+                            type: 'polarArea',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    label: 'Playlist Types',
+                                    backgroundColor: coloR,
+                                    data: data.data
+                                }]
+                            },
+                            options: {
+                                scale: {
+                                    reverse: false,
+                                    ticks: {
+                                        min: -10,
+                                        max: 100,
+                                        interval: 10,
+                                    }
+                                },
+                                responsive: true,
+                                legend: {
+                                    position: 'right',
+                                    display: {% if watching.count <= 10 %}true{% else %}false{% endif %},
+                                },
+                                title: {
+                                    display: false,
+                                },
+                                tooltips: {
+                                    callbacks: {
+                                        label: function(tooltipItem, object) {
+                                              return object['labels'][tooltipItem['index']] + ": " + object['datasets'][0]['data'][tooltipItem['index']] + '% complete';
+                                            }
+                                    }
+                                }
+                            }
+                        });
 
                     }
-                  });
-
                 });
+
+            });
 
 
         </script>

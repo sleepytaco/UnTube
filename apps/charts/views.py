@@ -26,8 +26,7 @@ def overall_playlists_distribution(request):
 
     user_playlists = request.user.playlists.filter(is_in_db=True)
     total_num_playlists = user_playlists.count()
-    user_playlists = user_playlists.filter(num_of_accesses__gt=0).order_by(
-        "-num_of_accesses")
+
 
     statistics = {
         "public": 0,
@@ -46,7 +45,6 @@ def overall_playlists_distribution(request):
         statistics["imported"] = user_playlists.filter(is_user_owned=False).count()
         statistics["youtube mixes"] = user_playlists.filter(is_yt_mix=True).count()
 
-
     for key, value in statistics.items():
         labels.append(key)
         data.append(value)
@@ -63,9 +61,10 @@ def watching_playlists_percent_distribution(request):
 
     watching_playlists = request.user.playlists.filter(Q(is_in_db=True) & Q(marked_as="watching"))
 
-    for playlist in watching_playlists:
-        labels.append(playlist.name)
-        data.append(playlist.get_percent_complete())
+    if watching_playlists.exists():
+        for playlist in watching_playlists:
+            labels.append(playlist.name)
+            data.append(playlist.get_percent_complete())
 
     return JsonResponse(data={
         'labels': labels,
