@@ -254,7 +254,6 @@ class PlaylistManager(models.Manager):
                     # if video already in playlist.videos
                     is_duplicate = False
                     if playlist.videos.filter(video_id=video_id).exists():
-                        playlist.has_duplicate_videos = True
                         is_duplicate = True
                     else:
                         playlist.videos.add(video)
@@ -278,9 +277,10 @@ class PlaylistManager(models.Manager):
                     playlist_item.save()
 
                     # check if the video became unavailable on youtube
-                    if not video.is_unavailable_on_yt and not video.was_deleted_on_yt and (item['snippet']['title'] == "Deleted video" or
-                                                           item['snippet'][
-                                                               'description'] == "This video is unavailable.") or (
+                    if not video.is_unavailable_on_yt and not video.was_deleted_on_yt and (
+                            item['snippet']['title'] == "Deleted video" or
+                            item['snippet'][
+                                'description'] == "This video is unavailable.") or (
                             item['snippet']['title'] == "Private video" or item['snippet'][
                         'description'] == "This video is private."):
                         video.was_deleted_on_yt = True
@@ -348,7 +348,6 @@ class PlaylistManager(models.Manager):
                             # if video already in playlist.videos
                             is_duplicate = False
                             if playlist.videos.filter(video_id=video_id).exists():
-                                playlist.has_duplicate_videos = True
                                 is_duplicate = True
                             else:
                                 playlist.videos.add(video)
@@ -371,9 +370,10 @@ class PlaylistManager(models.Manager):
                             playlist_item.save()
 
                             # check if the video became unavailable on youtube
-                            if not video.is_unavailable_on_yt and not video.was_deleted_on_yt and (item['snippet']['title'] == "Deleted video" or
-                                                                   item['snippet'][
-                                                                       'description'] == "This video is unavailable.") or (
+                            if not video.is_unavailable_on_yt and not video.was_deleted_on_yt and (
+                                    item['snippet']['title'] == "Deleted video" or
+                                    item['snippet'][
+                                        'description'] == "This video is unavailable.") or (
                                     item['snippet']['title'] == "Private video" or item['snippet'][
                                 'description'] == "This video is private."):
                                 video.was_deleted_on_yt = True
@@ -451,7 +451,7 @@ class PlaylistManager(models.Manager):
 
         # if its been a week since the last full scan, do a full playlist scan
         # basically checks all the playlist video for any updates
-        if playlist.last_full_scan_at + datetime.timedelta(minutes=2) < datetime.datetime.now(pytz.utc):
+        if playlist.last_full_scan_at + datetime.timedelta(seconds=2) < datetime.datetime.now(pytz.utc):
             print("DOING A FULL SCAN")
             current_video_ids = [playlist_item.video_id for playlist_item in playlist.playlist_items.all()]
             current_playlist_item_ids = [playlist_item.playlist_item_id for playlist_item in
@@ -488,9 +488,9 @@ class PlaylistManager(models.Manager):
                         # check if the video became unavailable on youtube
                         if not video.is_unavailable_on_yt and not video.was_deleted_on_yt:
                             if (item['snippet']['title'] == "Deleted video" or
-                                item['snippet']['description'] == "This video is unavailable." or
+                                    item['snippet']['description'] == "This video is unavailable." or
                                     item['snippet']['title'] == "Private video" or item['snippet'][
-                                'description'] == "This video is private."):
+                                        'description'] == "This video is private."):
                                 unavailable_videos += 1
 
                 while True:
@@ -515,9 +515,9 @@ class PlaylistManager(models.Manager):
                                 # check if the video became unavailable on youtube
                                 if not video.is_unavailable_on_yt and not video.was_deleted_on_yt:
                                     if (item['snippet']['title'] == "Deleted video" or
-                                        item['snippet']['description'] == "This video is unavailable." or
+                                            item['snippet']['description'] == "This video is unavailable." or
                                             item['snippet']['title'] == "Private video" or item['snippet'][
-                                        'description'] == "This video is private."):
+                                                'description'] == "This video is private."):
                                         unavailable_videos += 1
                     except AttributeError:
                         break
@@ -588,8 +588,6 @@ class PlaylistManager(models.Manager):
         credentials = self.getCredentials(user)
 
         playlist = user.playlists.get(playlist_id__exact=playlist_id)
-        playlist.has_duplicate_videos = False  # reset this to false for now
-        has_duplicate_videos = False
 
         current_video_ids = [playlist_item.video.video_id for playlist_item in playlist.playlist_items.all()]
         current_playlist_item_ids = [playlist_item.playlist_item_id for playlist_item in playlist.playlist_items.all()]
@@ -627,7 +625,9 @@ class PlaylistManager(models.Manager):
                     if not user.videos.filter(video_id=video_id).exists():
                         if (item['snippet']['title'] == "Deleted video" and item['snippet'][
                             'description'] == "This video is unavailable.") or (item['snippet'][
-                            'title'] == "Private video" and item['snippet']['description'] == "This video is private."):
+                                                                                    'title'] == "Private video" and
+                                                                                item['snippet'][
+                                                                                    'description'] == "This video is private."):
                             video = Video(
                                 video_id=video_id,
                                 name=item['snippet']['title'],
@@ -654,9 +654,10 @@ class PlaylistManager(models.Manager):
                     video = user.videos.get(video_id=video_id)
 
                     # check if the video became unavailable on youtube
-                    if not video.is_unavailable_on_yt and not video.was_deleted_on_yt and (item['snippet']['title'] == "Deleted video" and
-                                                           item['snippet'][
-                                                               'description'] == "This video is unavailable.") or (
+                    if not video.is_unavailable_on_yt and not video.was_deleted_on_yt and (
+                            item['snippet']['title'] == "Deleted video" and
+                            item['snippet'][
+                                'description'] == "This video is unavailable.") or (
                             item['snippet']['title'] == "Private video" and item['snippet'][
                         'description'] == "This video is private."):
                         video.was_deleted_on_yt = True
@@ -667,7 +668,6 @@ class PlaylistManager(models.Manager):
                         playlist.videos.add(video)
                     else:
                         is_duplicate = True
-                        has_duplicate_videos = True
 
                     playlist_item = PlaylistItem(
                         playlist_item_id=playlist_item_id,
@@ -689,7 +689,8 @@ class PlaylistManager(models.Manager):
 
                     video.video_details_modified = True
                     video.video_details_modified_at = datetime.datetime.now(tz=pytz.utc)
-                    video.save(update_fields=['video_details_modified', 'video_details_modified_at', 'was_deleted_on_yt'])
+                    video.save(
+                        update_fields=['video_details_modified', 'video_details_modified_at', 'was_deleted_on_yt'])
                     added_videos.append(video)
 
                 else:  # if playlist item already in playlist
@@ -709,7 +710,7 @@ class PlaylistManager(models.Manager):
                             playlist_item.video.video_details_modified = True
                             playlist_item.video.video_details_modified_at = datetime.datetime.now(tz=pytz.utc)
                             playlist_item.video.save(update_fields=['was_deleted_on_yt', 'video_details_modified',
-                                                      'video_details_modified_at'])
+                                                                    'video_details_modified_at'])
 
                             unavailable_videos.append(playlist_item.video)
 
@@ -758,9 +759,10 @@ class PlaylistManager(models.Manager):
                             video = user.videos.get(video_id=video_id)
 
                             # check if the video became unavailable on youtube
-                            if not video.is_unavailable_on_yt and not video.was_deleted_on_yt and (item['snippet']['title'] == "Deleted video" and
-                                                                   item['snippet'][
-                                                                       'description'] == "This video is unavailable.") or (
+                            if not video.is_unavailable_on_yt and not video.was_deleted_on_yt and (
+                                    item['snippet']['title'] == "Deleted video" and
+                                    item['snippet'][
+                                        'description'] == "This video is unavailable.") or (
                                     item['snippet']['title'] == "Private video" and item['snippet'][
                                 'description'] == "This video is private."):
                                 video.was_deleted_on_yt = True
@@ -771,7 +773,6 @@ class PlaylistManager(models.Manager):
                                 playlist.videos.add(video)
                             else:
                                 is_duplicate = True
-                                has_duplicate_videos = True
 
                             playlist_item = PlaylistItem(
                                 playlist_item_id=playlist_item_id,
@@ -846,7 +847,6 @@ class PlaylistManager(models.Manager):
                             'description'] == "This video is unavailable.") or (
                             item['snippet']['title'] == "Private video" or item['snippet'][
                         'description'] == "This video is private."):
-
                         playlist.has_unavailable_videos = True
                         vid_durations.append(duration)
                         vid.video_details_modified = True
@@ -889,13 +889,11 @@ class PlaylistManager(models.Manager):
         playlist.has_new_updates = True
         playlist.save()
 
-        playlist.has_duplicate_videos = has_duplicate_videos
-
         deleted_playlist_item_ids = current_playlist_item_ids  # left out playlist_item_ids
 
         return [0, deleted_playlist_item_ids, unavailable_videos, added_videos]
 
-    def deletePlaylistItems(self, user, playlist_id, playlist_item_ids):
+    def deletePlaylistFromYouTube(self, user, playlist_id):
         """
         Takes in playlist itemids for the videos in a particular playlist
         """
@@ -905,9 +903,40 @@ class PlaylistManager(models.Manager):
         # new_playlist_duration_in_seconds = playlist.playlist_duration_in_seconds
         # new_playlist_video_count = playlist.video_count
         with build('youtube', 'v3', credentials=credentials) as youtube:
-            for playlist_item_id in playlist_item_ids:
+            pl_request = youtube.playlists().delete(
+                id=playlist_id
+            )
+            try:
+                pl_response = pl_request.execute()
+                print(pl_response)
+            except googleapiclient.errors.HttpError as e:  # failed to delete playlist
+                # possible causes:
+                # playlistForbidden (403)
+                # playlistNotFound  (404)
+                # playlistOperationUnsupported (400)
+                print(e.error_details, e.status_code)
+                return -1
+
+            # playlistItem was successfully deleted if no HttpError, so delete it from db
+            playlist.delete()
+
+        return 0
+
+    def deletePlaylistItems(self, user, playlist_id, playlist_item_ids):
+        """
+        Takes in playlist itemids for the videos in a particular playlist
+        """
+        credentials = self.getCredentials(user)
+        playlist = user.playlists.get(playlist_id=playlist_id)
+        playlist_items = user.playlists.get(playlist_id=playlist_id).playlist_items.select_related('video').filter(
+            playlist_item_id__in=playlist_item_ids)
+
+        # new_playlist_duration_in_seconds = playlist.playlist_duration_in_seconds
+        # new_playlist_video_count = playlist.video_count
+        with build('youtube', 'v3', credentials=credentials) as youtube:
+            for playlist_item in playlist_items:
                 pl_request = youtube.playlistItems().delete(
-                    id=playlist_item_id
+                    id=playlist_item.playlist_item_id
                 )
                 print(pl_request)
                 try:
@@ -922,6 +951,12 @@ class PlaylistManager(models.Manager):
                     continue
 
                 # playlistItem was successfully deleted if no HttpError, so delete it from db
+                video = playlist_item.video
+                playlist_item.delete()
+
+                if not playlist.playlist_items.filter(video__video_id=video.video_id).exists():
+                    playlist.videos.remove(video)
+
                 # video = playlist.videos.get(playlist_item_id=playlist_item_id)
                 # new_playlist_video_count -= 1
                 # new_playlist_duration_in_seconds -= video.duration_in_seconds
@@ -976,10 +1011,54 @@ class PlaylistManager(models.Manager):
 
             return 0
 
+    def moveCopyVideosFromPlaylist(self, user, from_playlist_id, to_playlist_ids, playlist_item_ids, action="copy"):
+        """
+        Takes in playlist itemids for the videos in a particular playlist
+        """
+        credentials = self.getCredentials(user)
+        playlist_items = user.playlists.get(playlist_id=from_playlist_id).playlist_items.select_related('video').filter(
+            playlist_item_id__in=playlist_item_ids)
+
+        with build('youtube', 'v3', credentials=credentials) as youtube:
+            for playlist_id in to_playlist_ids:
+                for playlist_item in playlist_items:
+                    pl_request = youtube.playlistItems().insert(
+                        part="snippet",
+                        body={
+                            "snippet": {
+                                "playlistId": playlist_id,
+                                "position": 0,
+                                "resourceId": {
+                                    "kind": "youtube#video",
+                                    "videoId": playlist_item.video.video_id,
+                                }
+                            },
+                        }
+                    )
+
+                    try:
+                        pl_response = pl_request.execute()
+                    except googleapiclient.errors.HttpError as e:  # failed to update playlist details
+                        # possible causes:
+                        # playlistItemsNotAccessible (403)
+                        # playlistItemNotFound (404)
+                        # playlistOperationUnsupported (400)
+                        # errors i ran into:
+                        # runs into HttpError 400 "Invalid playlist snippet." when the description contains <, >
+                        print("ERROR UPDATING PLAYLIST DETAILS", e, e.status_code, e.error_details)
+                        return -1
+
+                    print(pl_response)
+
+        if action == "move":  # delete from the current playlist
+            self.deletePlaylistItems(user, from_playlist_id, playlist_item_ids)
+
+        return 0
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=69)
-    created_by = models.ForeignKey(User, related_name="playlist_tags", on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, related_name="playlist_tags", on_delete=models.CASCADE, null=True)
 
     times_viewed = models.IntegerField(default=0)
     # type = models.CharField(max_length=10)  # either 'playlist' or 'video'
@@ -1091,7 +1170,6 @@ class Playlist(models.Model):
     playlist_duration = models.CharField(max_length=69, blank=True)  # string version of playlist dureation
     playlist_duration_in_seconds = models.IntegerField(default=0)
     has_unavailable_videos = models.BooleanField(default=False)  # if videos in playlist are private/deleted
-    has_duplicate_videos = models.BooleanField(default=False)  # duplicate videos will not be shown on site
 
     # watch playlist details
     # watch_time_left = models.CharField(max_length=150, default="")
@@ -1129,6 +1207,11 @@ class Playlist(models.Model):
     def __str__(self):
         return str(self.playlist_id)
 
+    def has_duplicate_videos(self):
+        if self.playlist_items.filter(is_duplicate=True).exists():
+            return True
+        return False
+
     def get_channels_list(self):
         channels_list = []
         num_channels = 0
@@ -1155,11 +1238,13 @@ class Playlist(models.Model):
 
     # return count of watchable videos, i.e # videos that are not private or deleted in the playlist
     def get_watchable_videos_count(self):
-        return self.playlist_items.filter(Q(is_duplicate=False) & Q(video__is_unavailable_on_yt=False) & Q(video__was_deleted_on_yt=False)).count()
+        return self.playlist_items.filter(
+            Q(is_duplicate=False) & Q(video__is_unavailable_on_yt=False) & Q(video__was_deleted_on_yt=False)).count()
 
     def get_watched_videos_count(self):
         return self.playlist_items.filter(Q(is_duplicate=False) &
-            Q(video__is_marked_as_watched=True) & Q(video__is_unavailable_on_yt=False) & Q(video__was_deleted_on_yt=False)).count()
+                                          Q(video__is_marked_as_watched=True) & Q(
+            video__is_unavailable_on_yt=False) & Q(video__was_deleted_on_yt=False)).count()
 
     # diff of time from when playlist was first marked as watched and playlist reached 100% completion
     def get_finish_time(self):
@@ -1167,11 +1252,13 @@ class Playlist(models.Model):
 
     def get_watch_time_left(self):
         unwatched_playlist_items_secs = self.playlist_items.filter(Q(is_duplicate=False) &
-            Q(video__is_marked_as_watched=False) &
-          Q(video__is_unavailable_on_yt=False) &
-          Q(video__was_deleted_on_yt=False)).aggregate(Sum('video__duration_in_seconds'))['video__duration_in_seconds__sum']
+                                                                   Q(video__is_marked_as_watched=False) &
+                                                                   Q(video__is_unavailable_on_yt=False) &
+                                                                   Q(video__was_deleted_on_yt=False)).aggregate(
+            Sum('video__duration_in_seconds'))['video__duration_in_seconds__sum']
 
-        watch_time_left = getHumanizedTimeString(unwatched_playlist_items_secs) if unwatched_playlist_items_secs is not None else getHumanizedTimeString(0)
+        watch_time_left = getHumanizedTimeString(
+            unwatched_playlist_items_secs) if unwatched_playlist_items_secs is not None else getHumanizedTimeString(0)
 
         return watch_time_left
 
@@ -1179,7 +1266,8 @@ class Playlist(models.Model):
     def get_percent_complete(self):
         total_playlist_video_count = self.get_watchable_videos_count()
         watched_videos = self.playlist_items.filter(Q(is_duplicate=False) &
-            Q(video__is_marked_as_watched=True) & Q(video__is_unavailable_on_yt=False) & Q(video__was_deleted_on_yt=False))
+                                                    Q(video__is_marked_as_watched=True) & Q(
+            video__is_unavailable_on_yt=False) & Q(video__was_deleted_on_yt=False))
         num_videos_watched = watched_videos.count()
         percent_complete = round((num_videos_watched / total_playlist_video_count) * 100,
                                  1) if total_playlist_video_count != 0 else 0
@@ -1195,8 +1283,8 @@ class Playlist(models.Model):
 
 class PlaylistItem(models.Model):
     playlist = models.ForeignKey(Playlist, related_name="playlist_items",
-                                 on_delete=models.CASCADE)  # playlist this pl item belongs to
-    video = models.ForeignKey(Video, on_delete=models.CASCADE)
+                                 on_delete=models.CASCADE, null=True)  # playlist this pl item belongs to
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, null=True)
 
     # details
     playlist_item_id = models.CharField(max_length=100)  # the item id of the playlist this video beo
@@ -1223,6 +1311,8 @@ class PlaylistItem(models.Model):
 
 
 class Pin(models.Model):
+    untube_user = models.ForeignKey(User, related_name="pins",
+                                    on_delete=models.CASCADE, null=True)  # untube user this pin is linked to
     type = models.CharField(max_length=100)  # "playlist", "video"
-    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
-    video = models.ForeignKey(Video, on_delete=models.CASCADE)
+    playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE, null=True)
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, null=True)

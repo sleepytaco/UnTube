@@ -7,7 +7,6 @@
 
 
     <div id="view_playlist">
-        <br>
     {% if playlist.is_user_owned %}
 
         <div class="table-responsive" id="videos-div">
@@ -87,7 +86,9 @@
                           <h6 class="mb-0">Danger Zone</h6>
                         </div>
                         <div class="col-sm-9 text-white-50">
-                            <button type="button" class="btn btn-outline-danger">Delete Playlist From YouTube</button>
+                            <div id="delete-box">
+                                <a hx-get="{% url 'delete_playlist' playlist.playlist_id %}" hx-target="#delete-box" hx-vals='{"confirmed": "no"}' class="btn btn-outline-danger">Delete Playlist From YouTube</a>
+                            </div>
                         </div>
                       </div>
 
@@ -169,7 +170,9 @@
                           <h6 class="mb-0">Danger Zone</h6>
                         </div>
                         <div class="col-sm-9 text-white-50">
-                            <a href="{% url 'delete_playlist' playlist.playlist_id %}" class="btn btn-outline-danger">Remove Playlist From UnTube</a>
+                            <div id="delete-box">
+                                <a hx-get="{% url 'delete_playlist' playlist.playlist_id %}" hx-target="#delete-box" hx-vals='{"confirmed": "no"}' class="btn btn-outline-danger">Remove Playlist From UnTube</a>
+                            </div>
                         </div>
                       </div>
 

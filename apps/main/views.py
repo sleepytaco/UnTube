@@ -430,10 +430,10 @@ def playlists_home(request):
 @login_required
 @require_POST
 def delete_videos(request, playlist_id, command):
-    video_ids = request.POST.getlist("video-id", default=[])
+    playlist_item_ids = request.POST.getlist("video-id", default=[])
 
     print(request.POST)
-    num_vids = len(video_ids)
+    num_vids = len(playlist_item_ids)
     extra_text = " "
     if num_vids == 0:
         return HttpResponse("<h5>Select some videos first!</h5><hr>")
@@ -443,7 +443,7 @@ def delete_videos(request, playlist_id, command):
             command = "confirmed"
 
     if command == "confirm":
-        print(video_ids)
+        print(playlist_item_ids)
 
         if num_vids == request.user.playlists.get(playlist_id=playlist_id).videos.all().count():
             delete_text = "ALL VIDEOS"
@@ -457,15 +457,15 @@ def delete_videos(request, playlist_id, command):
                 <hr>
             """)
     elif command == "confirmed":
-        print(video_ids)
+        print(playlist_item_ids)
         url = f"/from/{playlist_id}/delete-videos/start"
         return HttpResponse(
             f"""
             <div class="spinner-border text-light" role="status" hx-post="{url}" hx-trigger="load" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box"></div><hr>
             """)
     elif command == "start":
-        print("Deleting", len(video_ids), "videos")
-        Playlist.objects.deletePlaylistItems(request.user, playlist_id, video_ids)
+        print("Deleting", len(playlist_item_ids), "videos")
+        Playlist.objects.deletePlaylistItems(request.user, playlist_id, playlist_item_ids)
         # playlist = request.user.playlists.get(playlist_id=playlist_id)
         # playlist.has_playlist_changed = True
         # playlist.save(update_fields=['has_playlist_changed'])
@@ -926,8 +926,11 @@ def update_playlist(request, playlist_id, type):
 
         for playlist_item_id in deleted_playlist_item_ids:
             playlist_item = playlist.playlist_items.select_related('video').get(playlist_item_id=playlist_item_id)
+            video = playlist_item.video
             playlist_changed_text.append(f"--> {playlist_item.video.name}")
             playlist_item.delete()
+            if not playlist.playlist_items.filter(video__video_id=video.video_id).exists():
+                playlist.videos.remove(video)
 
     if len(playlist_changed_text) == 0:
         playlist_changed_text = ["Successfully refreshed playlist! No new changes found!"]
@@ -1064,13 +1067,23 @@ def remove_playlist_tag(request, playlist_id, tag_name):
 def delete_playlist(request, playlist_id):
     playlist = request.user.playlists.get(playlist_id=playlist_id)
 
+    if request.GET["confirmed"] == "no":
+        return HttpResponse(f"""
+            <a href="/playlist/{playlist_id}/delete-playlist?confirmed=yes" class="btn btn-danger">Confirm Delete</a>
+            <a href="/playlist/{playlist_id}" class="btn btn-secondary ms-1">Cancel</a>
+        """)
+
     if not playlist.is_user_owned:  # if playlist trying to delete isn't user owned
         playlist.delete()  # just delete it from untrue
+        messages.success(request, "Successfully deleted playlist from UnTube.")
     else:
-        # delete it from YouTube first then from UnTube
-        pass
+        # deletes it from YouTube first then from UnTube
+        status = Playlist.objects.deletePlaylistFromYouTube(request.user, playlist_id)
+        if status == -1:  # failed to delete playlist from youtube
+            messages.error(request, "Failed to delete playlist from YouTube :(")
+            return redirect('view_playlist_settings', playlist_id=playlist_id)
 
-    messages.success(request, "Successfully deleted playlist from UnTube.")
+        messages.success(request, "Successfully deleted playlist from YouTube and removed it from UnTube as well.")
 
     return redirect('home')
 
@@ -1086,3 +1099,44 @@ def reset_watched(request, playlist_id):
     # messages.success(request, "Successfully marked all videos unwatched.")
 
     return redirect(f'/playlist/{playlist.playlist_id}')
+
+
+@login_required
+@require_POST
+def playlist_move_copy_videos(request, playlist_id, action):
+    playlist = request.user.playlists.get(playlist_id=playlist_id)
+
+    playlist_ids = request.POST.getlist("playlist-ids", default=[])
+    playlist_item_ids = request.POST.getlist("video-id", default=[])
+
+
+    # basic processing
+    if not playlist_ids and not playlist_item_ids:
+        return HttpResponse(f"""
+                <span class="text-warning">Mistakes happen. Try again >w<</span>""")
+    elif not playlist_ids:
+        return HttpResponse(f"""
+        <span class="text-danger">First select some playlists to {action} to!</span>""")
+    elif not playlist_item_ids:
+        return HttpResponse(f"""
+                <span class="text-danger">First select some videos to {action}!</span>""")
+
+    success_message = f"""
+                <span class="text-success">Successfully {'moved' if action == 'move' else 'copied'} {len(playlist_item_ids)} videos to {len(playlist_ids)} other playlist!</span>"""
+    if action == "move":
+        status = Playlist.objects.moveCopyVideosFromPlaylist(request.user,
+                                                             from_playlist_id=playlist_id,
+                                                             to_playlist_ids=playlist_ids,
+                                                             playlist_item_ids=playlist_item_ids,
+                                                             action="move")
+        if status == -1:
+            return HttpResponse("Error moving!")
+    else:  # copy
+        status = Playlist.objects.moveCopyVideosFromPlaylist(request.user,
+                                                             from_playlist_id=playlist_id,
+                                                             to_playlist_ids=playlist_ids,
+                                                             playlist_item_ids=playlist_item_ids)
+        if status == -1:
+            return HttpResponse("Error copying!")
+
+    return HttpResponse(success_message)

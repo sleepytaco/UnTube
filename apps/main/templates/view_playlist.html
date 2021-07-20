@@ -334,8 +334,8 @@
 
 
                             <div class="col-md-8 text-dark">
-                                <select class="visually-hidden" onchange="triggerSubmit()"
-                                    id="choices-multiple-remove-button" name="playlist-tags" placeholder="Select Playlists" multiple>
+                                <select class="visually-hidden"
+                                    id="playlists-to-move-to" name="playlist-ids" placeholder="Select Playlists" multiple>
                                     {% for pl in user_owned_playlists %}
                                         {% if pl.playlist_id != playlist.playlist_id %}
                                             <option value="{{ pl.playlist_id }}" class="text-dark">{{ pl.name }}</option>
@@ -347,18 +347,21 @@
                         </div>
 
                         <div class="d-flex justify-content-start mt-2">
-                            <!--
-          <div class="btn-group">
-              <a href="{% url 'all_playlists' 'all' %}" target="_blank" class="btn btn-sm btn-success" id="select-all-btn">Search for Playlists <i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
-          </div>
-          -->
+
                             {% if playlist.is_user_owned %}
                                 <div class="btn-group me-2">
-                                    <button type="button" class="btn btn-info" id="select-all-btn">Move!</button>
+                                    <button hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'move' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-primary">
+                                        Move!
+                                    </button>
                                 </div>
                             {% endif %}
                             <div class="btn-group">
-                                <button type="button" class="btn btn-info" id="select-all-btn">Copy!</button>
+                                <button hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'copy' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-info">
+                                    Copy!
+                                </button>
+                            </div>
+                            <div id="move-copy-videos-box" class="d-flex align-items-end ms-2">
+                                <span class="text-warning">Note: Move will delete the selected videos from this playlist. Copy won't.</span>
                             </div>
                         </div>
 
@@ -470,7 +473,7 @@
 
                                                 {% if playlist_item.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}
                                                 {% if playlist_item.video.playlists.count|add:"-1" != 0 %}<span class="badge bg-dark"><a href="{% url 'video' playlist_item.video.video_id %}#found-in" style="text-decoration: none; color: white">found in {{ playlist_item.video.playlists.count|add:"-1" }} other playlist{% if playlist_item.video.playlists.count|add:"-1" > 1 %}s{% endif %}</a></span>{% endif %}
-                                                {% if playlist_item.video.video_details_modified %}<span class="badge bg-danger">{% if playlist_item.video.was_deleted_on_yt %}WENT PRIVATE/DELETED{% else %}ADDED{% endif %} {{ playlist_item.video.created_at|naturaltime|upper }}</span>{% endif %}<br>
+                                                {% if playlist_item.video.video_details_modified %}<span class="badge bg-danger">{% if playlist_item.video.was_deleted_on_yt %}went private/deleted{% else %}added{% endif %} {{ playlist_item.created_at|naturaltime }}</span>{% endif %}<br>
                                                 <br>
                                             {% endif %}
 
@@ -558,6 +561,20 @@
 
     <script type="application/javascript">
 
+
+        $(document).ready(function(){
+
+                // multiple choices select search box
+                var multipleCancelButton = new Choices('#playlists-to-move-to', {
+                    removeItemButton: true,
+                });
+
+                BackgroundCheck.init({
+                  targets: '.ui',
+                    images: '.ui-img'
+                });
+            });
+
             $(function () {
 
                   var $populationChart = $("#channel-videos-chart");
@@ -610,7 +627,6 @@
                   });
 
                 });
-
 
         // when a video list item is clicked on, it gets checked and its bg turns red
         function selectVideo(video) {

@@ -87,6 +87,14 @@
 
     <script type="application/javascript">
 
+    $(document).ready(function(){
+        // multiple choices select search box
+        var multipleCancelButton = new Choices('#choices-multiple-remove-button', {
+                    removeItemButton: true,
+                });
+
+            });
+
         function triggerSubmit() {
             var startsWithCB = document.getElementById("starts-with-cb");
             var containsCB = document.getElementById("contains-cb");
