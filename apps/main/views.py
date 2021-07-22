@@ -146,6 +146,8 @@ def view_playlist(request, playlist_id):
             playlist.last_accessed_on = datetime.datetime.now(pytz.utc)
         playlist.save()
     else:
+        if playlist_id == "LL":  # liked videos playlist hasnt been imported yet
+            return render(request, 'view_playlist.html', {"not_imported_LL": True})
         messages.error(request, "No such playlist found!")
         return redirect('home')
 
@@ -445,7 +447,7 @@ def delete_videos(request, playlist_id, command):
     if command == "confirm":
         print(playlist_item_ids)
 
-        if num_vids == request.user.playlists.get(playlist_id=playlist_id).videos.all().count():
+        if num_vids == request.user.playlists.get(playlist_id=playlist_id).playlist_items.all().count():
             delete_text = "ALL VIDEOS"
             extra_text = " This will not delete the playlist itself, will only make the playlist empty. "
         else:
@@ -453,12 +455,12 @@ def delete_videos(request, playlist_id, command):
         return HttpResponse(
             f"""<h5>
                 Are you sure you want to delete {delete_text} from your YouTube playlist?{extra_text}This cannot be undone.</h5>
-                <button hx-post="/from/{playlist_id}/delete-videos/confirmed" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-outline-danger btn-sm">Confirm</button>
+                <button hx-post="/playlist/{playlist_id}/delete-videos/confirmed" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-outline-danger btn-sm">Confirm</button>
                 <hr>
             """)
     elif command == "confirmed":
         print(playlist_item_ids)
-        url = f"/from/{playlist_id}/delete-videos/start"
+        url = f"/playlist/{playlist_id}/delete-videos/start"
         return HttpResponse(
             f"""
             <div class="spinner-border text-light" role="status" hx-post="{url}" hx-trigger="load" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box"></div><hr>
@@ -470,8 +472,8 @@ def delete_videos(request, playlist_id, command):
         # playlist.has_playlist_changed = True
         # playlist.save(update_fields=['has_playlist_changed'])
         return HttpResponse(f"""
-        <h5 hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:3s" hx-target="#checkforupdates">
-            Done deleting selected videos from your playlist on YouTube. Playlist on UnTube will update soon.
+        <h5 hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:2s" hx-target="#checkforupdates">
+            Done deleting selected videos from your playlist on YouTube. Refresh page!
         </h5>
         <hr>
         """)
@@ -929,6 +931,9 @@ def update_playlist(request, playlist_id, type):
             video = playlist_item.video
             playlist_changed_text.append(f"--> {playlist_item.video.name}")
             playlist_item.delete()
+            if playlist_id == "LL":
+                video.liked = False
+                video.save(update_fields=['liked'])
             if not playlist.playlist_items.filter(video__video_id=video.video_id).exists():
                 playlist.videos.remove(video)
 
@@ -1122,7 +1127,7 @@ def playlist_move_copy_videos(request, playlist_id, action):
                 <span class="text-danger">First select some videos to {action}!</span>""")
 
     success_message = f"""
-                <span class="text-success">Successfully {'moved' if action == 'move' else 'copied'} {len(playlist_item_ids)} videos to {len(playlist_ids)} other playlist!</span>"""
+                <span class="text-success">Successfully {'moved' if action == 'move' else 'copied'} {len(playlist_item_ids)} videos to {len(playlist_ids)} other playlist! Refresh depage!</span>"""
     if action == "move":
         status = Playlist.objects.moveCopyVideosFromPlaylist(request.user,
                                                              from_playlist_id=playlist_id,

@@ -112,6 +112,7 @@ class PlaylistManager(models.Manager):
                 result["status"] = -1
                 return result
 
+            print(pl_response)
             if pl_response["pageInfo"]["totalResults"] == 0:
                 print("No playlists created yet on youtube.")
                 result["status"] = -2
@@ -138,6 +139,7 @@ class PlaylistManager(models.Manager):
         for item in playlist_items:
             playlist_id = item["id"]
             playlist_ids.append(playlist_id)
+
             # check if this playlist already exists in user's untube collection
             if user.playlists.filter(playlist_id=playlist_id).exists():
                 playlist = user.playlists.get(playlist_id=playlist_id)
@@ -395,7 +397,7 @@ class PlaylistManager(models.Manager):
                 vid_request = youtube.videos().list(
                     part="contentDetails,player,snippet,statistics",  # get details of eac video
                     id=video_ids_string,
-                    maxResults=50
+                    maxResults=50,
                 )
 
                 vid_response = vid_request.execute()
@@ -403,6 +405,9 @@ class PlaylistManager(models.Manager):
                 for item in vid_response['items']:
                     duration = item['contentDetails']['duration']
                     vid = playlist.videos.get(video_id=item['id'])
+
+                    if playlist_id == "LL":
+                        vid.liked = True
 
                     vid.name = item['snippet']['title']
                     vid.description = item['snippet']['description']
@@ -931,8 +936,8 @@ class PlaylistManager(models.Manager):
         playlist_items = user.playlists.get(playlist_id=playlist_id).playlist_items.select_related('video').filter(
             playlist_item_id__in=playlist_item_ids)
 
-        # new_playlist_duration_in_seconds = playlist.playlist_duration_in_seconds
-        # new_playlist_video_count = playlist.video_count
+        new_playlist_duration_in_seconds = playlist.playlist_duration_in_seconds
+        new_playlist_video_count = playlist.video_count
         with build('youtube', 'v3', credentials=credentials) as youtube:
             for playlist_item in playlist_items:
                 pl_request = youtube.playlistItems().delete(
@@ -958,15 +963,31 @@ class PlaylistManager(models.Manager):
                     playlist.videos.remove(video)
 
                 # video = playlist.videos.get(playlist_item_id=playlist_item_id)
-                # new_playlist_video_count -= 1
-                # new_playlist_duration_in_seconds -= video.duration_in_seconds
+                new_playlist_video_count -= 1
+                new_playlist_duration_in_seconds -= video.duration_in_seconds
                 # video.delete()
 
-        # playlist.video_count = new_playlist_video_count
-        # playlist.playlist_duration_in_seconds = new_playlist_duration_in_seconds
-        # playlist.playlist_duration = getHumanizedTimeString(new_playlist_duration_in_seconds)
-        # playlist.save(update_fields=['video_count', 'playlist_duration', 'playlist_duration_in_seconds'])
+        playlist.video_count = new_playlist_video_count
+        playlist.playlist_duration_in_seconds = new_playlist_duration_in_seconds
+        playlist.playlist_duration = getHumanizedTimeString(new_playlist_duration_in_seconds)
+        playlist.save(update_fields=['video_count', 'playlist_duration', 'playlist_duration_in_seconds'])
         # time.sleep(2)
+
+        playlist_items = playlist.playlist_items.select_related('video').order_by("video_position")
+        counter = 0
+        videos = []
+        for playlist_item in playlist_items:
+            playlist_item.video_position = counter
+
+            is_duplicate = False
+            if playlist_item.video_id in videos:
+                is_duplicate = True
+            else:
+                videos.append(playlist_item.video_id)
+
+            playlist_item.is_duplicate = is_duplicate
+            playlist_item.save(update_fields=['video_position', 'is_duplicate'])
+            counter += 1
 
     def updatePlaylistDetails(self, user, playlist_id, details):
         """
@@ -1056,6 +1077,7 @@ class PlaylistManager(models.Manager):
         return 0
 
 
+
 class Tag(models.Model):
     name = models.CharField(max_length=69)
     created_by = models.ForeignKey(User, related_name="playlist_tags", on_delete=models.CASCADE, null=True)
@@ -1097,6 +1119,7 @@ class Video(models.Model):
     published_at = models.DateTimeField(blank=True, null=True)
     description = models.CharField(max_length=420, default="")
     has_cc = models.BooleanField(default=False, blank=True, null=True)
+    liked = models.BooleanField(default=False)  # whether this video liked on YouTube by user or not
 
     # video stats
     public_stats_viewable = models.BooleanField(default=True)

@@ -6,6 +6,16 @@
 {% block content %}
 
     <div id="view_playlist">
+        {% if not_imported_LL %}
+            <div hx-get="/import/liked-videos-playlist" hx-trigger="load" hx-swap="outerHTML">
+            <div class="alert alert-dismissible fade show" role="alert" style="background-color: cadetblue">
+                <div class="d-flex justify-content-center mt-4 mb-3 ms-2" id="loading-sign" >
+                    <img src="/static/svg-loaders/spinning-circles.svg" width="40" height="40">
+                    <h5 class="mt-2 ms-2 text-black">Importing your Liked Videos playlist into UnTube, do not refresh this page!</h5>
+                </div>
+            </div>
+        </div>
+        {% else %}
         {% if playlist.has_playlist_changed %}
             <div hx-get="{% url 'update_playlist' playlist.playlist_id 'auto' %}" hx-trigger="load" hx-swap="outerHTML">
                 <div class="d-flex justify-content-center mt-4 mb-3" id="loading-sign">
@@ -330,7 +340,7 @@
 
                         <h5>{% if playlist.is_user_owned %}Move or {% endif %}Copy videos to another playlist!</h5>
 
-                        <div class="d-flex justify-content-start">
+                        <div class="row d-flex justify-content-start">
 
 
                             <div class="col-md-8 text-dark">
@@ -344,23 +354,27 @@
                                 </select>
                             </div>
 
-                        </div>
-
-                        <div class="d-flex justify-content-start mt-2">
+                            <div class="col-md d-flex justify-content-start">
 
                             {% if playlist.is_user_owned %}
-                                <div class="btn-group me-2">
+                                <div class="btn-group mt-1">
                                     <button hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'move' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-primary">
                                         Move!
                                     </button>
                                 </div>
                             {% endif %}
-                            <div class="btn-group">
+                            <div class="btn-group ms-1 mt-1">
                                 <button hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'copy' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-info">
                                     Copy!
                                 </button>
                             </div>
-                            <div id="move-copy-videos-box" class="d-flex align-items-end ms-2">
+
+                            </div>
+
+                        </div>
+
+                        <div class="d-flex justify-content-start mt-2">
+              <div id="move-copy-videos-box" class="d-flex align-items-end ms-2">
                                 <span class="text-warning">Note: Move will delete the selected videos from this playlist. Copy won't.</span>
                             </div>
                         </div>
@@ -549,9 +563,7 @@
         <div class="d-flex justify-content-center">
             <img id="load-more-videos-spinner" class="htmx-indicator mt-4" src="{% static 'svg-loaders/spinning-circles.svg' %}" width="40" height="40">
         </div>
-
-
-
+        {% endif %}
     </div>
 
     <button class="scrollToTopBtn sticky-top">

@@ -14,6 +14,7 @@ urlpatterns = [
     path("delete/account", views.delete_account, name='delete_account'),
     path('settings/', views.settings, name="settings"),
 
+    path("import/liked-videos-playlist", views.get_user_liked_videos_playlist, name="get_user_liked_videos_playlist"),
     path("import/init", views.import_user_yt_playlists, name='import_user_yt_playlists'),
     path("import/start", views.start_import, name='start'),
     path("import/continue", views.continue_import, name='continue'),

@@ -32,7 +32,7 @@
                 {% endfor %}
             </ul>
         {% endif %}
-            <button class="btn btn-success" hx-get="{% url 'user_playlists_updates' 'init-update' %}" hx-trigger="click" hx-target="#user-pl-updates">
+            <button class="btn btn-success" {% if deleted_playlist_names and playlists %}hx-get="{% url 'user_playlists_updates' 'init-update' %}" hx-trigger="click" hx-target="#user-pl-updates"{% else %}type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"{% endif %}>
                 {% if deleted_playlist_names and not playlists %}
                     OK
                 {% else %}

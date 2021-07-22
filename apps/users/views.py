@@ -104,6 +104,11 @@ def delete_account(request):
 def log_out(request):
     request.session.flush()  # delete all stored session keys
     logout(request)  # log out authenticated user
+
+    if "troll" in request.GET:
+        print("TROLLED")
+        messages.success(request, "Hee Hee")
+
     return redirect('/')
 
 
@@ -165,6 +170,8 @@ def start_import(request):
 
         print("User has no playlists on YT")
 
+        Playlist.objects.initializePlaylist(request.user, "LL")
+
         if request.user.profile.yt_channel_id == "":
             Playlist.objects.getUserYTChannelID(request.user)
 
@@ -177,6 +184,8 @@ def start_import(request):
     else:
         if request.user.profile.yt_channel_id == "":
             Playlist.objects.getUserYTChannelID(request.user)
+
+        Playlist.objects.initializePlaylist(request.user)
 
         user_profile.import_in_progress = True
         user_profile.save()
@@ -195,10 +204,10 @@ def continue_import(request):
     if request.user.profile.import_in_progress is False:
         return redirect('home')
 
-    num_of_playlists = request.user.playlists.all().count()
+    num_of_playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).exclude(playlist_id="LL").count()
 
     try:
-        remaining_playlists = request.user.playlists.filter(is_in_db=False)
+        remaining_playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).exclude(playlist_id="LL")
         playlists_imported = num_of_playlists - remaining_playlists.count() + 1
         playlist = remaining_playlists.order_by("created_at")[0]
         playlist_name = playlist.name
@@ -221,9 +230,11 @@ def continue_import(request):
         request.user.profile.show_import_page = True  # set back to true again so as to show users the welcome screen on 'home'
         request.user.save()
 
+        user_pl_count = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True)).exclude(playlist_id="LL").count()
+
         return HttpResponse(loader.get_template('intercooler/progress_bar.html').render(
-            {"total_playlists": num_of_playlists,
-             "playlists_imported": num_of_playlists,
+            {"total_playlists": user_pl_count,
+             "playlists_imported": user_pl_count,
              "done": True,
              "progress": 100,
              "channel_found": True}))
@@ -231,8 +242,13 @@ def continue_import(request):
 
 @login_required
 def user_playlists_updates(request, action):
+    """
+    Gets all user created playlist's ids from YouTube and checks them with the user playlists imported on UnTube.
+    If any playlist id is on UnTube but not on YouTube, deletes the playlist from YouTube.
+    If any new playlist id, imports it to UnTube
+    """
     if action == 'check-for-updates':
-        user_playlists_on_UnTube = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
+        user_playlists_on_UnTube = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True)).exclude(playlist_id="LL")
 
         result = Playlist.objects.initializePlaylist(request.user)
 
@@ -289,6 +305,19 @@ def user_playlists_updates(request, action):
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-la bel="Close"></button>
         </div>
         """)
+
+@login_required
+def get_user_liked_videos_playlist(request):
+    if not request.user.playlists.filter(Q(playlist_id="LL") & Q(is_in_db=True)).exists():
+        Playlist.objects.initializePlaylist(request.user, "LL")
+        Playlist.objects.getAllVideosForPlaylist(request.user, "LL")
+        messages.success(request, "Successfully imported your Liked Videos playlist!")
+
+    return HttpResponse("""
+        <script>
+        window.location.reload();
+        </script>
+    """)
 
 
 ### FOR INDEX.HTML

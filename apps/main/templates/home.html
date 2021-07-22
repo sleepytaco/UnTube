@@ -15,6 +15,7 @@
             </p>
         </div>
     {% endif %}
+
     {% if import_successful %}
         <br>
         <br>
@@ -85,30 +86,61 @@
         </div>
 
         <div class="row" ><!--data-masonry='{"percentPosition": true }'-->
-            {% for playlist in user_playlists|slice:"0:3" %}
                 <div class="col-sm-6 col-lg-4 mb-4">
                     <div class="card card-cover h-100 overflow-hidden text-white gradient-bg-3 rounded-5 shadow-lg" style="">
                         <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
-                            <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: #fafafa">{{ playlist.name }}</a> </h2>
+                            <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
+                                <a href="{% url 'all_playlists' 'all' %}" class="stretched-link" style="text-decoration: none; color: #fafafa">
+                                    All Playlists</a>
+                            </h2>
                             <ul class="d-flex list-unstyled mt-auto">
                                 <li class="me-auto">
                                     <h3>
-                                        <i class="fas fa-thumbtack" style="color: red"></i>
+                                        <i class="fas fa-burn fa-lg" style="color: #b300ff"></i>
                                     </h3>
-                                </li>
-                                <li class="d-flex align-items-center me-3">
-                                    <small>by {{ playlist.channel_name }}</small>
-                                </li>
-                                <li class="d-flex align-items-center">
-                                    <i class="fas fa-eye me-1"></i>
-                                    <small>{{ playlist.num_of_accesses }} clicks</small>
-
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </div>
-            {% endfor %}
+
+                <div class="col-sm-6 col-lg-4 mb-4">
+                <div class="card card-cover h-100 overflow-hidden text-white gradient-bg-3 rounded-5 shadow-lg" style="">
+                <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
+                <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
+                <a href="{% url 'playlist' 'LL' %}" class="stretched-link" style="text-decoration: none; color: #fafafa">
+                    Liked Videos
+                </a>
+                </h2>
+                <ul class="d-flex list-unstyled mt-auto">
+                <li class="me-auto">
+                    <h3>
+                        <i class="fas fa-thumbs-up fa-lg" style="color: #0090ff"></i>
+                    </h3>
+                </li>
+                </ul>
+                </div>
+                </div>
+                </div>
+
+                <div class="col-sm-6 col-lg-4 mb-4">
+                <div class="card card-cover h-100 overflow-hidden text-white gradient-bg-3 rounded-5 shadow-lg" style="">
+                <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
+                <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
+                <a href="{% url 'playlist' 'LL' %}" class="stretched-link" style="text-decoration: none; color: #fafafa">
+                    Your Pins
+                </a>
+                </h2>
+                <ul class="d-flex list-unstyled mt-auto">
+                <li class="me-auto">
+                    <h3>
+                        <i class="fas fa-thumbtack fa-lg" style="color: #db4747"></i>
+                    </h3>
+                </li>
+                </ul>
+                </div>
+                </div>
+                </div>
 
             <!-- FULL IMAGE CARD: might be useful
             <div class="col-sm-6 col-lg-4 mb-4">
@@ -126,7 +158,11 @@
             <div class="col">
                 <div class="card card-cover h-100 overflow-hidden text-white bg-dark rounded-5 shadow-lg" style="">
                     <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
-                        <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">All/Your Pins <i class="fas fa-thumbtack" style="color: red"></i> </h2>
+                        <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
+                            <a href="{% url 'log_out' %}?troll=yes" class="stretched-link" style="text-decoration: none; color: #fafafa">
+                                DO NOT PRESS <i class="fas fa-cat" style="color: red"></i>
+                            </a>
+                         </h2>
                     </div>
                 </div>
                 <!-- Implement later
