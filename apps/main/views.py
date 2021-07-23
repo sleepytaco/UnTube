@@ -478,11 +478,15 @@ def delete_videos(request, playlist_id, command):
             hx_vals = ""
             delete_text = f"{num_vids} videos"
 
+        if playlist_id == "LL":
+            extra_text += "Since you're deleting from your Liked Videos playlist, the selected videos will also be unliked from YouTube. "
+
         url = f"/playlist/{playlist_id}/delete-videos/confirmed"
+
         return HttpResponse(
             f"""
                 <div hx-ext="class-tools">
-                <div classes="add visually-hidden:4s">
+                <div classes="add visually-hidden:30s">
                     <h5>
                     Are you sure you want to delete {delete_text} from your YouTube playlist?{extra_text}This cannot be undone.</h5>
                     <button hx-post="{url}" hx-include="[id='video-checkboxes']" {hx_vals} hx-target="#delete-videos-confirm-box" type="button" class="btn btn-outline-danger btn-sm">Confirm</button>

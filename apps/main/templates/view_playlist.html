@@ -11,9 +11,15 @@
         {% if not_imported_LL %}
             <div hx-get="/import/liked-videos-playlist" hx-trigger="load" hx-swap="outerHTML">
             <div class="alert alert-dismissible fade show" role="alert" style="background-color: cadetblue">
-                <div class="d-flex justify-content-center mt-4 mb-3 ms-2" id="loading-sign" >
+                <div class="d-flex justify-content-center flex-column mt-4 mb-3 ms-2" id="loading-sign" >
+                    <div class="d-flex justify-content-center">
                     <img src="/static/svg-loaders/spinning-circles.svg" width="40" height="40">
-                    <h5 class="mt-2 ms-2 text-black">Importing your Liked Videos playlist into UnTube, do not refresh this page!</h5>
+                    <h5 class="mt-2 ms-2 text-black">Importing your Liked Videos playlist into UnTube, do not refresh this page!
+                        </h5>
+                    </div>
+                    <div class="d-flex justify-content-center mt-1">
+                        <h6>(this might take a while if you have more than 700 liked videos!)</h6>
+                    </div>
                 </div>
             </div>
         </div>
@@ -396,7 +402,16 @@
                             {% if not playlist.confirm_before_deleting %}
                                 <h5>Note: You have set confirm before deleting to False. Buttons below will take effect immediately when clicked.</h5>
                                 <hr>
+                            {% else %}
+                                {% if playlist.has_unavailable_videos %}
+                                    <h5>Note: Clicking on delete unavailable videos button will take immediate effect. All videos labelled unavailable in this playlist will be deleted from your YouTube playlist.</h5>
+                                {% endif %}
+                                {% if playlist.has_duplicate_videos %}
+                                    <h5>Note: Clicking on delete duplicate videos button will take immediate effect. All videos labelled duplicate in this playlist will be deleted from your YouTube playlist.</h5>
+                                {% endif %}
+                                <hr>
                             {% endif %}
+
                         </div>
                         <div class="d-flex justify-content-start">
                             <div class="btn-group me-2">
