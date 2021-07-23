@@ -156,13 +156,15 @@
 
         <div class="row text-dark mt-0 align-items-center">
             <div class="col">
-                <div class="card card-cover h-100 overflow-hidden text-white bg-dark rounded-5 shadow-lg" style="">
-                    <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
-                        <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
-                            <a href="{% url 'log_out' %}?troll=yes" class="stretched-link" style="text-decoration: none; color: #fafafa">
-                                DO NOT PRESS <i class="fas fa-cat" style="color: red"></i>
-                            </a>
-                         </h2>
+                <div class="card bg-transparent text-dark">
+                    <div class="card-body">
+                        <h6 class="d-flex align-items-center mb-3">A total of <span class="text-primary me-1 ms-1" id="num-channels">{{ channels.count }} channels</span> and <span class="text-primary ms-1 me-1" id="num-channels"> {{ videos.count }} videos</span> found in your UnTube collection</h6>
+                        <div class="d-flex align-items-center mb-3">
+
+                            <canvas id="overall-channels-distribution" data-url="{% url 'overall_channels_distribution' %}">
+
+                            </canvas>
+                        </div>
                     </div>
                 </div>
                 <!-- Implement later
@@ -193,7 +195,7 @@
                     </div>
                     -->
             </div>
-            <div class="col-8">
+            <div class="col">
                 <div class="card bg-transparent border border-0 text-black">
                     <div class="card-body">
                         <h3><span style="border-bottom: 3px #a35a5a dashed;">Most viewed playlists</span> <a href="{% url 'all_playlists' 'all' %}" class="pt-1"><i class="fas fa-binoculars"></i> </a></h3>
@@ -560,6 +562,63 @@
                                             }
                                     }
                                 }
+                            }
+                        });
+
+                    }
+                });
+
+                var $overallChannels = $("#overall-channels-distribution");
+                $.ajax({
+                    url: $overallChannels.data("url"),
+                    success: function (data) {
+
+                        var ctx = $overallChannels[0].getContext("2d");
+                        var coloR = [];
+
+                        var dynamicColors = function() { // generate random color
+                            var r = Math.floor(Math.random() * 255);
+                            var g = Math.floor(Math.random() * 255);
+                            var b = Math.floor(Math.random() * 255);
+                            return "rgb(" + r + "," + g + "," + b + ")";
+                        };
+
+                        for (var i in data.labels) {
+                            if (data.labels)
+                            coloR.push(dynamicColors());
+                        }
+
+                        new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    label: 'Channel',
+                                    backgroundColor: coloR,
+                                    data: data.data
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                legend: {
+                                    position: 'right',
+                                    display: false
+                                },
+                                title: {
+                                    display: false,
+                                    text: 'Video Count Distribution per Channel',
+                                    fontSize: 20,
+                                    fontColor: '#fff',
+                                },
+                                tooltips: {
+                                    callbacks: {
+                                        label: function(tooltipItem, object) {
+                                              return object['labels'][tooltipItem['index']] + ": " + object['datasets'][0]['data'][tooltipItem['index']] + ' videos';
+                                            }
+                                    }
+                                }
+
+
                             }
                         });
 

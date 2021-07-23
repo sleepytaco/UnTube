@@ -3,7 +3,7 @@ import random
 
 import bleach
 import pytz
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.html import strip_tags
@@ -88,12 +88,19 @@ def home(request):
         statistics["imported_x"] = round(user_playlists.filter(is_user_owned=False).count() / total_num_playlists,
                                          1) * 100
 
+    videos = request.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
+
+    channels = videos.values(
+        'channel_name').annotate(channel_videos_count=Count('video_id'))
+
     return render(request, 'home.html', {"channel_found": channel_found,
                                          "user_playlists": user_playlists,
                                          "watching": watching,
                                          "recently_accessed_playlists": recently_accessed_playlists,
                                          "recently_added_playlists": recently_added_playlists,
-                                         "statistics": statistics})
+                                         "statistics": statistics,
+                                         "videos": videos,
+                                         "channels": channels})
 
 
 @login_required

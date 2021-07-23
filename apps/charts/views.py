@@ -10,8 +10,28 @@ def channel_videos_distribution(request, playlist_id):
 
     queryset = playlist_items.filter(Q(video__is_unavailable_on_yt=False) & Q(video__was_deleted_on_yt=False)).values(
         'video__channel_name').annotate(channel_videos_count=Count('video_position'))
+
     for entry in queryset:
         labels.append(entry['video__channel_name'])
+        data.append(entry['channel_videos_count'])
+
+    return JsonResponse(data={
+        'labels': labels,
+        'data': data,
+    })
+
+
+def overall_channels_distribution(request):
+    labels = []
+    data = []
+
+    videos = request.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
+
+    queryset = videos.values(
+        'channel_name').annotate(channel_videos_count=Count('video_id'))
+
+    for entry in queryset:
+        labels.append(entry['channel_name'])
         data.append(entry['channel_videos_count'])
 
     return JsonResponse(data={
