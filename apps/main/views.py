@@ -1225,3 +1225,24 @@ def playlist_move_copy_videos(request, playlist_id, action):
             return HttpResponse("Error copying!")
 
     return HttpResponse(success_message)
+
+@login_required
+def playlist_open_random_video(request, playlist_id):
+    playlist = request.user.playlists.get(playlist_id=playlist_id)
+    videos = playlist.videos.all()
+
+    random_video = random.choice(videos)
+
+    return redirect(f'/video/{random_video.video_id}')
+
+@login_required
+def playlist_completion_times(request, playlist_id):
+    playlist_duration = request.user.playlists.get(playlist_id=playlist_id).playlist_duration_in_seconds
+
+    return HttpResponse(f"""
+        <h5 class="text-warning">Playlist completion times:</h5>
+        <h6>At 1.25x speed: {getHumanizedTimeString(playlist_duration/1.25)}</h6>
+        <h6>At 1.5x speed: {getHumanizedTimeString(playlist_duration/1.5)}</h6>
+        <h6>At 1.75x speed: {getHumanizedTimeString(playlist_duration/1.75)}</h6>
+        <h6>At 2x speed: {getHumanizedTimeString(playlist_duration/2)}</h6>
+    """)

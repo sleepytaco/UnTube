@@ -42,6 +42,9 @@ urlpatterns = [
     path("playlist/<slug:playlist_id>/delete-playlist", views.delete_playlist, name="delete_playlist"),
     path("playlist/<slug:playlist_id>/reset-watched", views.reset_watched, name="reset_watched"),
     path("playlist/<slug:playlist_id>/move-copy-videos/<str:action>", views.playlist_move_copy_videos, name="playlist_move_copy_videos"),
+    path("playlist/<slug:playlist_id>/open-random-video", views.playlist_open_random_video, name="playlist_open_random_video"),
+    path("playlist/<slug:playlist_id>/get-playlist-completion-times", views.playlist_completion_times,
+         name="playlist_completion_times"),
 
     ### STUFF RELATED TO PLAYLISTS IN BULK
     path("search/playlists/<slug:playlist_type>", views.search_playlists, name="search_playlists"),

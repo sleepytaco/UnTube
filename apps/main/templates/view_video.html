@@ -82,7 +82,9 @@
 
     <div class="row">
         <div class="col-6">
-         <iframe width="100%" height="100%" src="//www.youtube.com/embed/{{ video.video_id }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+            <iframe id="ytplayer" width="100%" height="100%" src="//www.youtube.com/embed/{{ video.video_id }}?enablejsapi=1" frameborder="0" style="border: solid 5px #37474F" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
         </div>
         <div class="col-6">
             <div class="row">
@@ -101,7 +103,7 @@
             <div >
                 <textarea name="video-notes-text-area"
                           hx-post="{% url 'video_notes' video.video_id %}"
-                          hx-trigger="keyup changed delay:2s"
+                          hx-trigger="keyup changed delay:1.5s"
                           hx-target="#notes-save-status"
                           class="form-control"
                           id="video-notes-text-area"
@@ -152,63 +154,59 @@
                     </div>
                 </div>
 
-                <!--
-        <div class="col">
-            <div class="card">
-                <a style="background-color: #7e89c2;" href="{% url 'playlist' playlist.playlist_id %}" class="list-group-item list-group-item-action" aria-current="true">
-                    <div class="card-body">
-                <h5 class="card-title">
-                   {{ playlist.name }}
-                    {% if playlist.is_private_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
-                    {% if playlist.is_from_yt %}<small><span class="badge bg-danger text-dark">YT</span></small> {% endif %}
-                </h5>
-                <p class="card-text">
-                    <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
-
-                    {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white">{{ playlist.get_watch_time_left }} left</span>{% endif %}
-                </p>
-                    {% if playlist.tags.all %}
-                <small>
-                <i class="fas fa-tags fa-sm" style="color: yellow"></i>
-                    {% for tag in playlist.tags.all %}
-                        <span class="badge rounded-pill bg-primary mb-lg-1">
-                            {{ tag.name }}
-                        </span>
-                    {% endfor %}
-                </small>
-                    {% endif %}
-                </div>
-                </a>
-            </div>
-        </div> -->
-                <!--
-            {% if forloop.counter == 3 %}
-                {% if watching.count|add:"-3" != 0 %}
-                <div class="col">
-                    <div class="card">
-                        <a style="background-color: #7e89c2;" href="{% url 'all_playlists' 'watching' %}" class="list-group-item list-group-item-action" aria-current="true">
-                            <div class="card-body">
-
-                                <p class="card-text">
-                                    <h3>+ {{ watching.count|add:"-3" }} more</h3>
-                                </p>
-                             </div>
-                        </a>
-                    </div>
-                </div>
-                {% endif %}
-            {% endif %}
-            -->
             {% endfor %}
         </div>
     </div>
 
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
-    <!-- Initialize Quill editor -->
-    <script>
-      var quill = new Quill('#editor', {
-        theme: 'snow'
-      });
+
+    <script type="text/javascript">
+        // from https://developers.google.com/youtube/iframe_api_reference#Examples
+      var tag = document.createElement('script');
+      tag.id = 'iframe-demo';
+      tag.src = 'https://www.youtube.com/iframe_api';
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      var player;
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player('ytplayer', {
+            events: {
+              'onReady': onPlayerReady,
+              'onStateChange': onPlayerStateChange
+            }
+        });
+      }
+      function onPlayerReady(event) {
+        document.getElementById('ytplayer').style.borderColor = '#FF6D00';
+      }
+      function changeBorderColor(playerStatus) {
+        var color;
+        if (playerStatus === -1) {
+          color = "#37474F"; // unstarted = gray
+        } else if (playerStatus === 0) {
+          color = "#FFFF00"; // ended = yellow
+        } else if (playerStatus === 1) {
+          color = "#33691E"; // playing = green
+        } else if (playerStatus === 2) {
+          color = "#DD2C00"; // paused = red
+            // console.log(player.playerInfo.currentTime + " secs elapsed!");
+        } else if (playerStatus === 3) {
+          color = "#AA00FF"; // buffering = purple
+        } else if (playerStatus === 5) {
+          color = "#FF6DOO"; // video cued = orange
+        }
+        if (color) {
+          document.getElementById('ytplayer').style.borderColor = color;
+        }
+      }
+      function onPlayerStateChange(event) {
+        changeBorderColor(event.data);
+
+        // can use the below info to create a stream room
+        // player.playerInfo.currentTime returns player elapsed time
+        // console.log(player)
+      }
     </script>
+
 {% endblock %}

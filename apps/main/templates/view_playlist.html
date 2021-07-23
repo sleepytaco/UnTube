@@ -96,7 +96,19 @@
                                 <span class="badge bg-light text-black-50">{% if playlist.is_user_owned %}OWNED{% else %}IMPORTED{% endif %}</span>
 
                                 <span class="badge bg-light text-black-50">{{ playlist.video_count }} VIDEOS</span>
-                                <span class="badge bg-light text-black-50">{{ playlist.playlist_duration }} </span>
+                                <a data-bs-toggle="collapse" href="#vidDurationCollapse" role="button" aria-expanded="false" aria-controls="vidDurationCollapse">
+                                        <span class="badge bg-light text-black-50">{{ playlist.playlist_duration }}</span>
+                                    </a>
+                                <div class="collapse" id="vidDurationCollapse">
+                                    <div class="card card-body bg-transparent text-white text-capitalize border border-3 mt-2 mb-2 border-light">
+                                        <div hx-get="{% url 'playlist_completion_times' playlist.playlist_id %}"
+                                hx-trigger="revealed"
+                                hx-swap="outerHTML">
+
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <span class="badge bg-light text-black-50">{% if playlist.is_private_on_yt %}PRIVATE{% else %}PUBLIC{% endif %}</span>
                                 {% if playlist.is_yt_mix %}<span class="badge bg-light text-black-50">YT MIX</span>{% endif %}
 
@@ -254,6 +266,14 @@
                                     <i class="fas fa-sync"></i>
                                 </a>
                             </div>
+
+                            {% if playlist.video_count != 0 %}
+                            <div class="btn-group me-2 mb-2">
+                                <a href="{% url 'playlist_open_random_video' playlist.playlist_id %}" class="btn btn-danger">
+                                    Open a Random Video
+                                </a>
+                            </div>
+                            {% endif %}
 
                             <div class="btn-group me-2 mb-2">
 
