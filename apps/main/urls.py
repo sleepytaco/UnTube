@@ -10,6 +10,8 @@ urlpatterns = [
     ### STUFF RELATED TO INDIVIDUAL VIDEOS
     path("video/<slug:video_id>", views.view_video, name='video'),
     path("video/<slug:video_id>/notes", views.video_notes, name='video_notes'),
+    path("video/<slug:video_id>/get-video-completion-times", views.video_completion_times,
+         name="video_completion_times"),
 
     ### STUFF RELATED TO WHOLE SITE
     path("search", views.search, name="search"),

@@ -96,10 +96,10 @@
                                 <span class="badge bg-light text-black-50">{% if playlist.is_user_owned %}OWNED{% else %}IMPORTED{% endif %}</span>
 
                                 <span class="badge bg-light text-black-50">{{ playlist.video_count }} VIDEOS</span>
-                                <a data-bs-toggle="collapse" href="#vidDurationCollapse" role="button" aria-expanded="false" aria-controls="vidDurationCollapse">
+                                <a data-bs-toggle="collapse" href="#playlistDurationCollapse" role="button" aria-expanded="false" aria-controls="playlistDurationCollapse">
                                         <span class="badge bg-light text-black-50">{{ playlist.playlist_duration }}</span>
                                     </a>
-                                <div class="collapse" id="vidDurationCollapse">
+                                <div class="collapse" id="playlistDurationCollapse">
                                     <div class="card card-body bg-transparent text-white text-capitalize border border-3 mt-2 mb-2 border-light">
                                         <div hx-get="{% url 'playlist_completion_times' playlist.playlist_id %}"
                                 hx-trigger="revealed"
@@ -526,7 +526,16 @@
                                                 <a class="link-dark" href="{% url 'video' playlist_item.video.video_id %}">
                                                     {{ playlist_item.video.name|truncatewords:"16" }}
                                                 </a> by {{ playlist_item.video.channel_name }} <br>
-                                                <span class="badge bg-secondary">{{ playlist_item.video.duration }}</span>
+                                                <a style="text-decoration: none" hx-get="{% url 'video_completion_times' playlist_item.video.video_id %}" hx-trigger="click once" hx-target="#{{ playlist_item.playlist_item_id }}-completion-times" data-bs-toggle="collapse" href="#{{ playlist_item.playlist_item_id }}DurationCollapse" role="button" aria-expanded="false" aria-controls="{{ playlist_item.playlist_item_id }}DurationCollapse">
+                                                        <span class="badge bg-secondary">{{ playlist_item.video.duration }}</span>
+                                                    </a>
+                                                <div class="collapse" id="{{ playlist_item.playlist_item_id }}DurationCollapse">
+                                                    <div class="card card-body bg-dark text-white text-capitalize border border-3 mt-2 mb-2 border-light">
+                                                        <div id="{{ playlist_item.playlist_item_id }}-completion-times">
+
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                 {% if playlist_item.video.has_cc %}<span class="badge bg-danger">CC</span>{% endif %}
                                                 {% if playlist_item.video.published_at %}<span class="badge bg-secondary">added to playlist on {{ playlist_item.published_at }}</span>{% endif %}
                                                 <span class="badge bg-info text-black-50"><i class="fas fa-eye"></i> {% if playlist_item.video.view_count == -1 %}HIDDEN{% else %}{{ playlist_item.video.view_count|intword|intcomma }}{% endif %}</span>
@@ -607,8 +616,10 @@
 
             </div>
         {% endif %}
-        <div class="d-flex justify-content-center">
-            <img id="load-more-videos-spinner" class="htmx-indicator mt-4" src="{% static 'svg-loaders/spinning-circles.svg' %}" width="40" height="40">
+        <div id="load-more-videos-spinner" class="d-flex htmx-indicator justify-content-center align-items-center">
+            <div class="spinner-border mt-3" role="status">
+            </div>
+            <span class="mt-3 ms-2">Loading more videos...</span>
         </div>
         {% endif %}
     </div>

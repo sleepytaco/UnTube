@@ -1246,3 +1246,16 @@ def playlist_completion_times(request, playlist_id):
         <h6>At 1.75x speed: {getHumanizedTimeString(playlist_duration/1.75)}</h6>
         <h6>At 2x speed: {getHumanizedTimeString(playlist_duration/2)}</h6>
     """)
+
+@login_required
+def video_completion_times(request, video_id):
+    video_duration = request.user.videos.get(video_id=video_id).duration_in_seconds
+
+    return HttpResponse(f"""
+        <h5 class="text-warning">Video completion times:</h5>
+        <h6>At 1.25x speed: {getHumanizedTimeString(video_duration/1.25)}</h6>
+        <h6>At 1.5x speed: {getHumanizedTimeString(video_duration/1.5)}</h6>
+        <h6>At 1.75x speed: {getHumanizedTimeString(video_duration/1.75)}</h6>
+        <h6>At 2x speed: {getHumanizedTimeString(video_duration/2)}</h6>
+    """)
+
