@@ -286,7 +286,6 @@ class PlaylistManager(models.Manager):
                             item['snippet']['title'] == "Private video" or item['snippet'][
                         'description'] == "This video is private."):
                         video.was_deleted_on_yt = True
-                        playlist.has_unavailable_videos = True
                         video.save(update_fields=['was_deleted_on_yt'])
 
             while True:
@@ -379,7 +378,6 @@ class PlaylistManager(models.Manager):
                                     item['snippet']['title'] == "Private video" or item['snippet'][
                                 'description'] == "This video is private."):
                                 video.was_deleted_on_yt = True
-                                playlist.has_unavailable_videos = True
                                 video.save(update_fields=['was_deleted_on_yt'])
 
 
@@ -433,9 +431,6 @@ class PlaylistManager(models.Manager):
         playlist.playlist_duration_in_seconds = playlist_duration_in_seconds
         playlist.playlist_duration = getHumanizedTimeString(playlist_duration_in_seconds)
 
-        if len(video_ids) != len(vid_durations):  # that means some videos in the playlist are deleted
-            playlist.has_unavailable_videos = True
-
         playlist.is_in_db = True
 
         playlist.save()
@@ -456,7 +451,7 @@ class PlaylistManager(models.Manager):
 
         # if its been a week since the last full scan, do a full playlist scan
         # basically checks all the playlist video for any updates
-        if playlist.last_full_scan_at + datetime.timedelta(seconds=2) < datetime.datetime.now(pytz.utc):
+        if playlist.last_full_scan_at + datetime.timedelta(minutes=1) < datetime.datetime.now(pytz.utc):
             print("DOING A FULL SCAN")
             current_video_ids = [playlist_item.video_id for playlist_item in playlist.playlist_items.all()]
             current_playlist_item_ids = [playlist_item.playlist_item_id for playlist_item in
@@ -666,7 +661,6 @@ class PlaylistManager(models.Manager):
                             item['snippet']['title'] == "Private video" and item['snippet'][
                         'description'] == "This video is private."):
                         video.was_deleted_on_yt = True
-                        playlist.has_unavailable_videos = True
 
                     is_duplicate = False
                     if not playlist.videos.filter(video_id=video_id).exists():
@@ -771,7 +765,6 @@ class PlaylistManager(models.Manager):
                                     item['snippet']['title'] == "Private video" and item['snippet'][
                                 'description'] == "This video is private."):
                                 video.was_deleted_on_yt = True
-                                playlist.has_unavailable_videos = True
 
                             is_duplicate = False
                             if not playlist.videos.filter(video_id=video_id).exists():
@@ -852,7 +845,6 @@ class PlaylistManager(models.Manager):
                             'description'] == "This video is unavailable.") or (
                             item['snippet']['title'] == "Private video" or item['snippet'][
                         'description'] == "This video is private."):
-                        playlist.has_unavailable_videos = True
                         vid_durations.append(duration)
                         vid.video_details_modified = True
                         vid.video_details_modified_at = datetime.datetime.now(tz=pytz.utc)
@@ -884,10 +876,6 @@ class PlaylistManager(models.Manager):
 
         playlist.playlist_duration_in_seconds = playlist_duration_in_seconds
         playlist.playlist_duration = getHumanizedTimeString(playlist_duration_in_seconds)
-
-        if len(video_ids) != len(vid_durations) or len(
-                unavailable_videos) != 0:  # that means some videos in the playlist became private/deleted
-            playlist.has_unavailable_videos = True
 
         playlist.has_playlist_changed = False
         playlist.video_count = updated_playlist_video_count
@@ -989,6 +977,20 @@ class PlaylistManager(models.Manager):
             playlist_item.save(update_fields=['video_position', 'is_duplicate'])
             counter += 1
 
+    def deleteSpecificPlaylistItems(self, user, playlist_id, command):
+        playlist = user.playlists.get(playlist_id=playlist_id)
+        playlist_items = []
+        if command == "duplicate":
+            playlist_items = playlist.playlist_items.filter(is_duplicate=True)
+        elif command == "unavailable":
+            playlist_items = playlist.playlist_items.filter(Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=False))
+
+        playlist_item_ids = []
+        for playlist_item in playlist_items:
+            playlist_item_ids.append(playlist_item.playlist_item_id)
+
+        self.deletePlaylistItems(user, playlist_id, playlist_item_ids)
+
     def updatePlaylistDetails(self, user, playlist_id, details):
         """
         Takes in playlist itemids for the videos in a particular playlist
@@ -1062,19 +1064,19 @@ class PlaylistManager(models.Manager):
                     except googleapiclient.errors.HttpError as e:  # failed to update playlist details
                         # possible causes:
                         # playlistItemsNotAccessible (403)
-                        # playlistItemNotFound (404)
+                        # playlistItemNotFound (404) - I ran into 404 while trying to copy an unavailable video into another playlist
                         # playlistOperationUnsupported (400)
                         # errors i ran into:
                         # runs into HttpError 400 "Invalid playlist snippet." when the description contains <, >
-                        print("ERROR UPDATING PLAYLIST DETAILS", e, e.status_code, e.error_details)
-                        return -1
+                        print("ERROR UPDATING PLAYLIST DETAILS", e.status_code, e.error_details)
+                        return [-1, e.status_code]
 
                     print(pl_response)
 
         if action == "move":  # delete from the current playlist
             self.deletePlaylistItems(user, from_playlist_id, playlist_item_ids)
 
-        return 0
+        return [0]
 
 
 
@@ -1192,7 +1194,6 @@ class Playlist(models.Model):
 
     playlist_duration = models.CharField(max_length=69, blank=True)  # string version of playlist dureation
     playlist_duration_in_seconds = models.IntegerField(default=0)
-    has_unavailable_videos = models.BooleanField(default=False)  # if videos in playlist are private/deleted
 
     # watch playlist details
     # watch_time_left = models.CharField(max_length=150, default="")
@@ -1230,6 +1231,11 @@ class Playlist(models.Model):
     def __str__(self):
         return str(self.playlist_id)
 
+    def has_unavailable_videos(self):
+        if self.playlist_items.filter(Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=False)).exists():
+            return True
+        return False
+
     def has_duplicate_videos(self):
         if self.playlist_items.filter(is_duplicate=True).exists():
             return True
@@ -1258,6 +1264,9 @@ class Playlist(models.Model):
 
     def get_unavailable_videos_count(self):
         return self.video_count - self.get_watchable_videos_count()
+
+    def get_duplicate_videos_count(self):
+        return self.playlist_items.filter(is_duplicate=True).count()
 
     # return count of watchable videos, i.e # videos that are not private or deleted in the playlist
     def get_watchable_videos_count(self):
@@ -1336,6 +1345,6 @@ class PlaylistItem(models.Model):
 class Pin(models.Model):
     untube_user = models.ForeignKey(User, related_name="pins",
                                     on_delete=models.CASCADE, null=True)  # untube user this pin is linked to
-    type = models.CharField(max_length=100)  # "playlist", "video"
+    kind = models.CharField(max_length=100)  # "playlist", "video"
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE, null=True)
     video = models.ForeignKey(Video, on_delete=models.CASCADE, null=True)

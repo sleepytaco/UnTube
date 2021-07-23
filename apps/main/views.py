@@ -77,11 +77,16 @@ def home(request):
 
     if total_num_playlists != 0:
         # x means  percentage
-        statistics["public_x"] = round(user_playlists.filter(is_private_on_yt=False).count() / total_num_playlists, 1) * 100
-        statistics["private_x"] = round(user_playlists.filter(is_private_on_yt=True).count() / total_num_playlists, 1) * 100
-        statistics["favorites_x"] = round(user_playlists.filter(is_favorite=True).count() / total_num_playlists, 1) * 100
-        statistics["watching_x"] = round(user_playlists.filter(marked_as="watching").count() / total_num_playlists, 1) * 100
-        statistics["imported_x"] = round(user_playlists.filter(is_user_owned=False).count() / total_num_playlists, 1) * 100
+        statistics["public_x"] = round(user_playlists.filter(is_private_on_yt=False).count() / total_num_playlists,
+                                       1) * 100
+        statistics["private_x"] = round(user_playlists.filter(is_private_on_yt=True).count() / total_num_playlists,
+                                        1) * 100
+        statistics["favorites_x"] = round(user_playlists.filter(is_favorite=True).count() / total_num_playlists,
+                                          1) * 100
+        statistics["watching_x"] = round(user_playlists.filter(marked_as="watching").count() / total_num_playlists,
+                                         1) * 100
+        statistics["imported_x"] = round(user_playlists.filter(is_user_owned=False).count() / total_num_playlists,
+                                         1) * 100
 
     return render(request, 'home.html', {"channel_found": channel_found,
                                          "user_playlists": user_playlists,
@@ -107,7 +112,6 @@ def view_video(request, video_id):
     else:
         messages.error(request, "No such video in your UnTube collection!")
         return redirect('home')
-
 
 
 @login_required
@@ -298,7 +302,8 @@ def order_playlist_by(request, playlist_id, order_by):
     if order_by == "all":
         playlist_items = playlist.playlist_items.select_related('video').order_by("video_position")
     elif order_by == "favorites":
-        playlist_items = playlist.playlist_items.select_related('video').filter(video__is_favorite=True).order_by("video_position")
+        playlist_items = playlist.playlist_items.select_related('video').filter(video__is_favorite=True).order_by(
+            "video_position")
         videos_details = "Sorted by Favorites"
         display_text = "No favorites yet!"
     elif order_by == "popularity":
@@ -312,7 +317,8 @@ def order_playlist_by(request, playlist_id, order_by):
         playlist_items = playlist.playlist_items.select_related('video').order_by("-video__view_count")
     elif order_by == "has-cc":
         videos_details = "Filtered by Has CC"
-        playlist_items = playlist.playlist_items.select_related('video').filter(video__has_cc=True).order_by("video_position")
+        playlist_items = playlist.playlist_items.select_related('video').filter(video__has_cc=True).order_by(
+            "video_position")
         display_text = "No videos in this playlist have CC :("
     elif order_by == "duration":
         videos_details = "Sorted by Video Duration"
@@ -322,7 +328,8 @@ def order_playlist_by(request, playlist_id, order_by):
         videos_details = "Sorted by New Updates"
         display_text = "No new updates! Note that deleted videos will not show up here."
         if playlist.has_new_updates:
-            recently_updated_videos = playlist.playlist_items.select_related('video').filter(video__video_details_modified=True)
+            recently_updated_videos = playlist.playlist_items.select_related('video').filter(
+                video__video_details_modified=True)
 
             for playlist_item in recently_updated_videos:
                 if playlist_item.video.video_details_modified_at + datetime.timedelta(hours=12) < datetime.datetime.now(
@@ -336,12 +343,14 @@ def order_playlist_by(request, playlist_id, order_by):
             else:
                 playlist_items = recently_updated_videos.order_by("video_position")
     elif order_by == 'unavailable-videos':
-        playlist_items = playlist.playlist_items.select_related('video').filter(Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=True))
+        playlist_items = playlist.playlist_items.select_related('video').filter(
+            Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=True))
         videos_details = "Sorted by Unavailable Videos"
         display_text = "None of the videos in this playlist have gone unavailable... yet."
     elif order_by == 'channel':
         channel_name = request.GET["channel-name"]
-        playlist_items = playlist.playlist_items.select_related('video').filter(video__channel_name=channel_name).order_by("video_position")
+        playlist_items = playlist.playlist_items.select_related('video').filter(
+            video__channel_name=channel_name).order_by("video_position")
         videos_details = f"Sorted by Channel '{channel_name}'"
     else:
         return HttpResponse("Something went wrong :(")
@@ -432,52 +441,98 @@ def playlists_home(request):
 @login_required
 @require_POST
 def delete_videos(request, playlist_id, command):
-    playlist_item_ids = request.POST.getlist("video-id", default=[])
-
+    all = False
+    num_vids = 0
+    playlist_item_ids = []
     print(request.POST)
-    num_vids = len(playlist_item_ids)
+    if "all" in request.POST:
+        if request.POST["all"] == "yes":
+            all = True
+            num_vids = request.user.playlists.get(playlist_id=playlist_id).playlist_items.all().count()
+            if command == "start":
+                playlist_item_ids = [playlist_item.playlist_item_id for playlist_item in request.user.playlists.get(playlist_id=playlist_id).playlist_items.all()]
+    else:
+        playlist_item_ids = request.POST.getlist("video-id", default=[])
+        num_vids = len(playlist_item_ids)
+
     extra_text = " "
     if num_vids == 0:
-        return HttpResponse("<h5>Select some videos first!</h5><hr>")
+        return HttpResponse("""
+        <div hx-ext="class-tools">
+            <div classes="add visually-hidden:3s">
+                <h5>Select some videos first!</h5><hr>
+            </div>
+        </div>
+        """)
 
     if 'confirm before deleting' in request.POST:
         if request.POST['confirm before deleting'] == 'False':
             command = "confirmed"
 
     if command == "confirm":
-        print(playlist_item_ids)
-
-        if num_vids == request.user.playlists.get(playlist_id=playlist_id).playlist_items.all().count():
+        if all or num_vids == request.user.playlists.get(playlist_id=playlist_id).playlist_items.all().count():
+            hx_vals = """hx-vals='{"all": "yes"}'"""
             delete_text = "ALL VIDEOS"
             extra_text = " This will not delete the playlist itself, will only make the playlist empty. "
         else:
+            hx_vals = ""
             delete_text = f"{num_vids} videos"
+
+        url = f"/playlist/{playlist_id}/delete-videos/confirmed"
         return HttpResponse(
-            f"""<h5>
-                Are you sure you want to delete {delete_text} from your YouTube playlist?{extra_text}This cannot be undone.</h5>
-                <button hx-post="/playlist/{playlist_id}/delete-videos/confirmed" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-outline-danger btn-sm">Confirm</button>
-                <hr>
+            f"""
+                <div hx-ext="class-tools">
+                <div classes="add visually-hidden:4s">
+                    <h5>
+                    Are you sure you want to delete {delete_text} from your YouTube playlist?{extra_text}This cannot be undone.</h5>
+                    <button hx-post="{url}" hx-include="[id='video-checkboxes']" {hx_vals} hx-target="#delete-videos-confirm-box" type="button" class="btn btn-outline-danger btn-sm">Confirm</button>
+                    <hr>
+                </div>
+                </div>
             """)
     elif command == "confirmed":
-        print(playlist_item_ids)
+        if all:
+            hx_vals = """hx-vals='{"all": "yes"}'"""
+        else:
+            hx_vals = ""
         url = f"/playlist/{playlist_id}/delete-videos/start"
         return HttpResponse(
             f"""
-            <div class="spinner-border text-light" role="status" hx-post="{url}" hx-trigger="load" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box"></div><hr>
+            <div class="spinner-border text-light" role="status" hx-post="{url}" {hx_vals} hx-trigger="load" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box"></div><hr>
             """)
     elif command == "start":
         print("Deleting", len(playlist_item_ids), "videos")
         Playlist.objects.deletePlaylistItems(request.user, playlist_id, playlist_item_ids)
-        # playlist = request.user.playlists.get(playlist_id=playlist_id)
-        # playlist.has_playlist_changed = True
-        # playlist.save(update_fields=['has_playlist_changed'])
+        if all:
+            help_text = "Finished emptying this playlist."
+        else:
+            help_text = "Done deleting selected videos from your playlist on YouTube."
+
         return HttpResponse(f"""
         <h5 hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:2s" hx-target="#checkforupdates">
-            Done deleting selected videos from your playlist on YouTube. Refresh page!
+            {help_text} Refresh page!
         </h5>
         <hr>
         """)
 
+
+@login_required
+@require_POST
+def delete_specific_videos(request, playlist_id, command):
+    Playlist.objects.deleteSpecificPlaylistItems(request.user, playlist_id, command)
+
+    help_text = "Error."
+    if command == "unavailable":
+        help_text = "Deleted all unavailable videos."
+    elif command == "duplicate":
+        help_text = "Deleted all duplicate videos."
+
+    return HttpResponse(f"""
+        <h5>
+            {help_text} Refresh page!
+        </h5>
+        <hr>
+        """)
 
 @login_required
 @require_POST
@@ -591,27 +646,33 @@ def search_UnTube(request):
         tags = request.POST.getlist('playlist-tags')
         for tag in tags:
             all_playlists = all_playlists.filter(tags__name=tag)
-        #all_playlists = all_playlists.filter(tags__name__in=tags)
+        # all_playlists = all_playlists.filter(tags__name__in=tags)
 
     playlist_items = []
 
     if request.POST['search-settings'] == 'starts-with':
-        playlists = all_playlists.filter(Q(name__istartswith=search_query) | Q(user_label__istartswith=search_query)) if search_query != "" else all_playlists.none()
+        playlists = all_playlists.filter(Q(name__istartswith=search_query) | Q(
+            user_label__istartswith=search_query)) if search_query != "" else all_playlists.none()
 
         if search_query != "":
             for playlist in all_playlists:
-                pl_items = playlist.playlist_items.select_related('video').filter(Q(video__name__istartswith=search_query) | Q(video__user_label__istartswith=search_query) & Q(is_duplicate=False))
+                pl_items = playlist.playlist_items.select_related('video').filter(
+                    Q(video__name__istartswith=search_query) | Q(video__user_label__istartswith=search_query) & Q(
+                        is_duplicate=False))
 
                 if pl_items.exists():
                     for v in pl_items.all():
                         playlist_items.append(v)
 
     else:
-        playlists = all_playlists.filter(Q(name__icontains=search_query) | Q(user_label__istartswith=search_query)) if search_query != "" else all_playlists.none()
+        playlists = all_playlists.filter(Q(name__icontains=search_query) | Q(
+            user_label__istartswith=search_query)) if search_query != "" else all_playlists.none()
 
         if search_query != "":
             for playlist in all_playlists:
-                pl_items = playlist.playlist_items.select_related('video').filter(Q(video__name__icontains=search_query) | Q(video__user_label__istartswith=search_query) & Q(is_duplicate=False))
+                pl_items = playlist.playlist_items.select_related('video').filter(
+                    Q(video__name__icontains=search_query) | Q(video__user_label__istartswith=search_query) & Q(
+                        is_duplicate=False))
 
                 if pl_items.exists():
                     for v in pl_items.all():
@@ -670,7 +731,7 @@ def manage_import_playlists(request):
             if pl_id is None:
                 num_playlists_not_found += 1
                 continue
-                
+
             status = Playlist.objects.initializePlaylist(request.user, pl_id)["status"]
             if status == -1 or status == -2:
                 print("\nNo such playlist found:", pl_id)
@@ -718,7 +779,8 @@ def load_more_videos(request, playlist_id, order_by, page):
         playlist_items = playlist.playlist_items.select_related('video').order_by("video_position")
         print(f"loading page 1: {playlist_items.count()} videos")
     elif order_by == "favorites":
-        playlist_items = playlist.playlist_items.select_related('video').filter(video__is_favorite=True).order_by("video_position")
+        playlist_items = playlist.playlist_items.select_related('video').filter(video__is_favorite=True).order_by(
+            "video_position")
     elif order_by == "popularity":
         playlist_items = playlist.playlist_items.select_related('video').order_by("-video__like_count")
     elif order_by == "date-published":
@@ -726,13 +788,15 @@ def load_more_videos(request, playlist_id, order_by, page):
     elif order_by == "views":
         playlist_items = playlist.playlist_items.select_related('video').order_by("-video__view_count")
     elif order_by == "has-cc":
-        playlist_items = playlist.playlist_items.select_related('video').filter(video__has_cc=True).order_by("video_position")
+        playlist_items = playlist.playlist_items.select_related('video').filter(video__has_cc=True).order_by(
+            "video_position")
     elif order_by == "duration":
         playlist_items = playlist.playlist_items.select_related('video').order_by("-video__duration_in_seconds")
     elif order_by == 'new-updates':
         playlist_items = []
         if playlist.has_new_updates:
-            recently_updated_videos = playlist.playlist_items.select_related('video').filter(video__video_details_modified=True)
+            recently_updated_videos = playlist.playlist_items.select_related('video').filter(
+                video__video_details_modified=True)
 
             for playlist_item in recently_updated_videos:
                 if playlist_item.video.video_details_modified_at + datetime.timedelta(hours=12) < datetime.datetime.now(
@@ -746,7 +810,8 @@ def load_more_videos(request, playlist_id, order_by, page):
             else:
                 playlist_items = recently_updated_videos.order_by("video_position")
     elif order_by == 'unavailable-videos':
-        playlist_items = playlist.playlist_items.select_related('video').filter(Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=True))
+        playlist_items = playlist.playlist_items.select_related('video').filter(
+            Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=True))
     elif order_by == 'channel':
         channel_name = request.GET["channel-name"]
         playlist_items = playlist.playlist_items.select_related('video').filter(
@@ -810,10 +875,10 @@ def update_playlist_settings(request, playlist_id):
 
 
 @login_required
-def update_playlist(request, playlist_id, type):
+def update_playlist(request, playlist_id, command):
     playlist = request.user.playlists.get(playlist_id=playlist_id)
 
-    if type == "checkforupdates":
+    if command == "checkforupdates":
         print("Checking if playlist changed...")
         result = Playlist.objects.checkIfPlaylistChangedOnYT(request.user, playlist_id)
 
@@ -837,10 +902,14 @@ def update_playlist(request, playlist_id, type):
                 # playlist.save()
             else:  # no updates found
                 return HttpResponse("""
-                <div id="checkforupdates" class="sticky-top" style="top: 0.5em;">
-                <div class="alert alert-success alert-dismissible fade show visually-hidden" role="alert">
-                    No new updates!
-                </div>
+                <div hx-ext="class-tools">
+
+                    <div id="checkforupdates" class="sticky-top" style="top: 0.5em;">
+                    
+                        <div class="alert alert-success alert-dismissible fade show" classes="add visually-hidden:1s" role="alert">
+                            Playlist upto date!
+                        </div>
+                    </div>
                 </div>
                 """)
         elif result[0] == -1:  # playlist changed
@@ -858,9 +927,11 @@ def update_playlist(request, playlist_id, type):
         else:  # no updates found
             return HttpResponse("""
             <div id="checkforupdates" class="sticky-top" style="top: 0.5em;">
-            <div class="alert alert-success alert-dismissible fade show visually-hidden sticky-top" role="alert" style="top: 0.5em;">
-                No new updates!
-            </div>
+                <div hx-ext="class-tools">
+                <div classes="add visually-hidden:2s" class="alert alert-success alert-dismissible fade show sticky-top visually-hidden" role="alert" style="top: 0.5em;">
+                    No new updates!
+                </div>
+                </div>
             </div>
             """)
 
@@ -876,7 +947,7 @@ def update_playlist(request, playlist_id, type):
         </div>
         """)
 
-    if type == "manual":
+    if command == "manual":
         print("MANUAL")
         return HttpResponse(
             f"""<div hx-get="/playlist/{playlist_id}/update/auto" hx-trigger="load" hx-swap="outerHTML">
@@ -888,7 +959,7 @@ def update_playlist(request, playlist_id, type):
 
     print("Attempting to update playlist")
     status, deleted_playlist_item_ids, unavailable_videos, added_videos = Playlist.objects.updatePlaylist(request.user,
-                                                                                                  playlist_id)
+                                                                                                          playlist_id)
 
     playlist = request.user.playlists.get(playlist_id=playlist_id)
 
@@ -1109,11 +1180,8 @@ def reset_watched(request, playlist_id):
 @login_required
 @require_POST
 def playlist_move_copy_videos(request, playlist_id, action):
-    playlist = request.user.playlists.get(playlist_id=playlist_id)
-
     playlist_ids = request.POST.getlist("playlist-ids", default=[])
     playlist_item_ids = request.POST.getlist("video-id", default=[])
-
 
     # basic processing
     if not playlist_ids and not playlist_item_ids:
@@ -1127,21 +1195,29 @@ def playlist_move_copy_videos(request, playlist_id, action):
                 <span class="text-danger">First select some videos to {action}!</span>""")
 
     success_message = f"""
-                <span class="text-success">Successfully {'moved' if action == 'move' else 'copied'} {len(playlist_item_ids)} videos to {len(playlist_ids)} other playlist! Refresh depage!</span>"""
+                <div hx-ext="class-tools">
+                <span classes="add visually-hidden:5s" class="text-success">Successfully {'moved' if action == 'move' else 'copied'} {len(playlist_item_ids)} video(s) to {len(playlist_ids)} other playlist(s)! 
+                Go visit those playlist(s)!</span>
+                </div>
+                """
     if action == "move":
         status = Playlist.objects.moveCopyVideosFromPlaylist(request.user,
                                                              from_playlist_id=playlist_id,
                                                              to_playlist_ids=playlist_ids,
                                                              playlist_item_ids=playlist_item_ids,
                                                              action="move")
-        if status == -1:
+        if status[0] == -1:
+            if status[1] == 404:
+                return HttpResponse("<span class='text-danger'>You cannot copy/move unavailable videos! De-select them and try again.</span>")
             return HttpResponse("Error moving!")
     else:  # copy
         status = Playlist.objects.moveCopyVideosFromPlaylist(request.user,
                                                              from_playlist_id=playlist_id,
                                                              to_playlist_ids=playlist_ids,
                                                              playlist_item_ids=playlist_item_ids)
-        if status == -1:
+        if status[0] == -1:
+            if status[1] == 404:
+                return HttpResponse("<span class='text-danger'>You cannot copy/move unavailable videos! De-select them and try again.</span>")
             return HttpResponse("Error copying!")
 
     return HttpResponse(success_message)

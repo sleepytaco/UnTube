@@ -5,6 +5,8 @@
 
 {% block content %}
 
+    <script src="{% static 'htmx/extensions/class-tools.js' %}" type="application/javascript"></script>
+
     <div id="view_playlist">
         {% if not_imported_LL %}
             <div hx-get="/import/liked-videos-playlist" hx-trigger="load" hx-swap="outerHTML">
@@ -27,7 +29,9 @@
             <div class="sticky-top mb-3" style="top: 0.5rem;">
                 {% if not playlist.is_yt_mix %}
                     <div hx-get="{% url 'update_playlist' playlist.playlist_id 'checkforupdates' %}" hx-trigger="load" hx-swap="outerHTML" id="checkforupdates">
-
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            Checking playlist for updates...
+                        </div>
                     </div>
                 {% endif %}
                 {% if playlist.marked_as == "watching" %}
@@ -101,7 +105,7 @@
                                     </span>
                                 {% endif %}
                                 {% if playlist.has_duplicate_videos %}
-                                    <span class="badge bg-light text-black-50">DUPLICATE VIDEOS</span>
+                                    <span class="badge bg-light text-black-50">{{ playlist.get_duplicate_videos_count }} DUPLICATE VIDEOS</span>
                                 {% endif %}
                               <a data-bs-toggle="collapse" href="#channelVidsChartCollapse" role="button" aria-expanded="false" aria-controls="channelVidsChartCollapse">
                                         <span class="badge bg-light text-black-50">{{ playlist.get_channels_list.0 }} channels</span>
@@ -338,12 +342,12 @@
                 <div class="collapse border-danger" id="moveItemsToCollapse">
                     <div class="card card-body bg-dark text-white">
 
-                        <h5>{% if playlist.is_user_owned %}Move or {% endif %}Copy videos to another playlist!</h5>
+                        <h5>{% if playlist.is_user_owned %}Move or {% endif %}Copy videos to other playlist(s)!</h5>
 
                         <div class="row d-flex justify-content-start">
 
 
-                            <div class="col-md-8 text-dark">
+                            <div class="col-md-6 text-dark">
                                 <select class="visually-hidden"
                                     id="playlists-to-move-to" name="playlist-ids" placeholder="Select Playlists" multiple>
                                     {% for pl in user_owned_playlists %}
@@ -356,24 +360,27 @@
 
                             <div class="col-md d-flex justify-content-start">
 
-                            {% if playlist.is_user_owned %}
-                                <div class="btn-group mt-1">
-                                    <button hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'move' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-primary">
-                                        Move!
-                                    </button>
-                                </div>
-                            {% endif %}
-                            <div class="btn-group ms-1 mt-1">
-                                <button hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'copy' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-info">
-                                    Copy!
-                                </button>
+                            <div class="htmx-indicator d-flex align-items-center" id="move-copy-loader">
+                                <img src="{% static 'svg-loaders/grid.svg' %}" width="25" height="25" class="ms-2 mt-2">
+                                <span class="mt-2 ms-2">Loading, please wait... </span>
                             </div>
-
                             </div>
 
                         </div>
 
                         <div class="d-flex justify-content-start mt-2">
+                            {% if playlist.is_user_owned %}
+                                <div class="btn-group mt-1">
+                                    <button hx-indicator="#move-copy-loader" hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'move' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-primary">
+                                        Move!
+                                    </button>
+                                </div>
+                            {% endif %}
+                            <div class="btn-group ms-1 mt-1">
+                                <button hx-indicator="#move-copy-loader" hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'copy' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-info">
+                                    Copy!
+                                </button>
+                            </div>
               <div id="move-copy-videos-box" class="d-flex align-items-end ms-2">
                                 <span class="text-warning">Note: Move will delete the selected videos from this playlist. Copy won't.</span>
                             </div>
@@ -400,22 +407,27 @@
 
                             {% if playlist.has_unavailable_videos %}
                                 <div class="btn-group me-2">
-                                    <button hx-post="#" hx-include="[id='video-checkboxes']" type="button" class="btn btn-info">
+                                    <button hx-post="{% url 'delete_specific_videos' playlist.playlist_id 'unavailable' %}" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-info" hx-indicator="#delete-loader">
                                         Delete {{ playlist.get_unavailable_videos_count }} Unavailable Videos
                                     </button>
                                 </div>
                             {% endif %}
                             {% if playlist.has_duplicate_videos %}
                                 <div class="btn-group me-2">
-                                    <button hx-post="#" hx-include="[id='video-checkboxes']" type="button" class="btn btn-warning">
-                                        Delete Duplicate Videos
+                                    <button hx-post="{% url 'delete_specific_videos' playlist.playlist_id 'duplicate' %}" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-warning" hx-indicator="#delete-loader">
+                                        Delete {{ playlist.get_duplicate_videos_count }} Duplicate Videos
                                     </button>
                                 </div>
                             {% endif %}
                             <div class="btn-group me-2">
-                                <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-target="#delete-videos-confirm-box" type="button" class="btn btn-danger">
+                                <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-vals='{"all": "yes", "confirm before deleting": "{{ playlist.confirm_before_deleting }}"}' hx-target="#delete-videos-confirm-box" type="button" class="btn btn-danger">
                                     Empty this Playlist
                                 </button>
+                            </div>
+
+                            <div class="htmx-indicator d-flex align-items-center" id="delete-loader">
+                                <img src="{% static 'svg-loaders/grid.svg' %}" width="25" height="25" class="ms-2 mt-2">
+                                <span class="mt-2 ms-2">Deleting, please wait... </span>
                             </div>
                         </div>
 
