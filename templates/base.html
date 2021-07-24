@@ -19,12 +19,15 @@
 
             body {
                 margin: 0;
-                //background: linear-gradient(-45deg, #e2b968, #68af5b, #8a97bc, #d69ab2);
+                {% if user.profile.enable_gradient_bg %}
+                background: linear-gradient(-45deg, #e2b968, #68af5b, #8a97bc, #d69ab2);
+                    background-size: 400% 400%;
+                animation: gradient 10s ease infinite;
+                {% endif %}
                 //background: linear-gradient(-45deg, #B2A3FF, #84bcf3, #AE876B, #B0E7AE);
                 //background: linear-gradient(-45deg, #0645a4, #2480cd, #84bcf3, #b7d6f7);
                 //background: linear-gradient(-45deg, #AE876B, #ABA27B, #A7BC8A, #A3D69A);
-                //background-size: 400% 400%;
-                //animation: gradient 10s ease infinite;
+
                 }
 
             .gradient-bg {
@@ -122,7 +125,7 @@
         <script src="{% static 'jquery3.6.0/js/jquery-3.6.0.min.js' %}" type="application/javascript"></script>
         <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.min.js' %}" type="application/javascript"></script>
             </head>
-    <body class="text-dark" style="font-family: 'Fredoka One', monospace; background-color: #FDF4DC;">
+    <body class="text-dark" style="font-family: 'Fredoka One', monospace; {% if not user.profile.enable_gradient_bg %}background-color: #FDF4DC;{% endif %}">
 
 
         {% if user.profile.show_import_page %}

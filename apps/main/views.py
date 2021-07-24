@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.html import strip_tags
 
 import apps
-from apps.main.models import Playlist, Tag
+from apps.main.models import Playlist, Tag, Video
 from django.contrib.auth.decorators import login_required  # redirects user to settings.LOGIN_URL
 from allauth.socialaccount.models import SocialToken
 from django.views.decorators.http import require_POST
@@ -104,6 +104,14 @@ def home(request):
 
 
 @login_required
+def favorites(request):
+    favorite_playlists = request.user.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True)).order_by('-last_accessed_on')
+    favorite_videos = request.user.videos.filter(is_favorite=True).order_by('updated_at')
+
+    return render(request, 'favorites.html', {"playlists": favorite_playlists,
+                                              "videos": favorite_videos})
+
+@login_required
 def view_video(request, video_id):
     if request.user.videos.filter(video_id=video_id).exists():
         video = request.user.videos.get(video_id=video_id)
@@ -150,12 +158,17 @@ def view_playlist(request, playlist_id):
     # specific playlist requested
     if user_profile.playlists.filter(Q(playlist_id=playlist_id) & Q(is_in_db=True)).exists():
         playlist = user_profile.playlists.get(playlist_id__exact=playlist_id)
-        # playlist.num_of_accesses += 1
+
+        # if its been 30 days since the last playlist visit, force refresh the playlist
+        if datetime.datetime.now(pytz.utc) - playlist.last_accessed_on > datetime.timedelta(days=15):
+            playlist.has_playlist_changed = True
+
         # only note down that the playlist as been viewed when 5mins has passed since the last access
-        if playlist.last_accessed_on + datetime.timedelta(minutes=5) < datetime.datetime.now(pytz.utc):
+        if playlist.last_accessed_on + datetime.timedelta(minutes=1) < datetime.datetime.now(pytz.utc):
             playlist.num_of_accesses += 1
             playlist.last_accessed_on = datetime.datetime.now(pytz.utc)
-        playlist.save()
+
+        playlist.save(update_fields=['num_of_accesses', 'last_accessed_on', 'has_playlist_changed'])
     else:
         if playlist_id == "LL":  # liked videos playlist hasnt been imported yet
             return render(request, 'view_playlist.html', {"not_imported_LL": True})
@@ -433,7 +446,7 @@ def mark_playlist_as(request, playlist_id, mark_as):
         else:
             playlist.is_favorite = True
             playlist.save()
-            return HttpResponse('<i class="fas fa-star"></i>')
+            return HttpResponse('<i class="fas fa-star" style="color: #fafa06"></i>')
     else:
         return redirect('home')
 
@@ -457,7 +470,8 @@ def delete_videos(request, playlist_id, command):
             all = True
             num_vids = request.user.playlists.get(playlist_id=playlist_id).playlist_items.all().count()
             if command == "start":
-                playlist_item_ids = [playlist_item.playlist_item_id for playlist_item in request.user.playlists.get(playlist_id=playlist_id).playlist_items.all()]
+                playlist_item_ids = [playlist_item.playlist_item_id for playlist_item in
+                                     request.user.playlists.get(playlist_id=playlist_id).playlist_items.all()]
     else:
         playlist_item_ids = request.POST.getlist("video-id", default=[])
         num_vids = len(playlist_item_ids)
@@ -545,6 +559,7 @@ def delete_specific_videos(request, playlist_id, command):
         <hr>
         """)
 
+
 @login_required
 @require_POST
 def search_tagged_playlists(request, tag):
@@ -602,7 +617,7 @@ def search_playlists(request, playlist_type):
 
 #### MANAGE VIDEOS #####
 @login_required
-def mark_video_favortie(request, playlist_id, video_id):
+def mark_video_favortie(request, video_id):
     video = request.user.videos.get(video_id=video_id)
 
     if video.is_favorite:
@@ -963,7 +978,7 @@ def update_playlist(request, playlist_id, command):
         return HttpResponse(
             f"""<div hx-get="/playlist/{playlist_id}/update/auto" hx-trigger="load" hx-swap="outerHTML">
                     <div class="d-flex justify-content-center mt-4 mb-3" id="loading-sign">
-                        <img src="/static/svg-loaders/circles.svg" width="40" height="40">
+                        <img src="/static/svg-loaders/circles.svg" width="40" height="40" style="filter: invert(0%) sepia(18%) saturate(7468%) hue-rotate(241deg) brightness(84%) contrast(101%);">
                         <h5 class="mt-2 ms-2">Refreshing playlist '{playlist.name}', please wait!</h5>
                     </div>
                 </div>""")
@@ -1020,7 +1035,8 @@ def update_playlist(request, playlist_id, command):
                 playlist.videos.remove(video)
 
     if len(playlist_changed_text) == 0:
-        playlist_changed_text = ["Successfully refreshed playlist! No new changes found!"]
+        playlist_changed_text = [
+            "Updated playlist and video details to their latest. No new changes found in terms of modifications made to this playlist!"]
 
     # return HttpResponse
     return HttpResponse(loader.get_template("intercooler/playlist_updates.html")
@@ -1219,7 +1235,8 @@ def playlist_move_copy_videos(request, playlist_id, action):
                                                              action="move")
         if status[0] == -1:
             if status[1] == 404:
-                return HttpResponse("<span class='text-danger'>You cannot copy/move unavailable videos! De-select them and try again.</span>")
+                return HttpResponse(
+                    "<span class='text-danger'>You cannot copy/move unavailable videos! De-select them and try again.</span>")
             return HttpResponse("Error moving!")
     else:  # copy
         status = Playlist.objects.moveCopyVideosFromPlaylist(request.user,
@@ -1228,10 +1245,12 @@ def playlist_move_copy_videos(request, playlist_id, action):
                                                              playlist_item_ids=playlist_item_ids)
         if status[0] == -1:
             if status[1] == 404:
-                return HttpResponse("<span class='text-danger'>You cannot copy/move unavailable videos! De-select them and try again.</span>")
+                return HttpResponse(
+                    "<span class='text-danger'>You cannot copy/move unavailable videos! De-select them and try again.</span>")
             return HttpResponse("Error copying!")
 
     return HttpResponse(success_message)
+
 
 @login_required
 def playlist_open_random_video(request, playlist_id):
@@ -1242,17 +1261,19 @@ def playlist_open_random_video(request, playlist_id):
 
     return redirect(f'/video/{random_video.video_id}')
 
+
 @login_required
 def playlist_completion_times(request, playlist_id):
     playlist_duration = request.user.playlists.get(playlist_id=playlist_id).playlist_duration_in_seconds
 
     return HttpResponse(f"""
         <h5 class="text-warning">Playlist completion times:</h5>
-        <h6>At 1.25x speed: {getHumanizedTimeString(playlist_duration/1.25)}</h6>
-        <h6>At 1.5x speed: {getHumanizedTimeString(playlist_duration/1.5)}</h6>
-        <h6>At 1.75x speed: {getHumanizedTimeString(playlist_duration/1.75)}</h6>
-        <h6>At 2x speed: {getHumanizedTimeString(playlist_duration/2)}</h6>
+        <h6>At 1.25x speed: {getHumanizedTimeString(playlist_duration / 1.25)}</h6>
+        <h6>At 1.5x speed: {getHumanizedTimeString(playlist_duration / 1.5)}</h6>
+        <h6>At 1.75x speed: {getHumanizedTimeString(playlist_duration / 1.75)}</h6>
+        <h6>At 2x speed: {getHumanizedTimeString(playlist_duration / 2)}</h6>
     """)
+
 
 @login_required
 def video_completion_times(request, video_id):
@@ -1260,9 +1281,8 @@ def video_completion_times(request, video_id):
 
     return HttpResponse(f"""
         <h5 class="text-warning">Video completion times:</h5>
-        <h6>At 1.25x speed: {getHumanizedTimeString(video_duration/1.25)}</h6>
-        <h6>At 1.5x speed: {getHumanizedTimeString(video_duration/1.5)}</h6>
-        <h6>At 1.75x speed: {getHumanizedTimeString(video_duration/1.75)}</h6>
-        <h6>At 2x speed: {getHumanizedTimeString(video_duration/2)}</h6>
+        <h6>At 1.25x speed: {getHumanizedTimeString(video_duration / 1.25)}</h6>
+        <h6>At 1.5x speed: {getHumanizedTimeString(video_duration / 1.5)}</h6>
+        <h6>At 1.75x speed: {getHumanizedTimeString(video_duration / 1.75)}</h6>
+        <h6>At 2x speed: {getHumanizedTimeString(video_duration / 2)}</h6>
     """)
-

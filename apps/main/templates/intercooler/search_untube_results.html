@@ -36,11 +36,11 @@
 
                 <span class="d-flex justify-content-center">
                     <a href="https://www.youtube.com/watch?v={{ playlist_item.video.video_id }}" class="btn btn-info me-1" target="_blank" id="share_link" style=""><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
-                    <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ playlist_item.video.video_id }}">
+                    <input class="form-control me-1 visually-hidden" id="video-{{ playlist_item.video.video_id }}" value="https://www.youtube.com/watch?v={{ playlist_item.video.video_id }}">
                     <button class="copy-btn btn btn-success  me-1" data-clipboard-target="#video-{{ playlist_item.video.video_id }}">
                         <i class="far fa-copy" aria-hidden="true"></i>
                     </button>
-                    <button class="btn btn-dark" type="button" hx-get="{% url 'mark_video_favorite' playlist_item.playlist.playlist_id playlist_item.video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
+                    <button class="btn btn-dark" type="button" hx-get="{% url 'mark_video_favorite' playlist_item.video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
                         <div id="video-{{ forloop.counter }}-fav">
                             {% if playlist_item.video.is_favorite %}
                                 <i class="fas fa-heart" style="color: #fafa06"></i>

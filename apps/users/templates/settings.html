@@ -116,21 +116,28 @@
                         <label class="form-check-label" for="openSearchCheckDefault">Open Search in new tab</label>
                         </div>
 
+
+                        <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" name="enable gradient bg" type="checkbox" id="gradient-bg" {% if user.profile.enable_gradient_bg  %}checked{% endif %}>
+                        <label class="form-check-label" for="gradient-bg">Use a gradient background</label>
+                        </div>
+
                         <div class="mb-3 form-check form-switch">
                         <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="flexSwitchCheckDefault">
                         <label class="form-check-label" for="flexSwitchCheckDefault">Automatically check for playlist updates on visit</label>
                         </div>
 
                         <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" {% if profile.hide_unavailable_videos %}checked{% endif %}>
-                        <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
+                        <input class="form-check-input" name="hide videos" type="checkbox" id="hide-videos" {% if profile.hide_unavailable_videos %}checked{% endif %}>
+                        <label class="form-check-label" for="hide-videos">Hide deleted/private videos</label>
                         </div>
 
 
                         <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" {% if profile.confirm_before_deleting  %}checked{% endif %}>
-                        <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
+                        <input class="form-check-input" name="confirm before deleting" type="checkbox" id="confirm-before-delete" {% if profile.confirm_before_deleting  %}checked{% endif %}>
+                        <label class="form-check-label" for="confirm-before-delete">Confirm before deleting</label>
                         </div>
+
                     </div>
                 </div>
                 <hr>
@@ -140,7 +147,7 @@
               <div class="row">
                 <div class="col-sm-12">
                     <a href="#navbar" hx-post="{% url 'update_settings' %}" hx-include="[id='settings-form']" hx-target="#settings-status-div" class="btn btn-success">Save</a>
-                    <a class="btn btn-outline-danger" href="{% url 'delete_account' %}">Delete account</a>
+                    <a class="btn btn-outline-danger" href="{% url 'delete_account' %}">Delete UnTube account</a>
 
                 </div>
               </div>

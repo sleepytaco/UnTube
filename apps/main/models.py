@@ -432,6 +432,7 @@ class PlaylistManager(models.Manager):
         playlist.playlist_duration = getHumanizedTimeString(playlist_duration_in_seconds)
 
         playlist.is_in_db = True
+        playlist.last_accessed_on = datetime.datetime.now(pytz.utc)
 
         playlist.save()
 
@@ -453,7 +454,6 @@ class PlaylistManager(models.Manager):
         # basically checks all the playlist video for any updates
         if playlist.last_full_scan_at + datetime.timedelta(minutes=1) < datetime.datetime.now(pytz.utc):
             print("DOING A FULL SCAN")
-            current_video_ids = [playlist_item.video_id for playlist_item in playlist.playlist_items.all()]
             current_playlist_item_ids = [playlist_item.playlist_item_id for playlist_item in
                                          playlist.playlist_items.all()]
 
@@ -983,7 +983,8 @@ class PlaylistManager(models.Manager):
         if command == "duplicate":
             playlist_items = playlist.playlist_items.filter(is_duplicate=True)
         elif command == "unavailable":
-            playlist_items = playlist.playlist_items.filter(Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=False))
+            playlist_items = playlist.playlist_items.filter(
+                Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=False))
 
         playlist_item_ids = []
         for playlist_item in playlist_items:
@@ -1079,7 +1080,6 @@ class PlaylistManager(models.Manager):
         return [0]
 
 
-
 class Tag(models.Model):
     name = models.CharField(max_length=69)
     created_by = models.ForeignKey(User, related_name="playlist_tags", on_delete=models.CASCADE, null=True)
@@ -1154,7 +1154,6 @@ class Video(models.Model):
         default=False)  # True if the video was unavailable (private/deleted) when the API call was first made
     was_deleted_on_yt = models.BooleanField(default=False)  # True if video became unavailable on a subsequent API call
 
-    is_pinned = models.BooleanField(default=False)
     is_marked_as_watched = models.BooleanField(default=False)  # mark video as watched
     is_favorite = models.BooleanField(default=False, blank=True)  # mark video as favorite
     num_of_accesses = models.IntegerField(default=0)  # tracks num of times this video was clicked on by user
@@ -1201,7 +1200,6 @@ class Playlist(models.Model):
     last_watched = models.DateTimeField(auto_now_add=True, null=True)
 
     # manage playlist
-    is_pinned = models.BooleanField(default=False)
     user_notes = models.CharField(max_length=420, default="")  # user can take notes on the playlist and save them
     user_label = models.CharField(max_length=100, default="")  # custom user given name for this playlist
     marked_as = models.CharField(default="none",

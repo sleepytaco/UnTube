@@ -48,7 +48,7 @@
             <div class="col-6 mb-4">
                 <div class="card bg-transparent text-dark">
                     <div class="card-body">
-                        <h6 class="d-flex align-items-center mb-3"><span class="text-primary me-2">{{ user.playlists.count }}</span>Playlists Statistics{% if user.playlists.count == 0 %}: You have no playlists in your UnTube!{% endif %}</h6>
+                        <h6 class="d-flex align-items-center mb-3"><span class="text-warning me-2">{{ user.playlists.count }}</span>Playlists Statistics{% if user.playlists.count == 0 %}: You have no playlists in your UnTube!{% endif %}</h6>
                         <div class="d-flex align-items-center mb-3">
 
                             <canvas id="overall-playlists-distribution" data-url="{% url 'overall_playlists_distribution' %}">
@@ -62,7 +62,7 @@
             <div class="col-6 mb-4">
                 <div class="card bg-transparent text-dark">
                     <div class="card-body">
-                        <h6 class="d-flex align-items-center mb-3"><span class="text-primary me-2">{{ watching.count }}</span>
+                        <h6 class="d-flex align-items-center mb-3"><span class="text-warning me-2">{{ watching.count }}</span>
                             {% if watching.count > 0 %}
                                 Playlist{% if watching.count > 1 %}s{% endif %} Watching: Percent Complete Chart
                                 <small> <a class="btn btn-sm btn-success ms-2" href="#continue-watching">View</a></small>
@@ -87,7 +87,7 @@
 
         <div class="row" ><!--data-masonry='{"percentPosition": true }'-->
                 <div class="col-sm-6 col-lg-4 mb-4">
-                    <div class="card card-cover h-100 overflow-hidden text-white gradient-bg-3 rounded-5 shadow-lg" style="">
+                    <div class="card card-cover h-100 overflow-hidden text-white {% if not user.profile.enable_gradient_bg  %}gradient-bg-3{% else %}bg-dark{% endif %} rounded-5 shadow-lg" style="">
                         <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
                             <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
                                 <a href="{% url 'all_playlists' 'all' %}" class="stretched-link" style="text-decoration: none; color: #fafafa">
@@ -96,7 +96,7 @@
                             <ul class="d-flex list-unstyled mt-auto">
                                 <li class="me-auto">
                                     <h3>
-                                        <i class="fas fa-burn fa-lg" style="color: #b300ff"></i>
+                                        <i class="fas fa-mountain fa-lg" style="color: #e26f94"></i>
                                     </h3>
                                 </li>
                             </ul>
@@ -105,7 +105,7 @@
                 </div>
 
                 <div class="col-sm-6 col-lg-4 mb-4">
-                <div class="card card-cover h-100 overflow-hidden text-white gradient-bg-3 rounded-5 shadow-lg" style="">
+                <div class="card card-cover h-100 overflow-hidden text-white {% if not user.profile.enable_gradient_bg  %}gradient-bg-3{% else %}bg-dark{% endif %} rounded-5 shadow-lg" style="">
                 <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
                 <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
                 <a href="{% url 'playlist' 'LL' %}" class="stretched-link" style="text-decoration: none; color: #fafafa">
@@ -124,17 +124,17 @@
                 </div>
 
                 <div class="col-sm-6 col-lg-4 mb-4">
-                <div class="card card-cover h-100 overflow-hidden text-white gradient-bg-3 rounded-5 shadow-lg" style="">
+                <div class="card card-cover h-100 overflow-hidden text-white {% if not user.profile.enable_gradient_bg  %}gradient-bg-3{% else %}bg-dark{% endif %} rounded-5 shadow-lg" style="">
                 <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
                 <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
-                <a href="{% url 'playlist' 'LL' %}" class="stretched-link" style="text-decoration: none; color: #fafafa">
-                    Your Pins
+                <a href="{% url 'favorites' %}" class="stretched-link" style="text-decoration: none; color: #fafafa">
+                    Your Favorites
                 </a>
                 </h2>
                 <ul class="d-flex list-unstyled mt-auto">
                 <li class="me-auto">
                     <h3>
-                        <i class="fas fa-thumbtack fa-lg" style="color: #db4747"></i>
+                        <i class="fas fa-star fa-lg" style="color: #dbcc47"></i>
                     </h3>
                 </li>
                 </ul>
@@ -158,7 +158,7 @@
             <div class="col">
                 <div class="card bg-transparent text-dark">
                     <div class="card-body">
-                        <h6 class="d-flex align-items-center mb-3">A total of <span class="text-primary me-1 ms-1" id="num-channels">{{ channels.count }} channels</span> and <span class="text-primary ms-1 me-1" id="num-channels"> {{ videos.count }} videos</span> found in your UnTube collection</h6>
+                        <h6 class="d-flex align-items-center mb-3">A total of <span class="text-warning me-1 ms-1" id="num-channels">{{ channels.count|intword|intcomma }} channels</span> and <span class="text-warning ms-1 me-1" id="num-channels"> {{ videos.count|intword|intcomma }} videos</span> found in your UnTube collection</h6>
                         <div class="d-flex align-items-center mb-3">
 
                             <canvas id="overall-channels-distribution" data-url="{% url 'overall_channels_distribution' %}">

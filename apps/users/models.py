@@ -31,6 +31,7 @@ class Profile(models.Model):
 
     # preferences
     open_search_new_tab = models.BooleanField(default=True)  # open search page in new tab by default
+    enable_gradient_bg = models.BooleanField(default=False)
 
     # global playlist preferences (this will make all playlists)
     hide_unavailable_videos = models.BooleanField(default=False)

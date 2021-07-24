@@ -2,19 +2,15 @@
 {% load humanize %}
 {% load static %}
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-      <h4 class="alert-heading">Updates</h4>
+      <h4 class="alert-heading">Successfully refreshed playlist!</h4>
       <p>{{ playlist_changed_text|linebreaksbr }}</p>
       <hr>
       <p class="mb-0">Tip: Sort By Updates to see what changed in this playlist. Deleted videos will not show up there. Updates can be seen for 12 hrs.</p>
+
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         <div class="d-flex justify-content-center">
         <a class="btn btn-primary mt-2" href="{% url 'playlist' playlist_id %}">OK</a>
     </div>
     </div>
 
-<!--
-    <div class="d-flex justify-content-center">
-        <a class="btn btn-primary" href="{% url 'playlist' playlist_id %}">Back</a>
-    </div>
-    -->
       <meta http-equiv="refresh" content="100" />

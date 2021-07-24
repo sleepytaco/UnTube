@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block content %}
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Favorite Playlists
+                <span class="badge bg-primary rounded-pill">{{ playlists.count|default:"0" }}</span>
+                {% if playlists %}
+                <a href="{% url 'all_playlists' 'favorites' %}" style="text-decoration: none; color: black"><i class="fas fa-search"></i></a>
+                {% endif %}
+            </h1>
+        </div>
+
+        <div>
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% if playlists %}
+                    {% for playlist in playlists %}
+                    <div class="col">
+                        <div class="card" style="background-color: #515355;">
+                            <div style="background-color: #1A4464;" class="list-group-item list-group-item-action" aria-current="true">
+
+                                <div class="card-body">
+
+                                    <h5 class="card-title text-white">
+                                        <a style="text-decoration: none; color: white" href="{% url 'playlist' playlist.playlist_id %}">{{ playlist.name }}</a>
+                                    </h5>
+
+                                    <p class="card-text text-uppercase">
+                                        {% if playlist.is_user_owned %}<span class="badge bg-light text-black-50">OWNED</span>{% else %}<span class="badge bg-light text-black-50">IMPORTED</span>{% endif %}
+                                        {% if playlist.is_private_on_yt %}<span class="badge bg-secondary text-white">Private</span> {% endif %}
+                                        <span class="badge bg-warning text-black-50">{{ playlist.video_count }} videos</span>
+                                        <span class="badge bg-dark text-white-50">{{ playlist.playlist_duration }} </span>
+                                        {% if playlist.is_from_yt %}<span class="badge bg-danger text-black-50">YT</span> {% endif %}
+                                        {% if playlist.marked_as == "watching" %}<span class="badge bg-primary text-white">WATCHING</span>{% endif %}
+
+                                    </p>
+
+                                    {% if playlist.tags.all %}
+                                        <p class="card-text">
+                                        <span class="d-flex justify-content-start flex-wrap">
+                                        <small>
+                                        <span style="color: #eed868;" class="me-lg-1 mb-lg-1">
+                                            <i class="fas fa-tags"></i>
+                                        </span>
+                                        </small>
+                                        {% for tag in playlist.tags.all %}
+                                            <span class="badge rounded-pill bg-info mb-lg-1 me-lg-1 text-black-50">
+                                                {{ tag.name }}
+                                            </span>
+                                        {% endfor %}
+                                        </span>
+                                        </p>
+                                    {% endif %}
+
+                                    <span class="d-flex justify-content-center">
+        <a href="https://www.youtube.com/playlist?list={{ playlist.playlist_id }}" class="btn btn-info me-1" target="_blank" id="share_link" style=""><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+
+                                    <button class="btn btn-dark" type="button" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'favorite' %}" hx-target="#playlist-{{ forloop.counter }}-fav">
+                                    <div id="playlist-{{ forloop.counter }}-fav">
+                                        {% if playlist.is_favorite %}
+                                            <i class="fas fa-star" style="color: #fafa06"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    </div>
+                                </button>
+    </span>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% else %}
+                    <h5 class="text-dark align-content-center">No playlists marked favorite :(</h5>
+                    {% endif %}
+                </div>
+        </div>
+
+        <br>
+        <br>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Favorite Videos
+                <span class="badge bg-primary rounded-pill">{{ videos.count }}</span>
+                {% if videos %}
+                <a href="{% url 'all_playlists' 'favorites' %}" style="text-decoration: none; color: black"><i class="fas fa-search"></i></a>
+                {% endif %}
+            </h1>
+        </div>
+
+                <div>
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% if videos %}
+                {% for video in videos %}
+                <div class="col">
+
+                    <div class="card" style="max-width: 540px; background-color: #1A4464;">
+                          <div class="row g-0">
+                            <div class="col-md-4">
+                              <img src="{{ video.thumbnail_url }}" class="img-fluid rounded-3" style="    width: 100%;     height: 15vw;     object-fit: cover;">
+                            </div>
+                            <div class="col-md-8">
+                              <div class="card-body">
+                                <h5 class="card-title"><a href="{% url 'video' video.video_id %}" style="text-decoration: none; color: white"> {{ video.name|truncatewords:"15" }}</a></h5>
+                                <h5 class="card-text">
+                                    <small>
+                                        <span class="badge bg-dark text-white-50">{{ video.duration }}</span>
+                                        {% if video.is_unavailable_on_yt %}<span class="badge bg-light text-dark">Private</span>{% endif %}
+                                        {% if video.has_cc %}<span class="badge bg-danger text-dark">CC</span>{% endif %}
+                                        <span class="badge bg-info text-black-50"><i class="fas fa-eye"></i> {% if video.view_count == -1 %}HIDDEN{% else %}{{ video.view_count|intword|intcomma }}{% endif %}</span>
+                                        <span class="badge bg-warning text-black-50"><i class="fas fa-thumbs-up"></i> {% if video.like_count == -1 %}HIDDEN{% else %}{{ video.like_count|intword|intcomma }}{% endif %}</span>
+
+                                    </small>
+                                </h5>
+
+                                <span class="card-text d-flex justify-content-start">
+                                <a href="https://www.youtube.com/watch?v={{ video.video_id }}" class="btn btn-info me-1" target="_blank" id="share_link" style=""><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+                                <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ video.video_id }}">
+                                <button class="copy-btn btn btn-success  me-1" data-clipboard-target="#video-{{ video.video_id }}">
+                                <i class="far fa-copy" aria-hidden="true"></i>
+                                </button>
+                                <button class="btn btn-dark" type="button" hx-get="{% url 'mark_video_favorite' video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
+                                <div id="video-{{ forloop.counter }}-fav">
+                                {% if video.is_favorite %}
+                                <i class="fas fa-heart" style="color: #fafa06"></i>
+                                {% else %}
+                                <i class="far fa-heart"></i>
+                                {% endif %}
+                                </div>
+                                </button>
+                                </span>
+
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                <!--
+                    <div class="card" style="background-color: #1A4464;">
+
+                    <div class="card-body">
+                        <h5 class="card-title text-light">
+                            <a href="{% url 'video' video.video_id %}" style="text-decoration: none; color: white"> {{ video.name|truncatewords:"15" }}</a><br>
+
+                            <small>
+
+                                <span class="badge bg-dark text-white-50">{{ video.duration }}</span>
+                            </small>
+                            {% if video.is_unavailable_on_yt %}<small><span class="badge bg-light text-dark">Private</span></small> {% endif %}
+                            {% if video.has_cc %}<small><span class="badge bg-danger text-dark">CC</span></small> {% endif %}
+                        </h5>
+                                                        <br>
+
+                        <span class="d-flex justify-content-center">
+                            <a href="https://www.youtube.com/watch?v={{ video.video_id }}" class="btn btn-info me-1" target="_blank" id="share_link" style=""><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+                            <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ video.video_id }}">
+                            <button class="copy-btn btn btn-success  me-1" data-clipboard-target="#video-{{ video.video_id }}">
+                                <i class="far fa-copy" aria-hidden="true"></i>
+                            </button>
+                            <button class="btn btn-dark" type="button" hx-get="{% url 'mark_video_favorite' video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
+                                <div id="video-{{ forloop.counter }}-fav">
+                                    {% if video.is_favorite %}
+                                        <i class="fas fa-heart" style="color: #fafa06"></i>
+                                    {% else %}
+                                        <i class="far fa-heart"></i>
+                                    {% endif %}
+                                </div>
+                            </button>
+                        </span>
+                    </div>
+                    </div>
+                    -->
+                </div>
+                {% endfor %}
+
+                {% else %}
+                <h5 class="text-dark align-content-center">Nothing favorites :(</h5>
+                {% endif %}
+            </div>
+        </div>
+{% endblock %}

@@ -84,6 +84,11 @@ def update_settings(request):
     else:
         user.profile.open_search_new_tab = False
 
+    if 'enable gradient bg' in request.POST:
+        user.profile.enable_gradient_bg = True
+    else:
+        user.profile.enable_gradient_bg = False
+
     user.save()
 
     return HttpResponse(loader.get_template("intercooler/messages.html").render(
@@ -204,7 +209,7 @@ def continue_import(request):
     if request.user.profile.import_in_progress is False:
         return redirect('home')
 
-    num_of_playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).exclude(playlist_id="LL").count()
+    num_of_playlists = request.user.playlists.filter(Q(is_user_owned=True)).exclude(playlist_id="LL").count()
 
     try:
         remaining_playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).exclude(playlist_id="LL")

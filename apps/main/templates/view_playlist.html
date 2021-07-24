@@ -27,8 +27,8 @@
         {% if playlist.has_playlist_changed %}
             <div hx-get="{% url 'update_playlist' playlist.playlist_id 'auto' %}" hx-trigger="load" hx-swap="outerHTML">
                 <div class="d-flex justify-content-center mt-4 mb-3" id="loading-sign">
-                    <img src="{% static 'svg-loaders/circles.svg' %}" width="40" height="40" style="color: black">
-                    <h5 class="mt-2 ms-2">Updating playlist '{{ playlist.name }}', please wait!</h5>
+                    <img src="{% static 'svg-loaders/circles.svg' %}" width="40" height="40" style="filter: invert(0%) sepia(18%) saturate(7468%) hue-rotate(241deg) brightness(84%) contrast(101%);">
+                    <h5 class="mt-2 ms-2">Refreshing playlist '{{ playlist.name }}', please wait!</h5>
                 </div>
             </div>
         {% else %}
@@ -73,9 +73,11 @@
                                         {% endif %}
                                     </span>
                                     <span id="">
+                                        <!--
                                         <span class="badge bg-dark">
                                             <i class="fas fa-map-pin"></i>
                                         </span>
+                                        -->
                                     </span>
                                 </h4>
                             </div>
@@ -277,10 +279,10 @@
 
                             <div class="btn-group me-2 mb-2">
 
-                                <button class="btn btn-warning" type="button" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'favorite' %}" hx-target="#playlist-fav">
+                                <button class="btn btn-dark" type="button" hx-get="{% url 'mark_playlist_as' playlist.playlist_id 'favorite' %}" hx-target="#playlist-fav">
                                     <div id="playlist-fav">
                                         {% if playlist.is_favorite %}
-                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star" style="color: #fafa06"></i>
                                         {% else %}
                                             <i class="far fa-star"></i>
                                         {% endif %}
@@ -352,7 +354,12 @@
                         <div class="btn-toolbar mb-2 mb-md-0">
                             <div class="btn-group me-2 mb-2">
                                 <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#deleteItemsCollapse" aria-expanded="false" aria-controls="deleteItemsCollapse">
-                                    <i class="fa fa-history"></i> History
+                                    <i class="fa fa-plus"></i> Add New Videos
+                                </button>
+                            </div>
+                            <div class="btn-group me-2 mb-2">
+                                <button class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#deleteItemsCollapse" aria-expanded="false" aria-controls="deleteItemsCollapse">
+                                    <i class="far fa-plus-square"></i> Create a New Playlist
                                 </button>
                             </div>
                             <div class="btn-group me-2 mb-2">
@@ -542,7 +549,12 @@
                                                 <span class="badge bg-warning text-black-50"><i class="fas fa-thumbs-up"></i> {% if playlist_item.video.like_count == -1 %}HIDDEN{% else %}{{ playlist_item.video.like_count|intword|intcomma }}{% endif %}</span>
 
                                                 {% if playlist_item.is_duplicate %}<span class="badge bg-primary">duplicate</span>{% endif %}
-                                                {% if playlist_item.video.playlists.count|add:"-1" != 0 %}<span class="badge bg-dark"><a href="{% url 'video' playlist_item.video.video_id %}#found-in" style="text-decoration: none; color: white">found in {{ playlist_item.video.playlists.count|add:"-1" }} other playlist{% if playlist_item.video.playlists.count|add:"-1" > 1 %}s{% endif %}</a></span>{% endif %}
+                                                {% if playlist_item.video.playlists.count|add:"-1" != 0 %}
+                                                    <span class="badge bg-dark">
+                                                        <a href="{% url 'video' playlist_item.video.video_id %}#found-in" style="text-decoration: none; color: white">
+                                                            found in {{ playlist_item.video.playlists.count|add:"-1" }} other playlist{% if playlist_item.video.playlists.count|add:"-1" > 1 %}s{% endif %}
+                                                        </a></span>
+                                                {% endif %}
                                                 {% if playlist_item.video.video_details_modified %}<span class="badge bg-danger">{% if playlist_item.video.was_deleted_on_yt %}went private/deleted{% else %}added{% endif %} {{ playlist_item.created_at|naturaltime }}</span>{% endif %}<br>
                                                 <br>
                                             {% endif %}
@@ -553,7 +565,7 @@
                                     <div class="ms-5">
                                         {% if playlist_item.video.is_unavailable_on_yt or playlist_item.video.was_deleted_on_yt %}
                                             <a class="btn btn-sm  btn-primary mb-1" href="{% url 'video' playlist_item.video.video_id %}"><i class="fas fa-info"></i></a>
-                                            <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist.playlist_id playlist_item.video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
+                                            <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist_item.video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
                                                 <div id="video-{{ forloop.counter }}-fav">
                                                     {% if playlist_item.video.is_favorite %}
                                                         <i class="fas fa-heart" style="color: #fafa06"></i>
@@ -570,7 +582,7 @@
                                                 <i class="far fa-copy" aria-hidden="true"></i>
                                             </button>
                                             <a class="btn btn-sm  btn-primary mb-1" href="{% url 'video' playlist_item.video.video_id %}"><i class="fas fa-info"></i></a>
-                                            <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist.playlist_id playlist_item.video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
+                                            <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist_item.video.video_id %}" hx-target="#video-{{ forloop.counter }}-fav">
                                                 <div id="video-{{ forloop.counter }}-fav">
                                                     {% if playlist_item.video.is_favorite %}
                                                         <i class="fas fa-heart" style="color: #fafa06"></i>
