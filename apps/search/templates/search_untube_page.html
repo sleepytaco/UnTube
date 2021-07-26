@@ -21,7 +21,7 @@
 
         <input class="form-control me-lg-2" type="text"
                id="untubeSearchBar"
-                name="search" placeholder="Search UnTube"
+                name="search" placeholder="Search UnTube (leave this empty to just filter playlists by tags or filter videos by channels)"
                 hx-post="{% url 'search_UnTube' %}"
                 hx-trigger="keyup changed delay:700ms"
                 hx-target="#untube-searchbar-results"
@@ -31,38 +31,48 @@
         <br>
 
         <div class="row d-flex justify-content-center">
-            <div class="col-md-6">
-
+            <div class="col-md-6" id="playlists">
+                Filter by playlist tags:
                 <select class="visually-hidden" onchange="triggerSubmit()"
-                     id="choices-multiple-remove-button" name="playlist-tags" placeholder="Add playlist tags to search within" multiple>
+                     id="choices-playlist-tags" name="playlist-tags" placeholder="Add playlist tags to search within" multiple>
                     {% for tag in user.playlist_tags.all %}
                     <option value="{{ tag.name }}" hx-post="{% url 'search_UnTube' %}">{{ tag.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6" id="videos">
+                Filter by video channels:
+                <select class="visually-hidden" onchange="triggerSubmit()"
+                     id="choices-channels" name="channel-names" placeholder="Select channels to search within" multiple>
+                    {% for channel in user.profile.get_channels_list %}
+                    <option value="{{ channel }}" hx-post="{% url 'search_UnTube' %}">{{ channel }}</option>
                     {% endfor %}
                 </select>
             </div>
         </div>
         <br>
     <div class="d-flex justify-content-center">
+
         <div class="form-check me-5">
-            <input hx-post="{% url 'search_UnTube' %}"
+            <input onclick="hideShow()" hx-post="{% url 'search_UnTube' %}"
         hx-trigger="click"
         hx-target="#untube-searchbar-results"
         hx-include="[id='search-playlist-form']"
         hx-indicator="#spinner"
-                           class="form-check-input" type="radio" name="search-settings" value="starts-with" id="starts-with-cb" checked>
-            <label class="form-check-label" for="starts-with-cb">
-                    Starts with
+                           class="form-check-input" type="radio" name="search-settings" value="playlists" id="playlists-cb" checked>
+            <label class="form-check-label " for="playlists-cb">
+                    Playlists
             </label>
         </div>
-         <div class="form-check">
-            <input hx-post="{% url 'search_UnTube' %}"
+         <div class="form-check" >
+            <input onclick="hideShow();" hx-post="{% url 'search_UnTube' %}"
         hx-trigger="click"
         hx-target="#untube-searchbar-results"
         hx-include="[id='search-playlist-form']"
         hx-indicator="#spinner"
-                    class="form-check-input" type="radio" name="search-settings" value="contains" id="contains-cb">
-                  <label class="form-check-label" for="contains-cb">
-                    Contains
+                    class="form-check-input" type="radio" name="search-settings" value="videos" id="videos-cb">
+                  <label class="form-check-label" for="videos-cb">
+                    Videos
                   </label>
         </div>
     </div>
@@ -78,7 +88,9 @@
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 class="h2">All Playlists <span class="badge bg-primary rounded-pill">{{ playlists.count }}</span></h1>
         </div>
+            <div class="row row-cols-1 row-cols-md-4 g-4">
             {% include 'intercooler/playlists.html' %}
+            </div>
         {% endif %}
     </div>
 
@@ -88,21 +100,42 @@
     <script type="application/javascript">
 
     $(document).ready(function(){
+
+                        videos.style.display = 'none';
+
         // multiple choices select search box
-        var multipleCancelButton = new Choices('#choices-multiple-remove-button', {
+        var choicesPlaylistTags = new Choices('#choices-playlist-tags', {
                     removeItemButton: true,
                 });
 
-            });
+        var choicesChannels = new Choices('#choices-channels', {
+                    removeItemButton: true,
+                });
+    });
 
-        function triggerSubmit() {
-            var startsWithCB = document.getElementById("starts-with-cb");
-            var containsCB = document.getElementById("contains-cb");
 
-            if (startsWithCB.checked) {
-                startsWithCB.click();
+        function hideShow() {
+            var playlistsCB = document.getElementById("playlists-cb");
+
+            var videos = document.getElementById("videos");
+            var playlists = document.getElementById("playlists");
+            if (playlistsCB.checked) {
+                videos.style.display = 'none';
+                playlists.style.display = 'block';
             } else {
-                containsCB.click();
+                videos.style.display = 'block';
+                playlists.style.display = 'none';
+            }
+        }
+        function triggerSubmit() {
+            var playlistsCB = document.getElementById("playlists-cb");
+            var videosCB = document.getElementById("videos-cb");
+
+            if (playlistsCB.checked) {
+                playlistsCB.click();
+            } else {
+                videosCB.click();
+
             }
         }
     </script>

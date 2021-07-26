@@ -33,7 +33,7 @@
             </div>
         {% else %}
             <div class="sticky-top mb-3" style="top: 0.5rem;">
-                {% if not playlist.is_yt_mix %}
+                {% if not playlist.is_yt_mix and not playlist.playlist_id == "LL" %}
                     <div hx-get="{% url 'update_playlist' playlist.playlist_id 'checkforupdates' %}" hx-trigger="load" hx-swap="outerHTML" id="checkforupdates">
                         <div class="alert alert-info alert-dismissible fade show" role="alert">
                             Checking playlist for updates...
@@ -269,7 +269,7 @@
                                 </a>
                             </div>
 
-                            {% if playlist.video_count != 0 %}
+                            {% if playlist.video_count > 1 %}
                             <div class="btn-group me-2 mb-2">
                                 <a href="{% url 'playlist_open_random_video' playlist.playlist_id %}" class="btn btn-danger">
                                     Open a Random Video
@@ -426,6 +426,7 @@
                 <div class="collapse border-danger" id="deleteItemsCollapse">
                     <div class="card card-body bg-dark text-white-50">
                         <div id="delete-videos-confirm-box">
+                            <h5>You can select videos by clicking any where on the video box. Selected videos will be highlighted red.</h5>
                             {% if not playlist.confirm_before_deleting %}
                                 <h5>Note: You have set confirm before deleting to False. Buttons below will take effect immediately when clicked.</h5>
                                 <hr>
@@ -627,12 +628,13 @@
                 {% endif %}
 
             </div>
-        {% endif %}
-        <div id="load-more-videos-spinner" class="d-flex htmx-indicator justify-content-center align-items-center">
+            <div id="load-more-videos-spinner" class="d-flex htmx-indicator justify-content-center align-items-center">
             <div class="spinner-border mt-3" role="status">
             </div>
             <span class="mt-3 ms-2">Loading more videos...</span>
         </div>
+        {% endif %}
+
         {% endif %}
     </div>
 
@@ -741,7 +743,21 @@
 
 
         document.getElementById('manageBtn').addEventListener('click', function () {                document.getElementById("delete-videos-confirm-box").innerHTML = "";
-            document.getElementById("delete-videos-confirm-box").innerHTML = "";
+            document.getElementById("delete-videos-confirm-box").innerHTML = `
+                <h5>You can select videos by clicking any where on the video box. Selected videos will be highlighted red.</h5>
+                {% if not playlist.confirm_before_deleting %}
+                    <h5>Note: You have set confirm before deleting to False. Buttons below will take effect immediately when clicked.</h5>
+                    <hr>
+                {% else %}
+                    {% if playlist.has_unavailable_videos %}
+                        <h5>Note: Clicking on delete unavailable videos button will take immediate effect. All videos labelled unavailable in this playlist will be deleted from your YouTube playlist.</h5>
+                    {% endif %}
+                    {% if playlist.has_duplicate_videos %}
+                        <h5>Note: Clicking on delete duplicate videos button will take immediate effect. All videos labelled duplicate in this playlist will be deleted from your YouTube playlist.</h5>
+                    {% endif %}
+                    <hr>
+                {% endif %}
+            `;
             bsMoveCopyCollapse.hide();
             bsDeleteCollapse.hide();
         });

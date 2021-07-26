@@ -36,11 +36,14 @@
                    hx-post="{% url 'search_playlists' playlist_type %}"
                    hx-trigger="keyup changed delay:700ms"
                    hx-target="#search-results"
-                   hx-indicator=".htmx-indicator">
+                   hx-indicator=".htmx-indicator"
+                    aria-describedby="searchHelp">
+            <div id="searchHelp" class="form-text">For a more extensive playlist search, click the search icon in the nav bar.</div>
           <br>
 
-        <div id="search-results">
-            {% include 'intercooler/playlists.html' %}
+
+        <div id="search-results" class="row row-cols-1 row-cols-md-4 g-4">
+            {% include 'intercooler/playlists.html' with show_controls=True %}
         </div>
         {% else %}
               <div class="card bg-dark text-white mb-3">

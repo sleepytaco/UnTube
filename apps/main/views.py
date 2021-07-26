@@ -1,6 +1,7 @@
 import datetime
+import json
 import random
-
+from django.core import serializers
 import bleach
 import pytz
 from django.db.models import Q, Count
@@ -39,54 +40,27 @@ def home(request):
         show_import_page is only set false in the import_in_progress.html page, i.e when user cancels YT import
         """
         # user_profile.show_import_page = False
-
         if user_profile.profile.access_token.strip() == "" or user_profile.profile.refresh_token.strip() == "":
             user_social_token = SocialToken.objects.get(account__user=request.user)
             user_profile.profile.access_token = user_social_token.token
             user_profile.profile.refresh_token = user_social_token.token_secret
             user_profile.profile.expires_at = user_social_token.expires_at
             user_profile.save()
-            Playlist.objects.getUserYTChannelID(user_profile)
+            Playlist.objects.getUserYTChannelID(request.user)
 
         if user_profile.profile.imported_yt_playlists:
             user_profile.profile.show_import_page = False  # after user imports all their YT playlists no need to show_import_page again
             user_profile.profile.save(update_fields=['show_import_page'])
-            return render(request, "home.html", {"import_successful": True})
+            imported_playlists_count = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True)).exclude(playlist_id="LL").count()
+            return render(request, "home.html", {"import_successful": True, "imported_playlists_count": imported_playlists_count})
 
         return render(request, "import_in_progress.html")
-
-        # if Playlist.objects.getUserYTChannelID(request.user) == -1:  # user channel not found
-        #    channel_found = False
-        # else:
-        #   Playlist.objects.initPlaylist(request.user, None)  # get all playlists from user's YT channel
-        #  return render(request, "home.html", {"import_successful": True})
     ##################################
 
     user_playlists = request.user.playlists.filter(is_in_db=True)
     total_num_playlists = user_playlists.count()
     user_playlists = user_playlists.filter(num_of_accesses__gt=0).order_by(
         "-num_of_accesses")
-
-    statistics = {
-        "public_x": 0,
-        "private_x": 0,
-        "favorites_x": 0,
-        "watching_x": 0,
-        "imported_x": 0
-    }
-
-    if total_num_playlists != 0:
-        # x means  percentage
-        statistics["public_x"] = round(user_playlists.filter(is_private_on_yt=False).count() / total_num_playlists,
-                                       1) * 100
-        statistics["private_x"] = round(user_playlists.filter(is_private_on_yt=True).count() / total_num_playlists,
-                                        1) * 100
-        statistics["favorites_x"] = round(user_playlists.filter(is_favorite=True).count() / total_num_playlists,
-                                          1) * 100
-        statistics["watching_x"] = round(user_playlists.filter(marked_as="watching").count() / total_num_playlists,
-                                         1) * 100
-        statistics["imported_x"] = round(user_playlists.filter(is_user_owned=False).count() / total_num_playlists,
-                                         1) * 100
 
     videos = request.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
 
@@ -98,18 +72,19 @@ def home(request):
                                          "watching": watching,
                                          "recently_accessed_playlists": recently_accessed_playlists,
                                          "recently_added_playlists": recently_added_playlists,
-                                         "statistics": statistics,
                                          "videos": videos,
                                          "channels": channels})
 
 
 @login_required
 def favorites(request):
-    favorite_playlists = request.user.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True)).order_by('-last_accessed_on')
+    favorite_playlists = request.user.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True)).order_by(
+        '-last_accessed_on')
     favorite_videos = request.user.videos.filter(is_favorite=True).order_by('updated_at')
 
     return render(request, 'favorites.html', {"playlists": favorite_playlists,
                                               "videos": favorite_videos})
+
 
 @login_required
 def view_video(request, video_id):
@@ -375,7 +350,7 @@ def order_playlist_by(request, playlist_id, order_by):
     else:
         return HttpResponse("Something went wrong :(")
 
-    return HttpResponse(loader.get_template("intercooler/videos.html").render({"playlist": playlist,
+    return HttpResponse(loader.get_template("intercooler/playlist_items.html").render({"playlist": playlist,
                                                                                "playlist_items": playlist_items,
                                                                                "videos_details": videos_details,
                                                                                "display_text": display_text,
@@ -533,9 +508,13 @@ def delete_videos(request, playlist_id, command):
         else:
             help_text = "Done deleting selected videos from your playlist on YouTube."
 
+        messages.success(request, help_text)
         return HttpResponse(f"""
-        <h5 hx-get="/playlist/{playlist_id}/update/checkforupdates" hx-trigger="load delay:2s" hx-target="#checkforupdates">
-            {help_text} Refresh page!
+        <h5>
+            Done! Refreshing...
+            <script>
+        window.location.reload();
+        </script>
         </h5>
         <hr>
         """)
@@ -552,67 +531,17 @@ def delete_specific_videos(request, playlist_id, command):
     elif command == "duplicate":
         help_text = "Deleted all duplicate videos."
 
+    messages.success(request, help_text)
+
     return HttpResponse(f"""
         <h5>
-            {help_text} Refresh page!
+            Done. Refreshing...
+            <script>
+            window.location.reload();
+            </script>
         </h5>
         <hr>
         """)
-
-
-@login_required
-@require_POST
-def search_tagged_playlists(request, tag):
-    tag = get_object_or_404(Tag, created_by=request.user, name=tag)
-    playlists = tag.playlists.all()
-
-    return HttpResponse("yay")
-
-
-@login_required
-@require_POST
-def search_playlists(request, playlist_type):
-    # print(request.POST)  # prints <QueryDict: {'search': ['aa']}>
-
-    search_query = request.POST["search"]
-    watching = False
-
-    playlists = None
-    if playlist_type == "all":
-        try:
-            playlists = request.user.playlists.all().filter(Q(name__startswith=search_query) & Q(is_in_db=True))
-        except:
-            playlists = request.user.playlists.all()
-    elif playlist_type == "user-owned":  # YT playlists owned by user
-        try:
-            playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) & Q(is_user_owned=True) & Q(is_in_db=True))
-        except:
-            playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
-    elif playlist_type == "imported":  # YT playlists (public) owned by others
-        try:
-            playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) & Q(is_user_owned=False) & Q(is_in_db=True))
-        except:
-            playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
-    elif playlist_type == "favorites":  # YT playlists (public) owned by others
-        try:
-            playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) & Q(is_favorite=True) & Q(is_in_db=True))
-        except:
-            playlists = request.user.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True))
-    elif playlist_type in ["watching", "plan-to-watch"]:
-        try:
-            playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) & Q(marked_as=playlist_type) & Q(is_in_db=True))
-        except:
-            playlists = request.user.playlists.all().filter(Q(marked_as=playlist_type) & Q(is_in_db=True))
-        if playlist_type == "watching":
-            watching = True
-
-    return HttpResponse(loader.get_template("intercooler/playlists.html")
-                        .render({"playlists": playlists,
-                                 "watching": watching}))
 
 
 #### MANAGE VIDEOS #####
@@ -652,64 +581,7 @@ def mark_video_watched(request, playlist_id, video_id):
 
 
 ###########
-@login_required
-def search(request):
-    if request.method == "GET":
-        return render(request, 'search_untube_page.html', {"playlists": request.user.playlists.all()})
-    else:
-        return redirect('home')
 
-
-@login_required
-@require_POST
-def search_UnTube(request):
-    print(request.POST)
-
-    search_query = request.POST["search"]
-
-    all_playlists = request.user.playlists.filter(is_in_db=True)
-    if 'playlist-tags' in request.POST:
-        tags = request.POST.getlist('playlist-tags')
-        for tag in tags:
-            all_playlists = all_playlists.filter(tags__name=tag)
-        # all_playlists = all_playlists.filter(tags__name__in=tags)
-
-    playlist_items = []
-
-    if request.POST['search-settings'] == 'starts-with':
-        playlists = all_playlists.filter(Q(name__istartswith=search_query) | Q(
-            user_label__istartswith=search_query)) if search_query != "" else all_playlists.none()
-
-        if search_query != "":
-            for playlist in all_playlists:
-                pl_items = playlist.playlist_items.select_related('video').filter(
-                    Q(video__name__istartswith=search_query) | Q(video__user_label__istartswith=search_query) & Q(
-                        is_duplicate=False))
-
-                if pl_items.exists():
-                    for v in pl_items.all():
-                        playlist_items.append(v)
-
-    else:
-        playlists = all_playlists.filter(Q(name__icontains=search_query) | Q(
-            user_label__istartswith=search_query)) if search_query != "" else all_playlists.none()
-
-        if search_query != "":
-            for playlist in all_playlists:
-                pl_items = playlist.playlist_items.select_related('video').filter(
-                    Q(video__name__icontains=search_query) | Q(video__user_label__istartswith=search_query) & Q(
-                        is_duplicate=False))
-
-                if pl_items.exists():
-                    for v in pl_items.all():
-                        playlist_items.append(v)
-
-    return HttpResponse(loader.get_template("intercooler/search_untube_results.html")
-                        .render({"playlists": playlists,
-                                 "playlist_items": playlist_items,
-                                 "videos_count": len(playlist_items),
-                                 "search_query": True if search_query != "" else False,
-                                 "all_playlists": all_playlists}))
 
 
 @login_required
@@ -843,7 +715,7 @@ def load_more_videos(request, playlist_id, order_by, page):
         playlist_items = playlist.playlist_items.select_related('video').filter(
             video__channel_name=channel_name).order_by("video_position")
 
-    return HttpResponse(loader.get_template("intercooler/videos.html")
+    return HttpResponse(loader.get_template("intercooler/playlist_items.html")
         .render(
         {
             "playlist": playlist,
@@ -939,17 +811,17 @@ def update_playlist(request, playlist_id, command):
                 </div>
                 """)
         elif result[0] == -1:  # playlist changed
-            print("!!!Playlist changed")
-
-            # current_playlist_vid_count = playlist.video_count
-            # new_playlist_vid_count = result[1]
-
-            # print(current_playlist_vid_count)
-            # print(new_playlist_vid_count)
-
-            # playlist.has_playlist_changed = True
-            # playlist.save()
-            # print(playlist.playlist_changed_text)
+            print("Playlist was deleted from YouTube")
+            playlist.videos.all().delete()
+            playlist.delete()
+            return HttpResponse("""
+                        <div id="checkforupdates" class="sticky-top" style="top: 0.5em;">
+                            <div class="alert alert-danger alert-dismissible fade show sticky-top visually-hidden" role="alert" style="top: 0.5em;">
+                                The playlist owner deleted this playlist on YouTube. It will be deleted for you as well :(
+                                <meta http-equiv="refresh" content="1" />
+                            </div>
+                        </div>
+                        """)
         else:  # no updates found
             return HttpResponse("""
             <div id="checkforupdates" class="sticky-top" style="top: 0.5em;">
@@ -1172,18 +1044,28 @@ def delete_playlist(request, playlist_id):
 
     if request.GET["confirmed"] == "no":
         return HttpResponse(f"""
-            <a href="/playlist/{playlist_id}/delete-playlist?confirmed=yes" class="btn btn-danger">Confirm Delete</a>
+            <a href="/playlist/{playlist_id}/delete-playlist?confirmed=yes" hx-indicator="#delete-pl-loader" class="btn btn-danger">Confirm Delete</a>
             <a href="/playlist/{playlist_id}" class="btn btn-secondary ms-1">Cancel</a>
         """)
 
     if not playlist.is_user_owned:  # if playlist trying to delete isn't user owned
-        playlist.delete()  # just delete it from untrue
+        video_ids = [video.video_id for video in playlist.videos.all()]
+        playlist.delete()
+        for video_id in video_ids:
+            video = request.user.videos.get(video_id=video_id)
+            if video.playlists.all().count() == 0:
+                video.delete()
+
         messages.success(request, "Successfully deleted playlist from UnTube.")
     else:
         # deletes it from YouTube first then from UnTube
         status = Playlist.objects.deletePlaylistFromYouTube(request.user, playlist_id)
-        if status == -1:  # failed to delete playlist from youtube
-            messages.error(request, "Failed to delete playlist from YouTube :(")
+        if status[0] == -1:  # failed to delete playlist from youtube
+            # if status[2] == 404:
+            #    playlist.delete()
+            #    messages.success(request, 'Looks like the playlist was already deleted on YouTube. Removed it from UnTube as well.')
+            #    return redirect('home')
+            messages.error(request, f"[{status[1]}] Failed to delete playlist from YouTube :(")
             return redirect('view_playlist_settings', playlist_id=playlist_id)
 
         messages.success(request, "Successfully deleted playlist from YouTube and removed it from UnTube as well.")

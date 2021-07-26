@@ -8,7 +8,7 @@
 
             <div class="w-50">
                 <div class="d-flex justify-content-center">
-                    <h3>Importing playlist '{{ playlist_name }}' from YouTube</h3>
+                    <h3>Imported playlist '{{ playlist_name }}' from YouTube</h3>
                 </div>
                 <div class="d-flex justify-content-center">
                     <h3>({{ playlists_imported }}/{{ total_playlists }} playlists imported)</h3>
@@ -45,7 +45,9 @@
 
             <div class="w-75">
                 <div class="d-flex justify-content-center">
-                    <h3>Uh-oh, we were not able to find any YouTube channel linked to this Google account. Please create a YouTube channel to be able to import/export playlists back and forth between YouTube and UnTube.</h3>
+                    <h3>
+                        [{{ error_message }}] Uh-oh, ran into an error while trying to import your playlists.
+                        </h3>
                 </div>
                 <br>
                 <div class="d-flex justify-content-center">

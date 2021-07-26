@@ -6,8 +6,6 @@ urlpatterns = [
 
     ### STUFF RELATED TO WHOLE SITE
     path("home/", views.home, name='home'),
-    path("search", views.search, name="search"),
-    path("search/UnTube/", views.search_UnTube, name="search_UnTube"),
     path("favorites", views.favorites, name="favorites"),
 
     ### STUFF RELATED TO INDIVIDUAL VIDEOS
@@ -17,12 +15,12 @@ urlpatterns = [
     path("video/<slug:video_id>/get-video-completion-times", views.video_completion_times, name="video_completion_times"),
 
     ### STUFF RELATED TO VIDEO(S) INSIDE PLAYLISTS
-    path("<slug:playlist_id>/<slug:video_id>/video-details", views.view_video, name='video_details'),
-    path('<slug:playlist_id>/<slug:video_id>/video-details/watched', views.mark_video_watched, name='mark_video_watched'),
     path("videos/<slug:videos_type>", views.all_videos, name='all_videos'),
 
     ### STUFF RELATED TO ONE PLAYLIST
     path("playlist/<slug:playlist_id>", views.view_playlist, name='playlist'),
+    path('playlist/<slug:playlist_id>/<slug:video_id>/video-details/watched', views.mark_video_watched,
+         name='mark_video_watched'),
     path("playlist/<slug:playlist_id>/settings", views.view_playlist_settings, name="view_playlist_settings"),
     path("playlist/<slug:playlist_id>/order-by/<slug:order_by>", views.order_playlist_by,
          name='order_playlist_by'),
@@ -47,10 +45,8 @@ urlpatterns = [
          name="playlist_completion_times"),
 
     ### STUFF RELATED TO PLAYLISTS IN BULK
-    path("search/playlists/<slug:playlist_type>", views.search_playlists, name="search_playlists"),
     path("playlists/<slug:playlist_type>", views.all_playlists, name='all_playlists'),
     path("playlists/<slug:playlist_type>/order-by/<slug:order_by>", views.order_playlists_by, name='order_playlists_by'),
-    path("search/tagged-playlists/<str:tag>", views.search_tagged_playlists, name="search_tagged_playlists"),
     path("playlists/tag/<str:tag>", views.tagged_playlists, name='tagged_playlists'),
 
     ### STUFF RELATED TO MANAGING A PLAYLIST

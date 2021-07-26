@@ -14,6 +14,10 @@ import googleapiclient.errors
 from django.db.models import Q, Sum
 
 
+def get_message_from_httperror(e):
+    return e.error_details[0]['message']
+
+
 class PlaylistManager(models.Manager):
     def getCredentials(self, user):
         credentials = Credentials(
@@ -38,8 +42,11 @@ class PlaylistManager(models.Manager):
 
         return credentials
 
-    def getPlaylistId(self, video_link):
-        temp = video_link.split("?")[-1].split("&")
+    def getPlaylistId(self, playlist_link):
+        if "?" not in playlist_link:
+            return playlist_link
+
+        temp = playlist_link.split("?")[-1].split("&")
 
         for el in temp:
             if "list=" in el:
@@ -83,6 +90,7 @@ class PlaylistManager(models.Manager):
         result = {"status": 0,
                   "num_of_playlists": 0,
                   "first_playlist_name": "N/A",
+                  "error_message": "",
                   "playlist_ids": []}
 
         credentials = self.getCredentials(user)
@@ -106,10 +114,11 @@ class PlaylistManager(models.Manager):
             # execute the above request, and store the response
             try:
                 pl_response = pl_request.execute()
-            except googleapiclient.errors.HttpError:
+            except googleapiclient.errors.HttpError as e:
                 print("YouTube channel not found if mine=True")
                 print("YouTube playlist not found if id=playlist_id")
                 result["status"] = -1
+                result["error_message"] = get_message_from_httperror(e)
                 return result
 
             print(pl_response)
@@ -143,7 +152,7 @@ class PlaylistManager(models.Manager):
             # check if this playlist already exists in user's untube collection
             if user.playlists.filter(playlist_id=playlist_id).exists():
                 playlist = user.playlists.get(playlist_id=playlist_id)
-                print(f"PLAYLIST {playlist.name} ALREADY EXISTS IN DB")
+                print(f"PLAYLIST {playlist.name} ({playlist_id}) ALREADY EXISTS IN DB")
 
                 # POSSIBLE CASES:
                 # 1. PLAYLIST HAS DUPLICATE VIDEOS, DELETED VIDS, UNAVAILABLE VIDS
@@ -157,6 +166,8 @@ class PlaylistManager(models.Manager):
                     result["status"] = -3
                     return result
             else:  # no such playlist in database
+                print(f"CREATING {item['snippet']['title']} ({playlist_id})")
+
                 ### MAKE THE PLAYLIST AND LINK IT TO CURRENT_USER
                 playlist = Playlist(  # create the playlist and link it to current user
                     playlist_id=playlist_id,
@@ -250,7 +261,12 @@ class PlaylistManager(models.Manager):
                         video=video
                     )
                     playlist_item.save()
+
                 else:  # video found in user's db
+                    if playlist.playlist_items.filter(playlist_item_id=playlist_item_id).exists():
+                        print("PLAYLIST ITEM ALREADY EXISTS")
+                        continue
+
                     video = user.videos.get(video_id=video_id)
 
                     # if video already in playlist.videos
@@ -469,7 +485,11 @@ class PlaylistManager(models.Manager):
                 )
 
                 # execute the above request, and store the response
-                pl_response = pl_request.execute()
+                try:
+                    pl_response = pl_request.execute()
+                except googleapiclient.errors.HttpError as e:
+                    if e.status_code == 404:  # playlist not found
+                        return [-1, "Playlist not found!"]
 
                 for item in pl_response['items']:
                     playlist_item_id = item['id']
@@ -908,12 +928,17 @@ class PlaylistManager(models.Manager):
                 # playlistNotFound  (404)
                 # playlistOperationUnsupported (400)
                 print(e.error_details, e.status_code)
-                return -1
+                return [-1, get_message_from_httperror(e), e.status_code]
 
             # playlistItem was successfully deleted if no HttpError, so delete it from db
+            video_ids = [video.video_id for video in playlist.videos.all()]
             playlist.delete()
+            for video_id in video_ids:
+                video = user.videos.get(video_id=video_id)
+                if video.playlists.all().count() == 0:
+                    video.delete()
 
-        return 0
+        return [0]
 
     def deletePlaylistItems(self, user, playlist_id, playlist_item_ids):
         """
@@ -949,11 +974,11 @@ class PlaylistManager(models.Manager):
 
                 if not playlist.playlist_items.filter(video__video_id=video.video_id).exists():
                     playlist.videos.remove(video)
+                    if video.playlists.all().count() == 0: # also delete the video if it is not found in other playlists
+                        video.delete()
 
-                # video = playlist.videos.get(playlist_item_id=playlist_item_id)
                 new_playlist_video_count -= 1
                 new_playlist_duration_in_seconds -= video.duration_in_seconds
-                # video.delete()
 
         playlist.video_count = new_playlist_video_count
         playlist.playlist_duration_in_seconds = new_playlist_duration_in_seconds

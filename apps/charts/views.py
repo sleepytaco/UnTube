@@ -28,7 +28,7 @@ def overall_channels_distribution(request):
     videos = request.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
 
     queryset = videos.values(
-        'channel_name').annotate(channel_videos_count=Count('video_id'))
+        'channel_name').annotate(channel_videos_count=Count('video_id')).order_by('-channel_videos_count')[:100]
 
     for entry in queryset:
         labels.append(entry['channel_name'])

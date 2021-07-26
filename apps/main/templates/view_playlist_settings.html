@@ -85,9 +85,12 @@
                         <div class="col-sm-3">
                           <h6 class="mb-0">Danger Zone</h6>
                         </div>
-                        <div class="col-sm-9 text-white-50">
+                        <div class="col-sm-9 text-white-50 d-flex justify-content-start">
                             <div id="delete-box">
-                                <a hx-get="{% url 'delete_playlist' playlist.playlist_id %}" hx-target="#delete-box" hx-vals='{"confirmed": "no"}' class="btn btn-outline-danger">Delete Playlist From YouTube</a>
+                                <a hx-get="{% url 'delete_playlist' playlist.playlist_id %}" hx-target="#delete-box" hx-vals='{"confirmed": "no"}' class="btn btn-outline-danger" hx-indicator="#delete-pl-loader">Delete Playlist From YouTube</a>
+                            </div>
+                            <div id="delete-pl-loader">
+                            <img src="{% static 'svg-loaders/rings.svg' %}" height="40" width="40" class="htmx-indicator">
                             </div>
                         </div>
                       </div>
@@ -100,8 +103,8 @@
                 <div class="btn-group">
                     <a href="{% url 'playlist' playlist.playlist_id %}" class="btn btn-secondary me-2">Back</a>
 
-                    <button href="#navbar" hx-post="{% url 'update_playlist_settings' playlist.playlist_id %}" hx-include="[id='settings-form']" hx-target="#settings-status-div"
-                            type="button" class="btn btn-success me-2">Save</button>
+                    <a href="#navbar" hx-post="{% url 'update_playlist_settings' playlist.playlist_id %}" hx-include="[id='settings-form']" hx-target="#settings-status-div"
+                            type="button" class="btn btn-success me-2">Save</a>
                 </div>
               </div>
         </div>
@@ -169,9 +172,12 @@
                         <div class="col-sm-3">
                           <h6 class="mb-0">Danger Zone</h6>
                         </div>
-                        <div class="col-sm-9 text-white-50">
+                        <div class="col-sm-9 text-white-50 d-flex justify-content-start">
                             <div id="delete-box">
-                                <a hx-get="{% url 'delete_playlist' playlist.playlist_id %}" hx-target="#delete-box" hx-vals='{"confirmed": "no"}' class="btn btn-outline-danger">Remove Playlist From UnTube</a>
+                                <a hx-get="{% url 'delete_playlist' playlist.playlist_id %}" hx-target="#delete-box" hx-vals='{"confirmed": "no"}' class="btn btn-outline-danger" hx-indicator="#delete-pl-loader">Remove Playlist From UnTube</a>
+                            </div>
+                            <div id="delete-pl-loader">
+                            <img src="{% static 'svg-loaders/rings.svg' %}" height="40" width="40" class="htmx-indicator">
                             </div>
                         </div>
                       </div>
@@ -184,8 +190,8 @@
                             <div class="btn-group">
                 <a href="{% url 'playlist' playlist.playlist_id %}" class="btn btn-secondary me-2">Back</a>
 
-                <button href="#navbar" hx-post="{% url 'update_playlist_settings' playlist.playlist_id %}" hx-include="[id='settings-form']" hx-target="#settings-status-div"
-                            type="button" class="btn btn-success me-2">Save</button>
+                <a href="#navbar" hx-post="{% url 'update_playlist_settings' playlist.playlist_id %}" hx-include="[id='settings-form']" hx-target="#settings-status-div"
+                            type="button" class="btn btn-success me-2">Save</a>
                                 </div>
               </div>
         </div>

@@ -1,0 +1,32 @@
+{% load humanize %}
+
+{% if playlists %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">{% if search_query == "" %}All{% endif %} Playlists <span class="badge bg-primary rounded-pill">{{ playlists.count|default:"0" }}</span></h1>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+        {% if playlists %}
+            {% include 'intercooler/playlists.html' with playlists=playlists show_controls=True %}
+        {% else %}
+            <h5 class="text-dark align-content-center">No playlists found :(</h5>
+        {% endif %}
+    </div>
+{% else %}
+
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Videos <span class="badge bg-primary rounded-pill">{{ videos.count }}</span>{% if videos.count > 250 %}(Only top 250 results shown){% endif %}</h1>
+    </div>
+
+    <div>
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            {% if videos %}
+                {% include 'intercooler/video_cards.html' with videos=videos %}
+            {% else %}
+                <h5 class="text-dark align-content-center">Nothing found :(</h5>
+            {% endif %}
+        </div>
+    </div>
+
+{% endif %}
+<br>

@@ -3,6 +3,7 @@ from django.contrib.auth.hashers import make_password, check_password
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -60,6 +61,17 @@ class Profile(models.Model):
     create_playlist_add_vids_from_collection = models.CharField(max_length=50, default="")
     create_playlist_add_vids_from_links = models.CharField(max_length=50, default="")
 
+    def get_channels_list(self):
+        channels_list = []
+        videos = self.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
+
+        queryset = videos.values(
+            'channel_name').annotate(channel_videos_count=Count('video_id')).order_by('-channel_videos_count')
+
+        for entry in queryset:
+            channels_list.append(entry['channel_name'])
+
+        return channels_list
 
 # as soon as one User object is created, create an associated profile object
 @receiver(post_save, sender=User)
