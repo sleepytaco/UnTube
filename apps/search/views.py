@@ -1,3 +1,4 @@
+import bleach
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse
@@ -21,46 +22,42 @@ def search(request):
 def search_UnTube(request):
     print(request.POST)
 
-    search_query = request.POST["search"]
-
-    all_playlists = request.user.playlists.filter(is_in_db=True)
-    if 'playlist-tags' in request.POST:
-        tags = request.POST.getlist('playlist-tags')
-        for tag in tags:
-            all_playlists = all_playlists.filter(tags__name=tag)
-
-    channels = []
-    if 'channel-names' in request.POST:
-        channels = request.POST.getlist('channel-names')
+    search_query = bleach.clean(request.POST["search"])
+    print(search_query)
 
     if request.POST['search-settings'] == 'playlists':
-        playlists = all_playlists.filter(Q(name__istartswith=search_query) | Q(
-            user_label__istartswith=search_query)) if search_query != "" else all_playlists.none()
+        all_playlists = request.user.playlists.filter(is_in_db=True)
+        if 'playlist-tags' in request.POST:
+            tags = request.POST.getlist('playlist-tags')
+            for tag in tags:
+                all_playlists = all_playlists.filter(tags__name=tag)
 
-        if search_query == "":
+        playlists = all_playlists.filter(Q(name__icontains=search_query) | Q(
+            user_label__icontains=search_query))
+
+        if search_query.strip() == "":
             playlists = all_playlists
 
         return HttpResponse(loader.get_template("intercooler/search_untube_results.html")
                             .render({"playlists": playlists,
+                                     "view_mode": "playlists",
                                      "search_query": search_query}))
     else:
-        playlists = all_playlists.filter(Q(name__icontains=search_query) | Q(
-            user_label__istartswith=search_query)) if search_query != "" else all_playlists.none()
+        all_videos = request.user.videos.filter(is_unavailable_on_yt=False)
+        if 'channel-names' in request.POST:
+            channels = request.POST.getlist('channel-names')
+            all_videos = all_videos.filter(channel_name__in=channels)
 
-        if search_query == "":
-            playlists = all_playlists
+        videos = all_videos.filter(
+            Q(name__icontains=search_query) | Q(user_label__icontains=search_query))
 
-        videos = Video.objects.none()
-        for playlist in playlists:
-            pl_videos = playlist.videos.filter(is_unavailable_on_yt=False)
-            videos = videos | pl_videos
-
-        videos = videos.filter(
-            Q(name__icontains=search_query) | Q(user_label__istartswith=search_query)).distinct()
+        if search_query.strip() == "":
+            videos = all_videos
 
         return HttpResponse(loader.get_template("intercooler/search_untube_results.html")
-                            .render({"videos": videos[:250],
-                                     "show_all_videos": len(channels) > 0}))
+                            .render({"videos": videos,
+                                     "view_mode": "videos",
+                                     "search_query": search_query}))
 
 
 @login_required

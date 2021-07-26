@@ -84,14 +84,7 @@
     </div>
 
     <div id="untube-searchbar-results">
-        {% if playlists %}
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">All Playlists <span class="badge bg-primary rounded-pill">{{ playlists.count }}</span></h1>
-        </div>
-            <div class="row row-cols-1 row-cols-md-4 g-4">
-            {% include 'intercooler/playlists.html' %}
-            </div>
-        {% endif %}
+
     </div>
 
     <button class="scrollToTopBtn sticky-top">
