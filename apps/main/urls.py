@@ -7,15 +7,16 @@ urlpatterns = [
     ### STUFF RELATED TO WHOLE SITE
     path("home/", views.home, name='home'),
     path("favorites", views.favorites, name="favorites"),
+    path("library/<slug:library_type>", views.library, name='library'),
 
     ### STUFF RELATED TO INDIVIDUAL VIDEOS
     path("video/<slug:video_id>", views.view_video, name='video'),
     path("video/<slug:video_id>/video-details/favorite", views.mark_video_favortie, name='mark_video_favorite'),
     path("video/<slug:video_id>/notes", views.video_notes, name='video_notes'),
     path("video/<slug:video_id>/get-video-completion-times", views.video_completion_times, name="video_completion_times"),
+    path("video/<slug:video_id>/add-user-label", views.add_video_user_label, name='add_video_user_label'),
 
     ### STUFF RELATED TO VIDEO(S) INSIDE PLAYLISTS
-    path("videos/<slug:videos_type>", views.all_videos, name='all_videos'),
 
     ### STUFF RELATED TO ONE PLAYLIST
     path("playlist/<slug:playlist_id>", views.view_playlist, name='playlist'),
@@ -45,7 +46,6 @@ urlpatterns = [
          name="playlist_completion_times"),
 
     ### STUFF RELATED TO PLAYLISTS IN BULK
-    path("playlists/<slug:playlist_type>", views.all_playlists, name='all_playlists'),
     path("playlists/<slug:playlist_type>/order-by/<slug:order_by>", views.order_playlists_by, name='order_playlists_by'),
     path("playlists/tag/<str:tag>", views.tagged_playlists, name='tagged_playlists'),
 

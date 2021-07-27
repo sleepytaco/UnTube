@@ -144,26 +144,22 @@
                         </li>
 
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="libraryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link" href="{% url 'library' 'home' %}">
                                 Library
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="libraryDropdown" style="z-index: 1021;">
-                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'home' %}">Playlists</a></li>
-                                <li><a class="dropdown-item" href="{% url 'all_videos' 'home' %}">Videos</a></li>
-                            </ul>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="quickViewDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Quick View
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="quickViewDropdown" style="z-index: 1021;">
-                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'favorites' %}">Favorites</a></li>
-                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'watching' %}">Watching</a></li>
-                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'plan-to-watch' %}">Plan to Watch</a></li>
-                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'user-owned' %}">Your YT Playlists</a></li>
-                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'imported' %}">Imported</a></li>
+                                <li><a class="dropdown-item" href="{% url 'library' 'favorites' %}">Favorites</a></li>
+                                <li><a class="dropdown-item" href="{% url 'library' 'watching' %}">Watching</a></li>
+                                <li><a class="dropdown-item" href="{% url 'library' 'plan-to-watch' %}">Plan to Watch</a></li>
+                                <li><a class="dropdown-item" href="{% url 'library' 'user-owned' %}">Your YT Playlists</a></li>
+                                <li><a class="dropdown-item" href="{% url 'library' 'imported' %}">Imported</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'all_playlists' 'all' %}">View all</a></li>
+                                <li><a class="dropdown-item" href="{% url 'library' 'all' %}">View all</a></li>
                             </ul>
                         </li>
 

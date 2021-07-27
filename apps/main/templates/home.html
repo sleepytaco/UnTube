@@ -81,13 +81,13 @@
                 <div class="card card-cover h-100 overflow-hidden text-white {% if not user.profile.enable_gradient_bg  %}gradient-bg-3{% else %}bg-dark{% endif %} rounded-5 shadow-lg" style="">
                     <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
                         <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
-                            <a href="{% url 'all_playlists' 'all' %}" class="stretched-link" style="text-decoration: none; color: #fafafa">
+                            <a href="{% url 'library' 'all' %}" class="stretched-link" style="text-decoration: none; color: #fafafa">
                                 All Playlists</a>
                         </h2>
                         <ul class="d-flex list-unstyled mt-auto">
                             <li class="me-auto">
                                 <h3>
-                                    <i class="fas fa-mountain fa-lg" style="color: #e26f94"></i>
+                                    <i class="fas fa-mountain fa-lg" style="color: #a9e26f"></i>
                                 </h3>
                             </li>
                         </ul>
@@ -137,14 +137,14 @@
                 <div class="card card-cover h-100 overflow-hidden text-white {% if not user.profile.enable_gradient_bg  %}gradient-bg-3{% else %}bg-dark{% endif %} rounded-5 shadow-lg" style="">
                     <div class="d-flex flex-column h-100 p-5 pb-3 text-white text-shadow-1">
                         <h2 class="pt-5 mt-5 mb-4 display-6 lh-1 fw-bold">
-                            <a href="https://www.youtube.com/" target="_blank" class="stretched-link" style="text-decoration: none; color: #fafafa">
-                                Open YouTube
+                            <a href="{% url 'library' 'plan-to-watch' %}" class="stretched-link" style="text-decoration: none; color: #fafafa">
+                                Planned to Watch
                             </a>
                         </h2>
                         <ul class="d-flex list-unstyled mt-auto">
                             <li class="me-auto">
                                 <h3>
-                                    <i class="fab fa-youtube fa-lg" style="color: #db477b"></i>
+                                    <i class="fas fa-sad-cry fa-lg" style="color: #db477b"></i>
                                 </h3>
                             </li>
                         </ul>
@@ -217,7 +217,7 @@
             <div class="col">
                 <div class="card bg-transparent border border-0 text-black">
                     <div class="card-body">
-                        <h3><span style="border-bottom: 3px #a35a5a dashed;">Most viewed playlists</span> <a href="{% url 'all_playlists' 'all' %}" class="pt-1"><i class="fas fa-binoculars"></i> </a></h3>
+                        <h3><span style="border-bottom: 3px #a35a5a dashed;">Most viewed playlists</span> <a href="{% url 'library' 'all' %}" class="pt-1"><i class="fas fa-binoculars"></i> </a></h3>
                         {% if user_playlists %}
                             <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
                                 {% include 'intercooler/playlists.html' with playlists=user_playlists|slice:"0:3" watching=False %}
@@ -244,7 +244,7 @@
                 {% if watching.count > 5 %}
 
                     <h3 class="ms-2 me-1">
-                        <a href="{% url 'all_playlists' 'watching' %}" style="text-decoration: none; color: #4675d2">
+                        <a href="{% url 'library' 'watching' %}" style="text-decoration: none; color: #4675d2">
                             <i class="fas fa-search" style="color: #4675d2"></i>
                         </a>
                     </h3>

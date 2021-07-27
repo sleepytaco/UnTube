@@ -51,8 +51,10 @@ def home(request):
         if user_profile.profile.imported_yt_playlists:
             user_profile.profile.show_import_page = False  # after user imports all their YT playlists no need to show_import_page again
             user_profile.profile.save(update_fields=['show_import_page'])
-            imported_playlists_count = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True)).exclude(playlist_id="LL").count()
-            return render(request, "home.html", {"import_successful": True, "imported_playlists_count": imported_playlists_count})
+            imported_playlists_count = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True)).exclude(
+                playlist_id="LL").count()
+            return render(request, "home.html",
+                          {"import_successful": True, "imported_playlists_count": imported_playlists_count})
 
         return render(request, "import_in_progress.html")
     ##################################
@@ -192,33 +194,33 @@ def tagged_playlists(request, tag):
 
 
 @login_required
-def all_playlists(request, playlist_type):
+def library(request, library_type):
     """
     Possible playlist types for marked_as attribute: (saved in database like this)
     "none", "watching", "plan-to-watch"
     """
-    playlist_type = playlist_type.lower()
+    library_type = library_type.lower()
     watching = False
-    if playlist_type == "" or playlist_type == "all":
+    if library_type == "" or library_type == "all":
         playlists = request.user.playlists.all().filter(is_in_db=True)
-        playlist_type_display = "All Playlists"
-    elif playlist_type == "user-owned":  # YT playlists owned by user
+        library_type_display = "All Playlists"
+    elif library_type == "user-owned":  # YT playlists owned by user
         playlists = request.user.playlists.all().filter(Q(is_user_owned=True) & Q(is_in_db=True))
-        playlist_type_display = "Your YouTube Playlists"
-    elif playlist_type == "imported":  # YT playlists (public) owned by others
+        library_type_display = "Your YouTube Playlists"
+    elif library_type == "imported":  # YT playlists (public) owned by others
         playlists = request.user.playlists.all().filter(Q(is_user_owned=False) & Q(is_in_db=True))
-        playlist_type_display = "Imported playlists"
-    elif playlist_type == "favorites":  # YT playlists (public) owned by others
+        library_type_display = "Imported playlists"
+    elif library_type == "favorites":  # YT playlists (public) owned by others
         playlists = request.user.playlists.all().filter(Q(is_favorite=True) & Q(is_in_db=True))
-        playlist_type_display = "Favorites"
-    elif playlist_type.lower() in ["watching", "plan-to-watch"]:
-        playlists = request.user.playlists.filter(Q(marked_as=playlist_type.lower()) & Q(is_in_db=True))
-        playlist_type_display = playlist_type.lower().replace("-", " ")
-        if playlist_type.lower() == "watching":
+        library_type_display = "Favorites"
+    elif library_type.lower() in ["watching", "plan-to-watch"]:
+        playlists = request.user.playlists.filter(Q(marked_as=library_type.lower()) & Q(is_in_db=True))
+        library_type_display = library_type.lower().replace("-", " ")
+        if library_type.lower() == "watching":
             watching = True
-    elif playlist_type.lower() == "home":  # displays cards of all playlist types
-        return render(request, 'playlists_home.html')
-    elif playlist_type.lower() == "random":  # randomize playlist
+    elif library_type.lower() == "home":  # displays cards of all playlist types
+        return render(request, 'library.html')
+    elif library_type.lower() == "random":  # randomize playlist
         if request.method == "POST":
             playlists_type = request.POST["playlistsType"]
             if playlists_type == "All":
@@ -237,54 +239,14 @@ def all_playlists(request, playlist_type):
                 return redirect('/playlists/home')
             random_playlist = random.choice(playlists)
             return redirect(f'/playlist/{random_playlist.playlist_id}')
-        return render(request, 'playlists_home.html')
+        return render(request, 'library.html')
     else:
         return redirect('home')
 
     return render(request, 'all_playlists.html', {"playlists": playlists,
-                                                  "playlist_type": playlist_type,
-                                                  "playlist_type_display": playlist_type_display,
+                                                  "library_type": library_type,
+                                                  "library_type_display": library_type_display,
                                                   "watching": watching})
-
-
-@login_required
-def all_videos(request, videos_type):
-    """
-    To implement this need to redesign the database
-    Currently videos -> playlist -> user.profile
-
-    Need to do
-    user.profile <- videos <- playlistItem -> playlist
-    many ways actually
-    """
-    videos_type = videos_type.lower()
-
-    if videos_type == "" or videos_type == "all":
-        playlists = request.user.playlists.all().filter(is_in_db=True)
-        videos_type_display = "All Videos"
-    elif videos_type == "user-owned":  # YT playlists owned by user
-        playlists = request.user.playlists.all().filter(Q(is_user_owned=True) & Q(is_in_db=True))
-        videos_type_display = "All Videos in your YouTube Playlists"
-    elif videos_type == "imported":  # YT playlists (public) owned by others
-        playlists = request.user.playlists.all().filter(Q(is_user_owned=False) & Q(is_in_db=True))
-        videos_type_display = "Imported YouTube Playlists Videos"
-    elif videos_type == "favorites":  # YT playlists (public) owned by others
-        playlists = request.user.playlists.all().filter(Q(is_favorite=True) & Q(is_in_db=True))
-        videos_type_display = "Favorite Videos"
-    elif videos_type == "watched":  # YT playlists (public) owned by others
-        playlists = request.user.playlists.all().filter(Q(is_favorite=True) & Q(is_in_db=True))
-        videos_type_display = "Watched Videos"
-    elif videos_type == 'hidden-videos':  # YT playlists (public) owned by others
-        playlists = request.user.playlists.all().filter(Q(is_favorite=True) & Q(is_in_db=True))
-        videos_type_display = "Hidden Videos"
-    elif videos_type.lower() == "home":  # displays cards of all playlist types
-        return render(request, 'videos_home.html')
-    else:
-        return redirect('home')
-
-    return render(request, 'all_playlists.html', {"playlists": playlists,
-                                                  "videos_type": videos_type,
-                                                  "videos_type_display": videos_type_display})
 
 
 @login_required
@@ -351,33 +313,27 @@ def order_playlist_by(request, playlist_id, order_by):
         return HttpResponse("Something went wrong :(")
 
     return HttpResponse(loader.get_template("intercooler/playlist_items.html").render({"playlist": playlist,
-                                                                               "playlist_items": playlist_items,
-                                                                               "videos_details": videos_details,
-                                                                               "display_text": display_text,
-                                                                               "order_by": order_by}))
+                                                                                       "playlist_items": playlist_items,
+                                                                                       "videos_details": videos_details,
+                                                                                       "display_text": display_text,
+                                                                                       "order_by": order_by}))
 
 
 @login_required
-def order_playlists_by(request, playlist_type, order_by):
-    print("GET", request.GET)
-    print("POST", request.POST)
-    print("CONTENT PARAMS", request.content_params)
-    print("HEAD", request.headers)
-    print("BODY", request.body)
-
+def order_playlists_by(request, library_type, order_by):
     watching = False
 
-    if playlist_type == "" or playlist_type.lower() == "all":
+    if library_type == "" or library_type.lower() == "all":
         playlists = request.user.playlists.all()
-    elif playlist_type.lower() == "favorites":
+    elif library_type.lower() == "favorites":
         playlists = request.user.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True))
-    elif playlist_type.lower() in ["watching", "plan-to-watch"]:
-        playlists = request.user.playlists.filter(Q(marked_as=playlist_type.lower()) & Q(is_in_db=True))
-        if playlist_type.lower() == "watching":
+    elif library_type.lower() in ["watching", "plan-to-watch"]:
+        playlists = request.user.playlists.filter(Q(marked_as=library_type.lower()) & Q(is_in_db=True))
+        if library_type.lower() == "watching":
             watching = True
-    elif playlist_type.lower() == "imported":
+    elif library_type.lower() == "imported":
         playlists = request.user.playlists.filter(Q(is_user_owned=False) & Q(is_in_db=True))
-    elif playlist_type.lower() == "user-owned":
+    elif library_type.lower() == "user-owned":
         playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
     else:
         return HttpResponse("Not found.")
@@ -430,7 +386,7 @@ def mark_playlist_as(request, playlist_id, mark_as):
 
 @login_required
 def playlists_home(request):
-    return render(request, 'playlists_home.html')
+    return render(request, 'library.html')
 
 
 @login_required
@@ -581,7 +537,6 @@ def mark_video_watched(request, playlist_id, video_id):
 
 
 ###########
-
 
 
 @login_required
@@ -1168,3 +1123,13 @@ def video_completion_times(request, video_id):
         <h6>At 1.75x speed: {getHumanizedTimeString(video_duration / 1.75)}</h6>
         <h6>At 2x speed: {getHumanizedTimeString(video_duration / 2)}</h6>
     """)
+
+
+@login_required
+@require_POST
+def add_video_user_label(request, video_id):
+    video = request.user.videos.get(video_id=video_id)
+    if "user_label" in request.POST:
+        video.user_label = bleach.clean(request.POST["user_label"])
+        video.save(update_fields=['user_label'])
+    return redirect('video', video_id=video_id)

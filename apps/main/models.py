@@ -981,9 +981,11 @@ class PlaylistManager(models.Manager):
                 new_playlist_duration_in_seconds -= video.duration_in_seconds
 
         playlist.video_count = new_playlist_video_count
+        if new_playlist_video_count == 0:
+            playlist.thumbnail_url = ""
         playlist.playlist_duration_in_seconds = new_playlist_duration_in_seconds
         playlist.playlist_duration = getHumanizedTimeString(new_playlist_duration_in_seconds)
-        playlist.save(update_fields=['video_count', 'playlist_duration', 'playlist_duration_in_seconds'])
+        playlist.save(update_fields=['video_count', 'playlist_duration', 'playlist_duration_in_seconds', 'thumbnail_url'])
         # time.sleep(2)
 
         playlist_items = playlist.playlist_items.select_related('video').order_by("video_position")

@@ -3,7 +3,7 @@
 
 <div class="row row-cols-1 row-cols-md-3 g-4" >
     <div class="col">
-        <a href="{% url 'all_playlists' 'all' %}" class="text-decoration-none text-white">
+        <a href="{% url 'library' 'all' %}" class="text-decoration-none text-white">
         <div class="card h-100" style="background-color: #64381a;">
             <div class="card-body">
                 <h4 class="card-title">All Playlists</h4>
@@ -13,7 +13,7 @@
         </a>
     </div>
     <div class="col">
-        <a href="{% url 'all_playlists' 'user-owned' %}" class="text-decoration-none text-white">
+        <a href="{% url 'library' 'user-owned' %}" class="text-decoration-none text-white">
         <div class="card h-100" style="background-color: #1A4464;">
             <div class="card-body">
                 <h4 class="card-title">Your YouTube Playlists</h4>
@@ -24,7 +24,7 @@
     </div>
 
     <div class="col">
-        <a href="{% url 'all_playlists' 'imported' %}" class="text-decoration-none text-white">
+        <a href="{% url 'library' 'imported' %}" class="text-decoration-none text-white">
         <div class="card h-100" style="background-color: #1a645e;">
             <div class="card-body">
                 <h4 class="card-title">Imported Playlists</h4>
@@ -34,7 +34,7 @@
         </a>
     </div>
     <div class="col">
-        <a href="{% url 'all_playlists' 'favorites' %}" class="text-decoration-none text-white">
+        <a href="{% url 'library' 'favorites' %}" class="text-decoration-none text-white">
         <div class="card h-100" style="background-color: #aa8c2e;">
             <div class="card-body">
                 <h4 class="card-title">Favorite Playlists</h4>
@@ -44,7 +44,7 @@
         </a>
     </div>
     <div class="col">
-        <a href="{% url 'all_playlists' 'watching' %}" class="text-decoration-none text-white">
+        <a href="{% url 'library' 'watching' %}" class="text-decoration-none text-white">
         <div class="card h-100" style="background-color: #541a64;">
             <div class="card-body">
                 <h4 class="card-title">Watching Playlists</h4>
@@ -54,7 +54,7 @@
         </a>
     </div>
     <div class="col">
-        <a href="{% url 'all_playlists' 'plan-to-watch' %}" class="text-decoration-none text-white">
+        <a href="{% url 'library' 'plan-to-watch' %}" class="text-decoration-none text-white">
         <div class="card h-100" style="background-color: #641a29;">
             <div class="card-body">
                 <h4 class="card-title">Plan to Watch</h4>
@@ -76,6 +76,18 @@
 
     <div class="col">
         <a href="#" class="text-decoration-none text-white">
+        <div class="card h-100" style="background-color: #7f8675;">
+            <div class="card-body">
+                <h5 class="card-title">Unavailable YouTube Videos</h5>
+                <p class="card-text">List of videos in your collection that went unavailable on YouTube. Note that all details except the video title will have been deleted once a video goes unavailable on YouTube.</p>
+            </div>
+        </div>
+        </a>
+    </div>
+
+    <!--
+    <div class="col">
+        <a href="#" class="text-decoration-none text-white">
         <div class="card h-100" style="background-color: #969291;">
             <div class="card-body">
                 <h5 class="card-title">Your UnTube Playlists</h5>
@@ -84,6 +96,7 @@
         </div>
         </a>
     </div>
+    -->
     <div class="col">
         <a href="#" class="text-decoration-none text-white">
 
@@ -91,7 +104,7 @@
             <div class="card-body">
                 <h5 class="card-title">Open a Random Playlist</h5>
                 <p class="card-text mt-4">
-                    <form action="{% url 'all_playlists' 'random' %}" method="post">
+                    <form action="{% url 'library' 'random' %}" method="post">
                         {% csrf_token %}
                         <select onchange="this.form.submit()" class="form-select w-50 bg-success text-white" name="playlistsType">
                               <option value="From" selected>From</option>
@@ -134,7 +147,7 @@
             <div class="card-footer">
                 <div class="d-flex justify-content-center">
                     <h3>
-                        <a href="" class="btn btn-success">Filter Playlists by Tags</a>
+                        <a href="{% url 'search' %}" class="btn btn-success">Filter Playlists by Tags</a>
                         <a href="" class="btn btn-danger">Edit Tags</a>
                     </h3>
                 </div>

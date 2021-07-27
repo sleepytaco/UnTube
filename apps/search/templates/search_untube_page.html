@@ -5,132 +5,203 @@
 {% block content %}
     <br>
     <script>
-    window.onkeydown = function( event ) {
-        if ( event.keyCode === 27 ) {
-            window.close(); // closes current tab
-        }
-    };
+        window.onkeydown = function( event ) {
+            if ( event.keyCode === 27 ) {
+                window.close(); // closes current tab
+            }
+        };
     </script>
 
-    <div class="d-flex justify-content-center">
+    <div class="d-flex justify-content-center mb-3">
         <h1> Search all of UnTube
             {% if user.profile.open_search_new_tab %}<h6>Press <kbd>Esc</kbd> to close.</h6>{% endif %}
         </h1>
     </div>
-        <div id="search-playlist-form">
+    <div id="search-playlist-form">
 
         <input class="form-control me-lg-2" type="text"
-               id="untubeSearchBar"
-                name="search" placeholder="Search UnTube (leave this empty to just filter playlists by tags or filter videos by channels)"
-                hx-post="{% url 'search_UnTube' %}"
-                hx-trigger="keyup changed delay:700ms"
-                hx-target="#untube-searchbar-results"
-                hx-include="[id='search-playlist-form']"
-                hx-indicator="#spinner" autofocus>
+            id="untubeSearchBar" value="{{ query }}"
+            name="search" placeholder="Search for a specific playlist or a video here (leave this empty to just filter playlists by tags or filter videos by channels)"
+            hx-post="{% url 'search_UnTube' %}"
+            hx-trigger="keyup changed delay:700ms"
+            hx-target="#untube-searchbar-results"
+            hx-include="[id='search-playlist-form']"
+            hx-indicator="#spinner" autofocus onfocus="this.setSelectionRange(this.value.length, this.value.length);">
 
         <br>
 
         <div class="row d-flex justify-content-center">
-            <div class="col-md-6" id="playlists">
-                Filter by playlist tags:
-                <select class="visually-hidden" onchange="triggerSubmit()"
-                     id="choices-playlist-tags" name="playlist-tags" placeholder="Add playlist tags to search within" multiple>
-                    {% for tag in user.playlist_tags.all %}
-                    <option value="{{ tag.name }}" hx-post="{% url 'search_UnTube' %}">{{ tag.name }}</option>
-                    {% endfor %}
-                </select>
+            <div class="col-lg-7" id="playlists">
+                <div class="row">
+                    <div class="col">
+                        Filter by playlist tags:
+                        <select class="visually-hidden" onchange="triggerSubmit()"
+                            id="choices-playlist-tags" name="playlist-tags" placeholder="Add playlist tags to search within" multiple>
+                            {% for tag in user.playlist_tags.all %}
+                                <option value="{{ tag.name }}" hx-post="{% url 'search_UnTube' %}" {% if pl_tag == tag.name %}selected{% endif %}>{{ tag.name }}</option>
+                            {% endfor %}
+                        </select>
+
+                    </div>
+                    <div class="col">
+                        <div class="d-flex justify-content-start">
+                            <div>
+                                Playlist type:
+                                <select onchange="triggerSubmit()" class="form-select mt-1" name="playlistsType">
+                                    <option value="All" {% if item_type == "all" %}selected{% endif %}>All</option>
+                                    <option value="Favorite" {% if item_type == "favorites" %}selected{% endif %}>Favorites</option>
+                                    <option value="Watching" {% if item_type == "watching" %}selected{% endif %}>Watching</option>
+                                    <option value="Plan to Watch" {% if item_type == "plan-to-watch" %}selected{% endif %}>Plan to Watch</option>
+                                    <option value="Owned" {% if item_type == "user-owned" %}selected{% endif %}>Owned</option>
+                                    <option value="Imported" {% if item_type == "imported" %}selected{% endif %}>Imported</option>
+                                    <option value="Mix" {% if item_type == "yt-mix" %}selected{% endif %}>YT Mix</option>
+                                </select>
+                            </div>
+                            <div class="ms-3">
+                                Sort by:
+                                <select onchange="triggerSubmit()" class="form-select mt-1" name="sortPlaylistsBy">
+                                    <option value="recently-accessed" selected>Recently accessed</option>
+                                    <option value="playlist-duration-in-seconds" >Duration</option>
+                                    <option value="video-count" >Number of videos</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-            <div class="col-md-6" id="videos">
-                Filter by video channels:
-                <select class="visually-hidden" onchange="triggerSubmit()"
-                     id="choices-channels" name="channel-names" placeholder="Select channels to search within" multiple>
-                    {% for channel in user.profile.get_channels_list %}
-                    <option value="{{ channel }}" hx-post="{% url 'search_UnTube' %}">{{ channel }}</option>
-                    {% endfor %}
-                </select>
+            <div class="col-lg-8" id="videos">
+
+                <div class="row">
+                    <div class="col">
+                        Filter by video channels:
+                        <select class="visually-hidden" onchange="triggerSubmit()"
+                            id="choices-channels" name="channel-names" placeholder="Select channels to search within" multiple>
+                            {% for channel in user.profile.get_channels_list %}
+                                <option value="{{ channel }}" hx-post="{% url 'search_UnTube' %}">{{ channel }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col">
+                        <div class="d-flex justify-content-start">
+                            <div>
+
+                                Video type:
+                                <select onchange="triggerSubmit()" class="form-select mt-1" name="videosType">
+                                    <option value="All" {% if item_type == "all" %}selected{% endif %}>All</option>
+                                    <option value="Favorite" {% if item_type == "favorite" %}selected{% endif %}>Favorite</option>
+                                    <option value="Watched" {% if item_type == "watched" %}selected{% endif %}>Watched</option>
+                                </select>
+                            </div>
+                            <div class="ms-3">
+                                Sort by:
+                                <select onchange="triggerSubmit()" class="form-select mt-1" name="sortVideosBy">
+                                    <option value="recently-accessed" selected>Recently accessed</option>
+                                    <option value="video-duration-in-seconds" >Duration</option>
+                                    <option value="most-liked" >Most liked</option>
+                                    <option value="most-views" >Most views</option>
+                                    <option value="date-uploaded" >Date uploaded</option>
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center mt-2">
+                    <input class="form-check-input" type="checkbox" name="has-cc" id="mustHaveCCcb" onclick="triggerSubmit()">
+                    <label class="form-check-label ms-2" for="mustHaveCCcb">
+                        Must have CC
+                    </label>
+                </div>
+            </div>
+            <br>
+            <div class="d-flex justify-content-center mt-3">
+
+                <div class="form-check me-5">
+                    <input onclick="hideShow()" hx-post="{% url 'search_UnTube' %}"
+                        hx-trigger="click"
+                        hx-target="#untube-searchbar-results"
+                        hx-include="[id='search-playlist-form']"
+                        hx-indicator="#spinner"
+                        class="form-check-input" type="radio" name="search-settings" value="playlists" id="playlists-cb" {% if mode == "playlists" %}checked{% endif %}>
+                    <label class="form-check-label " for="playlists-cb">
+                        Playlists
+                    </label>
+                </div>
+                <div class="form-check" >
+                    <input onclick="hideShow();" hx-post="{% url 'search_UnTube' %}"
+                        hx-trigger="click"
+                        hx-target="#untube-searchbar-results"
+                        hx-include="[id='search-playlist-form']"
+                        hx-indicator="#spinner"
+                        class="form-check-input" type="radio" name="search-settings" value="videos" id="videos-cb" {% if mode == "videos" %}checked{% endif %}>
+                    <label class="form-check-label" for="videos-cb">
+                        Videos
+                    </label>
+                </div>
             </div>
         </div>
-        <br>
-    <div class="d-flex justify-content-center">
 
-        <div class="form-check me-5">
-            <input onclick="hideShow()" hx-post="{% url 'search_UnTube' %}"
-        hx-trigger="click"
-        hx-target="#untube-searchbar-results"
-        hx-include="[id='search-playlist-form']"
-        hx-indicator="#spinner"
-                           class="form-check-input" type="radio" name="search-settings" value="playlists" id="playlists-cb" checked>
-            <label class="form-check-label " for="playlists-cb">
-                    Playlists
-            </label>
+        <div id="spinner" class="htmx-indicator d-flex justify-content-center p-3">
+            <div class="spinner-border text-warning" role="status">
+            </div>
         </div>
-         <div class="form-check" >
-            <input onclick="hideShow();" hx-post="{% url 'search_UnTube' %}"
-        hx-trigger="click"
-        hx-target="#untube-searchbar-results"
-        hx-include="[id='search-playlist-form']"
-        hx-indicator="#spinner"
-                    class="form-check-input" type="radio" name="search-settings" value="videos" id="videos-cb">
-                  <label class="form-check-label" for="videos-cb">
-                    Videos
-                  </label>
+
+        <div id="untube-searchbar-results">
+
         </div>
-    </div>
-</div>
 
-    <div id="spinner" class="htmx-indicator d-flex justify-content-center p-3">
-        <div class="spinner-border text-light" role="status">
-        </div>
-    </div>
+        <button class="scrollToTopBtn sticky-top">
+            <i class="fa fa-angle-double-up fa-lg"></i></button>
 
-    <div id="untube-searchbar-results">
+        <script type="application/javascript">
 
-    </div>
+            $(document).ready(function(){
 
-    <button class="scrollToTopBtn sticky-top">
-<i class="fa fa-angle-double-up fa-lg"></i></button>
+                {% if mode == "playlists" %}
+                    document.getElementById("videos").style.display = 'none';
+                {% else %}
+                    document.getElementById("playlists").style.display = 'none';
+                {% endif %}
 
-    <script type="application/javascript">
+                // multiple choices select search box
+                var choicesPlaylistTags = new Choices('#choices-playlist-tags', {
+                    removeItemButton: true,
+                    noChoicesText: "Looks like you haven't created any playlist tags yet!"
+                });
 
-    $(document).ready(function(){
-
-                        videos.style.display = 'none';
-
-        // multiple choices select search box
-        var choicesPlaylistTags = new Choices('#choices-playlist-tags', {
+                var choicesChannels = new Choices('#choices-channels', {
                     removeItemButton: true,
                 });
 
-        var choicesChannels = new Choices('#choices-channels', {
-                    removeItemButton: true,
-                });
-    });
+                triggerSubmit();
+            });
 
 
-        function hideShow() {
-            var playlistsCB = document.getElementById("playlists-cb");
+            function hideShow() {
+                var playlistsCB = document.getElementById("playlists-cb");
 
-            var videos = document.getElementById("videos");
-            var playlists = document.getElementById("playlists");
-            if (playlistsCB.checked) {
-                videos.style.display = 'none';
-                playlists.style.display = 'block';
-            } else {
-                videos.style.display = 'block';
-                playlists.style.display = 'none';
+                var videos = document.getElementById("videos");
+                var playlists = document.getElementById("playlists");
+                if (playlistsCB.checked) {
+                    videos.style.display = 'none';
+                    playlists.style.display = 'block';
+                } else {
+                    videos.style.display = 'block';
+                    playlists.style.display = 'none';
+                }
             }
-        }
-        function triggerSubmit() {
-            var playlistsCB = document.getElementById("playlists-cb");
-            var videosCB = document.getElementById("videos-cb");
+            function triggerSubmit() {
+                var playlistsCB = document.getElementById("playlists-cb");
+                var videosCB = document.getElementById("videos-cb");
 
-            if (playlistsCB.checked) {
-                playlistsCB.click();
-            } else {
-                videosCB.click();
+                if (playlistsCB.checked) {
+                    playlistsCB.click();
+                } else {
+                    videosCB.click();
 
+                }
             }
-        }
-    </script>
+        </script>
 
 {% endblock %}

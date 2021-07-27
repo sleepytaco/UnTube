@@ -12,7 +12,33 @@ from apps.main.models import Video, Tag
 @login_required
 def search(request):
     if request.method == "GET":
-        return render(request, 'search_untube_page.html', {"playlists": request.user.playlists.all()})
+        print(request.GET)
+        if 'mode' in request.GET:
+            mode = request.GET['mode']
+        else:
+            mode = "playlists"
+
+        if 'type' in request.GET:
+            item_type = request.GET["type"]
+        else:
+            item_type = "all"
+
+        if 'query' in request.GET:
+            query = request.GET["query"]
+        else:
+            query = ''
+
+        if 'tag' in request.GET:
+            pl_tag = request.GET["tag"]
+        else:
+            pl_tag = ""
+
+        return render(request, 'search_untube_page.html',
+                      {"playlists": request.user.playlists.all(),
+                       "mode": mode,
+                       "item_type": item_type,
+                       "query": query,
+                       "pl_tag": pl_tag})
     else:
         return redirect('home')
 
@@ -26,7 +52,22 @@ def search_UnTube(request):
     print(search_query)
 
     if request.POST['search-settings'] == 'playlists':
+        playlist_type = bleach.clean(request.POST["playlistsType"])
+
         all_playlists = request.user.playlists.filter(is_in_db=True)
+        if playlist_type == "Favorite":
+            all_playlists = all_playlists.filter(is_favorite=True)
+        elif playlist_type == "Watching":
+            all_playlists = all_playlists.filter(marked_as="watching")
+        elif playlist_type == "Plan to Watch":
+            all_playlists = all_playlists.filter(marked_as="plan-to-watch")
+        elif playlist_type == "Owned":
+            all_playlists = all_playlists.filter(is_user_owned=True)
+        elif playlist_type == "Imported":
+            all_playlists = all_playlists.filter(is_user_owned=False)
+        elif playlist_type == "Mix":
+            all_playlists = all_playlists.filter(is_yt_mix=True)
+
         if 'playlist-tags' in request.POST:
             tags = request.POST.getlist('playlist-tags')
             for tag in tags:
@@ -38,12 +79,28 @@ def search_UnTube(request):
         if search_query.strip() == "":
             playlists = all_playlists
 
+        order_by = bleach.clean(request.POST['sortPlaylistsBy'])
+        if order_by == 'recently-accessed':
+            playlists = playlists.order_by("-updated_at")
+        elif order_by == 'playlist-duration-in-seconds':
+            playlists = playlists.order_by("-playlist_duration_in_seconds")
+        elif order_by == 'video-count':
+            playlists = playlists.order_by("-video_count")
+
         return HttpResponse(loader.get_template("intercooler/search_untube_results.html")
                             .render({"playlists": playlists,
                                      "view_mode": "playlists",
-                                     "search_query": search_query}))
+                                     "search_query": search_query,
+                                     "playlist_type": playlist_type}))
     else:
+        videos_type = bleach.clean(request.POST["videosType"])
+
         all_videos = request.user.videos.filter(is_unavailable_on_yt=False)
+        if videos_type == "Favorite":
+            all_videos = all_videos.filter(is_favorite=True)
+        elif videos_type == "Watched":
+            all_videos = all_videos.filter(is_marked_as_watched=True)
+
         if 'channel-names' in request.POST:
             channels = request.POST.getlist('channel-names')
             all_videos = all_videos.filter(channel_name__in=channels)
@@ -54,9 +111,25 @@ def search_UnTube(request):
         if search_query.strip() == "":
             videos = all_videos
 
+        order_by = bleach.clean(request.POST['sortVideosBy'])
+        if order_by == 'recently-accessed':
+            videos = videos.order_by("-updated_at")
+        elif order_by == 'video-duration-in-seconds':
+            videos = videos.order_by("-duration_in_seconds")
+        elif order_by == 'most-liked':
+            videos = videos.order_by("-like_count")
+        elif order_by == 'most-views':
+            videos = videos.order_by("-view_count")
+        elif order_by == 'date-uploaded':
+            videos = videos.order_by("-published_at")
+
+        if 'has-cc' in request.POST:
+            videos = videos.filter(has_cc=True)
+
         return HttpResponse(loader.get_template("intercooler/search_untube_results.html")
                             .render({"videos": videos,
                                      "view_mode": "videos",
+                                     "videos_type": videos_type,
                                      "search_query": search_query}))
 
 

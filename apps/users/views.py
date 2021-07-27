@@ -121,6 +121,8 @@ def log_out(request):
     if "troll" in request.GET:
         print("TROLLED")
         messages.success(request, "Hee Hee")
+    else:
+        messages.success(request, "Successfully logged out. Hope to see you back again!")
 
     return redirect('/')
 

@@ -11,17 +11,34 @@
 
         {% else %}
 
+            <div class="alert alert-dark alert-dismissible fade show" role="alert" id="user-label-alert"  style="display:none;">
+                <form method="post" action="{% url 'add_video_user_label' video.video_id %}" class="d-flex justify-content-center">
+                    {% csrf_token %}
+                    <span class="mt-2 me-1">Enter an optional label to identify this video with:</span>
+                    <input class="form-control w-25 me-2" type="text" placeholder="Enter here" name="user_label" value="{{ video.user_label }}" aria-label="user label">
+                    <button type="submit" class="btn btn-primary">Save</button>
 
+                </form>
+                              <button type="button" class="btn-close mt-2 me-2" onclick='document.getElementById("user-label-alert").style.display = "none";' aria-label="Close"></button>
+
+            </div>
             <div class="card text-white bg-dark" style="max-width: 100%;">
                 <div class="row g-0">
                     <div class="col-md-4 p-3">
                         <img  class="img-fluid rounded-3" src="{{ video.thumbnail_url }}" style="max-width:100%; height: auto;   object-fit: cover;">
+                        <span class="d-flex justify-content-center">
+                        <a type="submit" onclick="window.open('{{ video.thumbnail_url }}')" class="btn btn-primary mt-3"><i class="fas fa-image fa-lg me-2"></i> Download Thumbnail</a>
+                            </span>
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
                             <div class="row d-flex justify-content-between">
                                 <h2 class="card-title text-white col-10">
                                     <a href="https://www.youtube.com/watch?v={{ video.video_id }}" target="_blank" style="color: white; text-decoration: none">{{ video.name }}</a>
+                                    <button class="btn btn-light btn-sm ms-2" onclick='document.getElementById("user-label-alert").style.display = "block";'>
+                                            <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                                        </button>
+
                                     <br><small class="h4">{% if video.user_label %}a.k.a <span style="border-bottom: 3px #ffffff dashed;"> {{ video.user_label }}</span>{% endif %}</small>
                                 </h2>
                                 <h4 class="col d-flex justify-content-end">
@@ -29,6 +46,7 @@
 
                                     </span>
                                     <span id="">
+
                                         <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ video.video_id }}">
                                         <button class="copy-btn btn btn-success  me-1" data-clipboard-target="#video-{{ video.video_id }}">
                                             <i class="far fa-copy" aria-hidden="true"></i>

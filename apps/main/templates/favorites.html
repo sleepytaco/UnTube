@@ -6,7 +6,7 @@
         <h1 class="h2">Favorite Playlists
             <span class="badge bg-primary rounded-pill">{{ playlists.count|default:"0" }}</span>
             {% if playlists %}
-                <a href="{% url 'all_playlists' 'favorites' %}" style="text-decoration: none; color: black"><i class="fas fa-search"></i></a>
+                <a href="{% url 'search' %}?mode=playlists&type=favorites" style="text-decoration: none; color: black"><i class="fas fa-search"></i></a>
             {% endif %}
         </h1>
     </div>
@@ -28,7 +28,7 @@
         <h1 class="h2">Favorite Videos
             <span class="badge bg-primary rounded-pill">{{ videos.count }}</span>
             {% if videos %}
-                <a href="{% url 'search_UnTube' %}" style="text-decoration: none; color: black"><i class="fas fa-search"></i></a>
+                <a href="{% url 'search' %}?mode=videos&type=favorite" style="text-decoration: none; color: black"><i class="fas fa-search"></i></a>
             {% endif %}
         </h1>
     </div>

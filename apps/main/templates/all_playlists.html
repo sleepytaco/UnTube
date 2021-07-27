@@ -4,7 +4,7 @@
 
 
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 mb-3">
-            <h1 class="h2"><span style="border-bottom: 3px #e24949 dashed;">{{ playlist_type_display|title }}</span> <span class="badge bg-primary rounded-pill">{{ playlists.count }}</span></h1>
+            <h1 class="h2"><span style="border-bottom: 3px #e24949 dashed;">{{ library_type_display|title }}</span> <span class="badge bg-primary rounded-pill">{{ playlists.count }}</span></h1>
 
             {% if playlists %}
             <div class="btn-toolbar mb-2 mb-md-0">
@@ -19,9 +19,9 @@
                     Sort By
                   </button>
                   <ul class="dropdown-menu">
-                    <li class="dropdown-item"><a hx-get="{% url 'order_playlists_by' playlist_type 'playlist-duration-in-seconds' %}" hx-trigger="click" hx-target="#search-results">Duration</a></li>
-                    <li class="dropdown-item"><a hx-get="{% url 'order_playlists_by' playlist_type 'video-count' %}" hx-trigger="click" hx-target="#search-results"># Videos</a></li>
-                    <li class="dropdown-item"><a hx-get="{% url 'order_playlists_by' playlist_type 'recently-accessed' %}" hx-trigger="click" hx-target="#search-results">Recently Accessed</a></li>
+                    <li class="dropdown-item"><a hx-get="{% url 'order_playlists_by' library_type 'playlist-duration-in-seconds' %}" hx-trigger="click" hx-target="#search-results">Duration</a></li>
+                    <li class="dropdown-item"><a hx-get="{% url 'order_playlists_by' library_type 'video-count' %}" hx-trigger="click" hx-target="#search-results"># Videos</a></li>
+                    <li class="dropdown-item"><a hx-get="{% url 'order_playlists_by' library_type 'recently-accessed' %}" hx-trigger="click" hx-target="#search-results">Recently Accessed</a></li>
                   </ul>
                 </div>
 
@@ -33,14 +33,14 @@
         {% if playlists %}
             <input   class="form-control border border-secondary" type="text"
                    name="search" placeholder="Begin to search playlists..."
-                   hx-post="{% url 'search_playlists' playlist_type %}"
+                   hx-post="{% url 'search_playlists' library_type %}"
                    hx-trigger="keyup changed delay:700ms"
                    hx-target="#search-results"
                    hx-indicator=".htmx-indicator"
                     aria-describedby="searchHelp">
-            <div id="searchHelp" class="form-text">For a more extensive playlist search, click the search icon in the nav bar.</div>
-          <br>
+            <div id="searchHelp" class="form-text">For a more extensive playlist search, <a href="{% url 'search' %}?mode=playlists&type={{ library_type }}">click here</a>.</div>
 
+            <br>
 
         <div id="search-results" class="row row-cols-1 row-cols-md-4 g-4">
             {% include 'intercooler/playlists.html' with show_controls=True %}
@@ -52,24 +52,24 @@
                     Nothing here!
                 </div>
                 <div class="d-flex justify-content-center h5">
-                    {% if playlist_type == "watching" %}
+                    {% if library_type == "watching" %}
                         You can mark a playlist as watching by heading over to the playlist and marking it from the dropdown.
-                    {% elif playlist_type == "all" %}
+                    {% elif library_type == "all" %}
                         There's no playlists in your UnTube right now.
-                    {% elif playlist_type == "imported" %}
+                    {% elif library_type == "imported" %}
                         To import public playlists into your UnTube collection you can head over to <a href="{% url 'manage_playlists' %}" class="btn btn-sm btn-primary ms-2">Manage</a>
-                    {% elif playlist_type == "plan-to-watch" %}
+                    {% elif library_type == "plan-to-watch" %}
                         You can mark a playlist as plan to watch by heading over to the playlist and marking it from the dropdown.
-                    {% elif playlist_type == "favorites" %}
+                    {% elif library_type == "favorites" %}
                         You can mark a playlist as favorite by heading over to the playlist page and pressing the star icon.
-                    {% elif playlist_type == "user-owned" %}
+                    {% elif library_type == "user-owned" %}
                         {% if user.profile.imported_yt_playlists %}
                             Looks like you have no playlists on YouTube.
                         {% else %}
                             You can always head over to your <a href="{% url 'profile' %}" class="btn btn-sm btn-primary ms-2 me-2">Profile</a> to import all of your public/private YouTube playlists.
                         {% endif %}
                     {% else %}
-                        {{ playlist_type }}
+                        {{ library_type }}
                     {% endif %}
                 </div>
             </div>

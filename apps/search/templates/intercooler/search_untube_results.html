@@ -2,7 +2,7 @@
 
 {% if view_mode == "playlists" %}
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">{% if search_query == "" %}All{% endif %} Playlists {% if search_query != "" %}results for '{{ search_query|escape }}' {% endif %} <span class="badge bg-primary rounded-pill">{{ playlists.count|default:"0" }}</span></h1>
+        <h1 class="h2">{% if search_query == "" %}{{ playlist_type }}{% endif %} Playlists {% if search_query != "" %}results for '{{ search_query|escape }}' {% endif %} <span class="badge bg-primary rounded-pill">{{ playlists.count|default:"0" }}</span></h1>
     </div>
 
     <div class="row row-cols-1 row-cols-md-4 g-4">
@@ -15,7 +15,7 @@
 {% else %}
 
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">{% if search_query == "" %}All{% endif %} Videos <span class="badge bg-primary rounded-pill">{{ videos.count }}</span> {% if videos.count > 250 %}(Only top 100 results shown){% endif %}</h1>
+        <h1 class="h2">{% if search_query == "" %}{{ videos_type }}{% endif %} Videos {% if search_query != "" %}results for '{{ search_query|escape }}' {% endif %} <span class="badge bg-primary rounded-pill">{{ videos.count }}</span> {% if videos.count > 100 %}<small>(only top 100 results shown)</small>{% endif %}</h1>
     </div>
 
     <div>
