@@ -48,7 +48,7 @@
             <div class="col-6 mb-4">
                 <div class="card bg-transparent text-dark">
                     <div class="card-body">
-                        <h6 class="d-flex align-items-center mb-3"><span class="text-warning me-2">{{ user.playlists.count }}</span>Playlists Statistics{% if user.playlists.count == 0 %}: You have no playlists in your UnTube!{% endif %}</h6>
+                        <h6 class="d-flex justify-content-center align-items-center mb-3">You have a total of <span class="text-warning ms-1 me-1">{{ user.playlists.count }}</span> Playlists in your UnTube collection</h6>
                         <div class="d-flex align-items-center mb-3">
 
                             <canvas id="overall-playlists-distribution" data-url="{% url 'overall_playlists_distribution' %}">
@@ -62,7 +62,7 @@
             <div class="col-6 mb-4">
                 <div class="card bg-transparent text-dark">
                     <div class="card-body">
-                        <h6 class="d-flex align-items-center mb-3">A total of <span class="text-warning me-1 ms-1" id="num-channels">{{ channels.count|intword|intcomma }} channels</span> and <span class="text-warning ms-1 me-1" id="num-channels"> {{ videos.count|intword|intcomma }} videos</span> found in your UnTube collection </h6>
+                        <h6 class="d-flex justify-content-center align-items-center mb-3">A total of <span class="text-warning me-1 ms-1" id="num-channels">{{ channels.count|intword|intcomma }} channels</span> and <span class="text-warning ms-1 me-1" id="num-channels"> {{ videos.count|intword|intcomma }} videos</span> found in your UnTube collection </h6>
                         {% if channels.count > 100 %}<h6 class="d-flex justify-content-center">(Only top 100 channels shown below)</h6>{% endif %}
                         <div class="d-flex align-items-center mb-3">
 
@@ -169,7 +169,7 @@
                 <div class="card bg-transparent text-dark">
                     <div class="card-body">
 
-                        <h6 class="d-flex align-items-center mb-3"><span class="text-warning me-2">{{ watching.count }}</span>
+                        <h6 class="d-flex justify-content-center align-items-center mb-3"><span class="text-warning me-2">{{ watching.count }}</span>
                             {% if watching.count > 0 %}
                                 Playlist{% if watching.count > 1 %}s{% endif %} Watching: Percent Complete Chart
 
@@ -260,7 +260,7 @@
                     <div class="row flex-row g-3 flex-nowrap">
                         {% for playlist in watching %}
                             <div class="col">
-                                <div class="card overflow-auto" style="background-color: #c2c68f; width: 275px; height: auto">
+                                <div class="card overflow-auto" style="background-color: #9363af; width: 275px; height: auto">
                                     <img  class="bd-placeholder-img card-img-top" src="{{ playlist.thumbnail_url }}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
 
                                     <div class="card-body">

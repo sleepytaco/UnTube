@@ -3,16 +3,16 @@
     {% for playlist in playlists %}
         <div class="col">
 
-            <div class="card overflow-auto" style="background-color: {{ bg_color|default:"#c2c68f" }};">
+            <div class="card overflow-auto" style="background-color: {{ bg_color|default:"#9363af" }};">
                 <img  class="bd-placeholder-img card-img-top" src="{{ playlist.thumbnail_url }}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
 
                 <div class="card-body">
-                    <h5 class="card-title"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: black">{{ playlist.name }}</a></h5>
+                    <h5 class="card-title"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: white">{{ playlist.name }}</a></h5>
                     <p class="card-text">
                         <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
                         {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white">{{ playlist.get_watch_time_left }} left</span>{% endif %}
                     </p>
-                    <p class="card-text"><small class="text-muted">Last watched {{ playlist.last_watched|naturaltime }}</small></p>
+                    <p class="card-text"><small class="text-black">Last watched {{ playlist.last_watched|naturaltime }}</small></p>
                 </div>
             </div>
         </div>
@@ -26,7 +26,15 @@
                     <img  class="bd-placeholder-img card-img-top" src="{% if playlist.thumbnail_url %}{{ playlist.thumbnail_url }}{% else %}https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg{% endif %}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
                 </a>
                 <div class="card-body">
-                    <h5 class="card-title"><a href="{% url 'playlist' playlist.playlist_id %}" style="text-decoration: none; color: black">{{ playlist.name }}</a></h5>
+                    <h5 class="card-title">
+                        <a href="{% url 'playlist' playlist.playlist_id %}" style="text-decoration: none; color: white">
+                            {% if playlist.user_label %}
+                                <span style="border-bottom: 3px #eeeaea dashed;">{{ playlist.user_label }}</span>
+                            {% else %}
+                            {{ playlist.name }}
+                            {% endif %}
+                        </a>
+                    </h5>
 
                     <p class="card-text text-uppercase">
                         {% if playlist.is_user_owned %}<span class="badge bg-light text-black-50">OWNED</span>{% else %}<span class="badge bg-light text-black-50">IMPORTED</span>{% endif %}

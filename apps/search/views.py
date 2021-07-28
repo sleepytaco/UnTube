@@ -33,12 +33,18 @@ def search(request):
         else:
             pl_tag = ""
 
+        if 'channel' in request.GET:
+            vid_channel_name = request.GET["channel"]
+        else:
+            vid_channel_name = ""
+
         return render(request, 'search_untube_page.html',
                       {"playlists": request.user.playlists.all(),
                        "mode": mode,
                        "item_type": item_type,
                        "query": query,
-                       "pl_tag": pl_tag})
+                       "pl_tag": pl_tag,
+                       "vid_channel_name": vid_channel_name})
     else:
         return redirect('home')
 
@@ -73,8 +79,12 @@ def search_UnTube(request):
             for tag in tags:
                 all_playlists = all_playlists.filter(tags__name=tag)
 
-        playlists = all_playlists.filter(Q(name__icontains=search_query) | Q(
-            user_label__icontains=search_query))
+        playlists = all_playlists.filter(Q(name__istartswith=search_query) | Q(
+            user_label__istartswith=search_query))
+
+        if not playlists.exists():
+            playlists = all_playlists.filter(Q(name__icontains=search_query) | Q(
+                user_label__icontains=search_query))
 
         if search_query.strip() == "":
             playlists = all_playlists
@@ -100,13 +110,19 @@ def search_UnTube(request):
             all_videos = all_videos.filter(is_favorite=True)
         elif videos_type == "Watched":
             all_videos = all_videos.filter(is_marked_as_watched=True)
+        elif videos_type == "Unavailable":
+            all_videos = all_videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=True))
 
         if 'channel-names' in request.POST:
             channels = request.POST.getlist('channel-names')
             all_videos = all_videos.filter(channel_name__in=channels)
 
         videos = all_videos.filter(
-            Q(name__icontains=search_query) | Q(user_label__icontains=search_query))
+            Q(name__istartswith=search_query) | Q(user_label__istartswith=search_query))
+
+        if not videos.exists():
+            videos = all_videos.filter(Q(name__icontains=search_query) | Q(
+                user_label__icontains=search_query))
 
         if search_query.strip() == "":
             videos = all_videos
@@ -144,35 +160,41 @@ def search_playlists(request, playlist_type):
     playlists = None
     if playlist_type == "all":
         try:
-            playlists = request.user.playlists.all().filter(Q(name__startswith=search_query) & Q(is_in_db=True))
+            playlists = request.user.playlists.all().filter(Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_in_db=True))
         except:
             playlists = request.user.playlists.all()
     elif playlist_type == "user-owned":  # YT playlists owned by user
         try:
             playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) & Q(is_user_owned=True) & Q(is_in_db=True))
+                Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_user_owned=True) & Q(is_in_db=True))
         except:
             playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
     elif playlist_type == "imported":  # YT playlists (public) owned by others
         try:
             playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) & Q(is_user_owned=False) & Q(is_in_db=True))
+                Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_user_owned=False) & Q(is_in_db=True))
         except:
             playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
     elif playlist_type == "favorites":  # YT playlists (public) owned by others
         try:
             playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) & Q(is_favorite=True) & Q(is_in_db=True))
+                Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_favorite=True) & Q(is_in_db=True))
         except:
             playlists = request.user.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True))
     elif playlist_type in ["watching", "plan-to-watch"]:
         try:
             playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) & Q(marked_as=playlist_type) & Q(is_in_db=True))
+                Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(marked_as=playlist_type) & Q(is_in_db=True))
         except:
             playlists = request.user.playlists.all().filter(Q(marked_as=playlist_type) & Q(is_in_db=True))
         if playlist_type == "watching":
             watching = True
+    elif playlist_type == "yt-mix":  # YT playlists owned by user
+        try:
+            playlists = request.user.playlists.filter(
+                Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_yt_mix=True) & Q(is_in_db=True))
+        except:
+            playlists = request.user.playlists.filter(Q(is_yt_mix=True) & Q(is_in_db=True))
 
     return HttpResponse(loader.get_template("intercooler/playlists.html")
                         .render({"playlists": playlists,

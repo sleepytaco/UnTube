@@ -19,7 +19,7 @@
                     <button type="submit" class="btn btn-primary">Save</button>
 
                 </form>
-                              <button type="button" class="btn-close mt-2 me-2" onclick='document.getElementById("user-label-alert").style.display = "none";' aria-label="Close"></button>
+                <button type="button" class="btn-close mt-2 me-2" onclick='document.getElementById("user-label-alert").style.display = "none";' aria-label="Close"></button>
 
             </div>
             <div class="card text-white bg-dark" style="max-width: 100%;">
@@ -27,8 +27,22 @@
                     <div class="col-md-4 p-3">
                         <img  class="img-fluid rounded-3" src="{{ video.thumbnail_url }}" style="max-width:100%; height: auto;   object-fit: cover;">
                         <span class="d-flex justify-content-center">
-                        <a type="submit" onclick="window.open('{{ video.thumbnail_url }}')" class="btn btn-primary mt-3"><i class="fas fa-image fa-lg me-2"></i> Download Thumbnail</a>
-                            </span>
+                            <a type="submit" onclick="window.open('{{ video.thumbnail_url }}')" class="btn btn-primary mt-3"><i class="fas fa-image fa-lg"></i></a>
+                            <a href="https://www.youtube.com/watch?v={{ video.video_id }}" class="btn btn-info ms-2 mt-3" target="_blank" id="share_link" style=""><i class="fas fa-external-link-alt" aria-hidden="true"></i></a>
+                            <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ video.video_id }}">
+                            <button class="copy-btn btn btn-success  ms-2 mt-3" data-clipboard-target="#video-{{ video.video_id }}">
+                                <i class="far fa-copy" aria-hidden="true"></i>
+                            </button>
+                            <button class="btn btn-dark mt-3 ms-2" type="button" hx-get="{% url 'mark_video_favorite' video.video_id %}" hx-target="#video-fav">
+                                <div id="video-fav">
+                                    {% if video.is_favorite %}
+                                        <i class="fas fa-heart" style="color: #fafa06"></i>
+                                    {% else %}
+                                        <i class="far fa-heart"></i>
+                                    {% endif %}
+                                </div>
+                            </button>
+                        </span>
                     </div>
                     <div class="col-md-8">
                         <div class="card-body">
@@ -36,34 +50,13 @@
                                 <h2 class="card-title text-white col-10">
                                     <a href="https://www.youtube.com/watch?v={{ video.video_id }}" target="_blank" style="color: white; text-decoration: none">{{ video.name }}</a>
                                     <button class="btn btn-light btn-sm ms-2" onclick='document.getElementById("user-label-alert").style.display = "block";'>
-                                            <i class="fas fa-pencil-alt" aria-hidden="true"></i>
-                                        </button>
+                                        <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                                    </button>
 
                                     <br><small class="h4">{% if video.user_label %}a.k.a <span style="border-bottom: 3px #ffffff dashed;"> {{ video.user_label }}</span>{% endif %}</small>
                                 </h2>
-                                <h4 class="col d-flex justify-content-end">
-                                    <span id="notice-div">
-
-                                    </span>
-                                    <span id="">
-
-                                        <input class="form-control me-1 visually-hidden" id="video-{{ video.video_id }}" value="https://www.youtube.com/watch?v={{ video.video_id }}">
-                                        <button class="copy-btn btn btn-success  me-1" data-clipboard-target="#video-{{ video.video_id }}">
-                                            <i class="far fa-copy" aria-hidden="true"></i>
-                                        </button>
-                                        <button class="btn btn-dark" type="button" hx-get="{% url 'mark_video_favorite' video.video_id %}" hx-target="#video-fav">
-                                            <div id="video-fav">
-                                                {% if video.is_favorite %}
-                                                    <i class="fas fa-heart" style="color: #fafa06"></i>
-                                                {% else %}
-                                                    <i class="far fa-heart"></i>
-                                                {% endif %}
-                                            </div>
-                                        </button>
-                                    </span>
-                                </h4>
                             </div>
-                            <h6>by {{ video.channel_name }}</h6>
+                            <h6>by <a href="{% url 'search' %}?mode=videos&channel={{ video.channel_name }}" style="text-decoration: none; color: white"><span style="border-bottom: 3px #e35959 dashed;">{{ video.channel_name }}</span></a></h6>
                             <p class="card-text">
                                 {% if video.description %}
                                     <h5 class="overflow-auto" style="max-height: 350px;">
@@ -83,27 +76,27 @@
                                 <div class="collapse" id="{{ video.video_id }}DurationCollapse">
                                     <div class="card card-body bg-dark text-white text-capitalize border border-3 mt-2 mb-2 border-light">
                                         <div hx-get="{% url 'video_completion_times' video.video_id %}"
-                                hx-trigger="revealed"
-                                hx-swap="outerHTML">
+                                            hx-trigger="revealed"
+                                            hx-swap="outerHTML">
 
                                         </div>
                                     </div>
                                 </div>
                                 <small>
-                                {% if video.has_cc %}<span class="badge bg-danger mb-1">CC</span>{% endif %}
-                                {% if video.published_at %}<span class="badge bg-secondary mb-1">Video uploaded on {{ video.published_at }}</span>{% endif %}
-                                <span class="badge bg-primary text-white mb-1"><i class="fas fa-eye"></i> {% if video.view_count == -1 %}HIDDEN{% else %}{{ video.view_count|intcomma }}{% endif %}</span>
-                                <span class="badge bg-warning text-black-50 mb-1"><i class="fas fa-thumbs-up"></i> {% if video.like_count == -1 %}HIDDEN{% else %}{{ video.like_count|intcomma }}{% endif %}</span>
-                                <span class="badge bg-warning text-black-50 mb-1"><i class="fas fa-thumbs-down"></i> {% if video.dislike_count == -1 %}HIDDEN{% else %}{{ video.dislike_count|intcomma }}{% endif %}</span>
-                                <span class="badge bg-info text-black-50 mb-1"><i class="fas fa-comments"></i> {% if video.comment_count == -1 %}HIDDEN{% else %}{{ video.comment_count|intcomma }}{% endif %} </span>
-                                {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}<span class="badge bg-light text-black-50 mb-1">UNAVAILABLE</span>{% endif %}
-                                <span class="badge bg-light text-black-50 mb-1"><a href="#found-in" style="text-decoration: none; color: grey"> Found in {{ video.playlists.all.count }} playlist{% if video.playlists.all.count > 1 %}s{% endif %}</a></span>
-                                {% if video.is_marked_as_watched %}
-                                    <span class="badge bg-dark text-white" >
+                                    {% if video.has_cc %}<span class="badge bg-danger mb-1">CC</span>{% endif %}
+                                    {% if video.published_at %}<span class="badge bg-secondary mb-1">Video uploaded on {{ video.published_at }}</span>{% endif %}
+                                    <span class="badge bg-primary text-white mb-1"><i class="fas fa-eye"></i> {% if video.view_count == -1 %}HIDDEN{% else %}{{ video.view_count|intcomma }}{% endif %}</span>
+                                    <span class="badge bg-warning text-black-50 mb-1"><i class="fas fa-thumbs-up"></i> {% if video.like_count == -1 %}HIDDEN{% else %}{{ video.like_count|intcomma }}{% endif %}</span>
+                                    <span class="badge bg-warning text-black-50 mb-1"><i class="fas fa-thumbs-down"></i> {% if video.dislike_count == -1 %}HIDDEN{% else %}{{ video.dislike_count|intcomma }}{% endif %}</span>
+                                    <span class="badge bg-info text-black-50 mb-1"><i class="fas fa-comments"></i> {% if video.comment_count == -1 %}HIDDEN{% else %}{{ video.comment_count|intcomma }}{% endif %} </span>
+                                    {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}<span class="badge bg-light text-black-50 mb-1">UNAVAILABLE</span>{% endif %}
+                                    <span class="badge bg-light text-black-50 mb-1"><a href="#found-in" style="text-decoration: none; color: grey"> Found in {{ video.playlists.all.count }} playlist{% if video.playlists.all.count > 1 %}s{% endif %}</a></span>
+                                    {% if video.is_marked_as_watched %}
+                                        <span class="badge bg-dark text-white" >
 
-                                        <i class="fas fa-flag-checkered me-1"></i> marked watched
-                                    </span>
-                                {% endif %}
+                                            <i class="fas fa-flag-checkered me-1"></i> marked watched
+                                        </span>
+                                    {% endif %}
 
                                 </small>
 
@@ -130,7 +123,7 @@
         <div class="col-6">
             <div class="row">
                 <div class="col-6">
-                        <h4>Your notes for this video
+                    <h4>Your notes for this video
 
                     </h4>
                 </div>
@@ -143,13 +136,13 @@
 
             <div >
                 <textarea name="video-notes-text-area"
-                          hx-post="{% url 'video_notes' video.video_id %}"
-                          hx-trigger="keyup changed delay:1.5s"
-                          hx-target="#notes-save-status"
-                          class="form-control"
-                          id="video-notes-text-area"
-                          placeholder="Enter here"
-                          rows="13">
+                    hx-post="{% url 'video_notes' video.video_id %}"
+                    hx-trigger="keyup changed delay:1.5s"
+                    hx-target="#notes-save-status"
+                    class="form-control"
+                    id="video-notes-text-area"
+                    placeholder="Enter here"
+                    rows="13">
                     {{ video.user_notes }}
                 </textarea>
 
@@ -161,41 +154,12 @@
         </div>
     </div>
 
-      <br>
+    <br>
 
     <div class="">
         <h3><span style="border-bottom: 3px #497ce2 dashed;">Video found in the following playlist{% if video.playlists.all.count > 1 %}s{% endif %}</span><i class="fas fa-binoculars ms-2" style="color: #4669d2"></i></h3>
         <div id="found-in" class="row row-cols-1 row-cols-md-4 g-4 text-dark mt-0" data-masonry='{"percentPosition": true }'>
-            {% for playlist in video.playlists.all %}
-                <div class="col">
-
-                    <div class="card" style="background-color: #EFEFEF;">
-                        <img  class="bd-placeholder-img card-img-top" src="{{ playlist.thumbnail_url }}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
-
-                        <div class="card-body">
-                            <h5 class="card-title"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: black">{{ playlist.name }}</a></h5>
-                            <p class="card-text">
-                                <span class="badge bg-{% if playlist.get_watch_time_left == "0secs." %}success{% else %}primary{% endif %} text-white">{{ playlist.get_watched_videos_count }}/{{ playlist.get_watchable_videos_count }} viewed</span>
-                                {% if playlist.get_watch_time_left != "0secs." %}<span class="badge bg-dark text-white">{{ playlist.get_watch_time_left }} left</span>{% endif %}
-                            </p>
-                            <p class="card-text">
-                                {% if playlist.tags.all %}
-                                    <small>
-                                        <i class="fas fa-tags fa-sm" style="color: black"></i>
-                                        {% for tag in playlist.tags.all %}
-                                            <span class="badge rounded-pill bg-primary mb-lg-1">
-                                                {{ tag.name }}
-                                            </span>
-                                        {% endfor %}
-                                    </small>
-                                {% endif %}
-                            </p>
-                            <p class="card-text"><small class="text-muted">Last watched {{ playlist.last_watched|naturalday }}</small></p>
-                        </div>
-                    </div>
-                </div>
-
-            {% endfor %}
+            {% include 'intercooler/playlists.html' with playlists=video.playlists.all watching=False bg_color="#357779" show_controls=True %}
         </div>
     </div>
 
@@ -203,51 +167,51 @@
 
     <script type="text/javascript">
         // from https://developers.google.com/youtube/iframe_api_reference#Examples
-      var tag = document.createElement('script');
-      tag.id = 'iframe-demo';
-      tag.src = 'https://www.youtube.com/iframe_api';
-      var firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        var tag = document.createElement('script');
+        tag.id = 'iframe-demo';
+        tag.src = 'https://www.youtube.com/iframe_api';
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-      var player;
-      function onYouTubeIframeAPIReady() {
-        player = new YT.Player('ytplayer', {
-            events: {
-              'onReady': onPlayerReady,
-              'onStateChange': onPlayerStateChange
+        var player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('ytplayer', {
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+        function onPlayerReady(event) {
+            document.getElementById('ytplayer').style.borderColor = '#FF6D00';
+        }
+        function changeBorderColor(playerStatus) {
+            var color;
+            if (playerStatus === -1) {
+                color = "#37474F"; // unstarted = gray
+            } else if (playerStatus === 0) {
+                color = "#FFFF00"; // ended = yellow
+            } else if (playerStatus === 1) {
+                color = "#33691E"; // playing = green
+            } else if (playerStatus === 2) {
+                color = "#DD2C00"; // paused = red
+                // console.log(player.playerInfo.currentTime + " secs elapsed!");
+            } else if (playerStatus === 3) {
+                color = "#AA00FF"; // buffering = purple
+            } else if (playerStatus === 5) {
+                color = "#FF6DOO"; // video cued = orange
             }
-        });
-      }
-      function onPlayerReady(event) {
-        document.getElementById('ytplayer').style.borderColor = '#FF6D00';
-      }
-      function changeBorderColor(playerStatus) {
-        var color;
-        if (playerStatus === -1) {
-          color = "#37474F"; // unstarted = gray
-        } else if (playerStatus === 0) {
-          color = "#FFFF00"; // ended = yellow
-        } else if (playerStatus === 1) {
-          color = "#33691E"; // playing = green
-        } else if (playerStatus === 2) {
-          color = "#DD2C00"; // paused = red
-            // console.log(player.playerInfo.currentTime + " secs elapsed!");
-        } else if (playerStatus === 3) {
-          color = "#AA00FF"; // buffering = purple
-        } else if (playerStatus === 5) {
-          color = "#FF6DOO"; // video cued = orange
+            if (color) {
+                document.getElementById('ytplayer').style.borderColor = color;
+            }
         }
-        if (color) {
-          document.getElementById('ytplayer').style.borderColor = color;
-        }
-      }
-      function onPlayerStateChange(event) {
-        changeBorderColor(event.data);
+        function onPlayerStateChange(event) {
+            changeBorderColor(event.data);
 
-        // can use the below info to create a stream room
-        // player.playerInfo.currentTime returns player elapsed time
-        // console.log(player)
-      }
+            // can use the below info to create a stream room
+            // player.playerInfo.currentTime returns player elapsed time
+            // console.log(player)
+        }
     </script>
 
 {% endblock %}

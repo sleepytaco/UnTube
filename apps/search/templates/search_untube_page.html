@@ -36,9 +36,9 @@
                     <div class="col">
                         Filter by playlist tags:
                         <select class="visually-hidden" onchange="triggerSubmit()"
-                            id="choices-playlist-tags" name="playlist-tags" placeholder="Add playlist tags to search within" multiple>
+                            id="choices-playlist-tags" name="playlist-tags" placeholder="Select playlist tags" multiple>
                             {% for tag in user.playlist_tags.all %}
-                                <option value="{{ tag.name }}" hx-post="{% url 'search_UnTube' %}" {% if pl_tag == tag.name %}selected{% endif %}>{{ tag.name }}</option>
+                                <option value="{{ tag.name }}" {% if pl_tag == tag.name %}selected{% endif %}>{{ tag.name }}</option>
                             {% endfor %}
                         </select>
 
@@ -78,7 +78,7 @@
                         <select class="visually-hidden" onchange="triggerSubmit()"
                             id="choices-channels" name="channel-names" placeholder="Select channels to search within" multiple>
                             {% for channel in user.profile.get_channels_list %}
-                                <option value="{{ channel }}" hx-post="{% url 'search_UnTube' %}">{{ channel }}</option>
+                                <option value="{{ channel }}" {% if channel == vid_channel_name %}selected{% endif %}>{{ channel }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -91,6 +91,7 @@
                                     <option value="All" {% if item_type == "all" %}selected{% endif %}>All</option>
                                     <option value="Favorite" {% if item_type == "favorite" %}selected{% endif %}>Favorite</option>
                                     <option value="Watched" {% if item_type == "watched" %}selected{% endif %}>Watched</option>
+                                     <option value="Unavailable" {% if item_type == "unavailable" %}selected{% endif %}>Unavailable</option>
                                 </select>
                             </div>
                             <div class="ms-3">

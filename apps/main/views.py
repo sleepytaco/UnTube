@@ -218,6 +218,9 @@ def library(request, library_type):
         library_type_display = library_type.lower().replace("-", " ")
         if library_type.lower() == "watching":
             watching = True
+    elif library_type.lower() == "yt-mix":
+        playlists = request.user.playlists.all().filter(Q(is_yt_mix=True) & Q(is_in_db=True))
+        library_type_display = "Your YouTube Mixes"
     elif library_type.lower() == "home":  # displays cards of all playlist types
         return render(request, 'library.html')
     elif library_type.lower() == "random":  # randomize playlist
@@ -410,11 +413,7 @@ def delete_videos(request, playlist_id, command):
     extra_text = " "
     if num_vids == 0:
         return HttpResponse("""
-        <div hx-ext="class-tools">
-            <div classes="add visually-hidden:3s">
-                <h5>Select some videos first!</h5><hr>
-            </div>
-        </div>
+            <h5>Select some videos first!</h5><hr>
         """)
 
     if 'confirm before deleting' in request.POST:
@@ -687,14 +686,6 @@ def update_playlist_settings(request, playlist_id):
 
     print(request.POST)
     playlist = request.user.playlists.get(playlist_id=playlist_id)
-    if "user_label" in request.POST:
-        playlist.user_label = request.POST["user_label"]
-        playlist.save(update_fields=['user_label'])
-
-        return HttpResponse(loader.get_template("intercooler/messages.html")
-            .render(
-            {"message_type": message_type,
-             "message_content": message_content}))
 
     if 'confirm before deleting' in request.POST:
         playlist.confirm_before_deleting = True
@@ -1065,12 +1056,12 @@ def playlist_move_copy_videos(request, playlist_id, action):
                 </div>
                 """
     if action == "move":
-        status = Playlist.objects.moveCopyVideosFromPlaylist(request.user,
+        result = Playlist.objects.moveCopyVideosFromPlaylist(request.user,
                                                              from_playlist_id=playlist_id,
                                                              to_playlist_ids=playlist_ids,
                                                              playlist_item_ids=playlist_item_ids,
                                                              action="move")
-        if status[0] == -1:
+        if result['status'] == -1:
             if status[1] == 404:
                 return HttpResponse(
                     "<span class='text-danger'>You cannot copy/move unavailable videos! De-select them and try again.</span>")
@@ -1133,3 +1124,13 @@ def add_video_user_label(request, video_id):
         video.user_label = bleach.clean(request.POST["user_label"])
         video.save(update_fields=['user_label'])
     return redirect('video', video_id=video_id)
+
+
+@login_required
+@require_POST
+def add_playlist_user_label(request, playlist_id):
+    playlist = request.user.playlists.get(playlist_id=playlist_id)
+    if "user_label" in request.POST:
+        playlist.user_label = bleach.clean(request.POST["user_label"].strip())
+        playlist.save(update_fields=['user_label'])
+    return redirect('playlist', playlist_id=playlist_id)

@@ -1070,6 +1070,12 @@ class PlaylistManager(models.Manager):
         playlist_items = user.playlists.get(playlist_id=from_playlist_id).playlist_items.select_related('video').filter(
             playlist_item_id__in=playlist_item_ids)
 
+        result = {
+            "status": 0,
+            "num_moved_copied": 0,
+            "playlistContainsMaximumNumberOfVideos": False,
+        }
+
         with build('youtube', 'v3', credentials=credentials) as youtube:
             for playlist_id in to_playlist_ids:
                 for playlist_item in playlist_items:
@@ -1097,14 +1103,96 @@ class PlaylistManager(models.Manager):
                         # errors i ran into:
                         # runs into HttpError 400 "Invalid playlist snippet." when the description contains <, >
                         print("ERROR UPDATING PLAYLIST DETAILS", e.status_code, e.error_details)
-                        return [-1, e.status_code]
+                        if e.status_code == 400:
+                            pl_request = youtube.playlistItems().insert(
+                                part="snippet",
+                                body={
+                                    "snippet": {
+                                        "playlistId": playlist_id,
+                                        "resourceId": {
+                                            "kind": "youtube#video",
+                                            "videoId": playlist_item.video.video_id,
+                                        }
+                                    },
+                                }
+                            )
 
-                    print(pl_response)
+                            try:
+                                pl_response = pl_request.execute()
+                            except googleapiclient.errors.HttpError as e:
+                                result['status'] = -1
+                        elif e.status_code == 403:
+                            result["playlistContainsMaximumNumberOfVideos"] = True
+                        else:
+                            result['status'] = -1
+                    result["num_moved_copied"] += 1
 
         if action == "move":  # delete from the current playlist
             self.deletePlaylistItems(user, from_playlist_id, playlist_item_ids)
 
-        return [0]
+        return result
+
+    def addVideosToPlaylist(self, user, playlist_id, video_ids):
+        """
+        Takes in playlist itemids for the videos in a particular playlist
+        """
+        credentials = self.getCredentials(user)
+
+        playlist = user.playlists.get(playlist_id=playlist_id)
+
+        result = {
+            "num_added": 0,
+            "playlistContainsMaximumNumberOfVideos": False,
+        }
+
+        added = 0
+        with build('youtube', 'v3', credentials=credentials) as youtube:
+
+            for video_id in video_ids:
+                pl_request = youtube.playlistItems().insert(
+                    part="snippet",
+                    body={
+                        "snippet": {
+                            "playlistId": playlist_id,
+                            "position": 0,
+                            "resourceId": {
+                                "kind": "youtube#video",
+                                "videoId": video_id,
+                            }
+                        },
+                    }
+                )
+
+                try:
+                    pl_response = pl_request.execute()
+                except googleapiclient.errors.HttpError as e:  # failed to update add video to playlis
+                    print("ERROR ADDDING VIDEOS TO PLAYLIST", e.status_code, e.error_details)
+                    if e.status_code == 400: # manualSortRequired - see errors https://developers.google.com/youtube/v3/docs/playlistItems/insert
+                        pl_request = youtube.playlistItems().insert(
+                            part="snippet",
+                            body={
+                                "snippet": {
+                                    "playlistId": playlist_id,
+                                    "resourceId": {
+                                        "kind": "youtube#video",
+                                        "videoId": video_id,
+                                    }
+                                },
+                            }
+                        )
+                        try:
+                            pl_response = pl_request.execute()
+                        except googleapiclient.errors.HttpError as e:  # failed to update playlist details
+                            pass
+                    elif e.status_code == 403:
+                        result["playlistContainsMaximumNumberOfVideos"] = True
+                    continue
+                added += 1
+        result["num_added"] = added
+        if added > 0:
+            playlist.has_playlist_changed = True
+            playlist.save(update_fields=['has_playlist_changed'])
+        return result
 
 
 class Tag(models.Model):

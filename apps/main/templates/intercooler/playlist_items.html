@@ -50,7 +50,7 @@
                             {{ playlist_item.video_position|add:"1" }}.
                             <a class="link-dark" href="{% url 'video' playlist_item.video.video_id %}">
                                 {{ playlist_item.video.name|truncatewords:"16" }}
-                            </a> by {{ playlist_item.video.channel_name }} <br>
+                            </a> by <a href="{% url 'search' %}?mode=videos&channel={{ playlist_item.video.channel_name }}" style="text-decoration: none; color: black"><span style="border-bottom: 3px #e35959 dashed;"> {{ playlist_item.video.channel_name }}</span></a> <br>
                             <a style="text-decoration: none" hx-get="{% url 'video_completion_times' playlist_item.video.video_id %}" hx-trigger="click once" hx-target="#{{ playlist_item.playlist_item_id }}-completion-times" data-bs-toggle="collapse" href="#{{ playlist_item.playlist_item_id }}DurationCollapse" role="button" aria-expanded="false" aria-controls="{{ playlist_item.playlist_item_id }}DurationCollapse">
                                     <span class="badge bg-secondary">{{ playlist_item.video.duration }}</span>
                                 </a>
@@ -63,7 +63,7 @@
                             </div>
 
                             {% if playlist_item.video.has_cc %}<span class="badge bg-secondary">CC</span>{% endif %}
-                            {% if playlist_item.video.published_at %}<span class="badge bg-secondary">{{ playlist_item.video.published_at }}</span>{% endif %}
+                            {% if playlist_item.published_at %}<span class="badge bg-secondary">added to playlist on {{ playlist_item.published_at }}</span>{% endif %}
                             <span class="badge bg-info text-black-50"><i class="fas fa-eye"></i> {% if playlist_item.video.view_count == -1 %}HIDDEN{% else %}{{ playlist_item.video.view_count|intword|intcomma }}{% endif %}</span>
                             <span class="badge bg-warning text-black-50"><i class="fas fa-thumbs-up"></i> {% if playlist_item.video.like_count == -1 %}HIDDEN{% else %}{{ playlist_item.video.like_count|intword|intcomma }}{% endif %}</span>
 

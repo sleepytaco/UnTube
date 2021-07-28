@@ -20,6 +20,8 @@ urlpatterns = [
 
     ### STUFF RELATED TO ONE PLAYLIST
     path("playlist/<slug:playlist_id>", views.view_playlist, name='playlist'),
+    path("playlist/<slug:playlist_id>/add-user-label", views.add_playlist_user_label, name='add_playlist_user_label'),
+
     path('playlist/<slug:playlist_id>/<slug:video_id>/video-details/watched', views.mark_video_watched,
          name='mark_video_watched'),
     path("playlist/<slug:playlist_id>/settings", views.view_playlist_settings, name="view_playlist_settings"),

@@ -5,10 +5,17 @@
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Favorite Playlists
             <span class="badge bg-primary rounded-pill">{{ playlists.count|default:"0" }}</span>
-            {% if playlists %}
-                <a href="{% url 'search' %}?mode=playlists&type=favorites" style="text-decoration: none; color: black"><i class="fas fa-search"></i></a>
-            {% endif %}
+
         </h1>
+        {% if playlists %}
+                    <form method="get" action="{% url 'search' %}" >
+                    <input size="50" class="form-control border border-secondary" type="text"
+                   name="query" placeholder="Search your favorite playlists...">
+                    <input type="text" class="visually-hidden" name="mode" value="playlists">
+                    <input type="text" class="visually-hidden" name="type" value="favorites">
+                    <button type="submit" class="visually-hidden"></button>
+                    </form>
+            {% endif %}
     </div>
 
     <div>
@@ -27,10 +34,17 @@
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Favorite Videos
             <span class="badge bg-primary rounded-pill">{{ videos.count }}</span>
-            {% if videos %}
-                <a href="{% url 'search' %}?mode=videos&type=favorite" style="text-decoration: none; color: black"><i class="fas fa-search"></i></a>
-            {% endif %}
+
         </h1>
+            {% if videos %}
+                    <form method="get" action="{% url 'search' %}" >
+                    <input size="50" class="form-control border border-secondary" type="text"
+                   name="query" placeholder="Search your favorite videos...">
+                    <input type="text" class="visually-hidden" name="mode" value="videos">
+                    <input type="text" class="visually-hidden" name="type" value="favorite">
+                    <button type="submit" class="visually-hidden"></button>
+                    </form>
+            {% endif %}
     </div>
 
     <div>
