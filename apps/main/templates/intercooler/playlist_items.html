@@ -79,7 +79,8 @@
                 <div class="ms-5">
                 {% if playlist_item.video.is_unavailable_on_yt or playlist_item.video.was_deleted_on_yt %}
                 <a class="btn btn-sm  btn-primary mb-1" href="{% url 'video' playlist_item.video.video_id %}"><i class="fas fa-info"></i></a>
-                <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist_item.video.video_id %}" hx-target="#video-{{ page }}-{{ forloop.counter }}-fav">
+                <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist_item.video.video_id %}"
+                        hx-target="#video-{{ page }}-{{ forloop.counter }}-fav">
                     <div id="video-{{ page }}-{{ forloop.counter }}-fav">
                         {% if playlist_item.video.is_favorite %}
                             <i class="fas fa-heart" style="color: #fafa06"></i>

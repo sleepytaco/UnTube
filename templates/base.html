@@ -115,7 +115,9 @@
 
         </style>
 
-        <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans&display=swap" rel="stylesheet">
+         <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Comfortaa&family=Fredoka+One&display=swap" rel="stylesheet">
 
         <link href="{% static 'fontawesome-free-5.15.3-web/css/all.min.css' %}" rel="stylesheet">
         <link href="{% static 'bootstrap5.0.1/css/bootstrap.min.css' %}" rel="stylesheet">
@@ -125,7 +127,7 @@
         <script src="{% static 'jquery3.6.0/js/jquery-3.6.0.min.js' %}" type="application/javascript"></script>
         <script src="{% static 'bootstrap5.0.1/js/bootstrap.bundle.min.js' %}" type="application/javascript"></script>
             </head>
-    <body class="text-dark" style="font-family: 'Fredoka One', monospace; {% if not user.profile.enable_gradient_bg %}background-color: #FDF4DC;{% endif %}">
+    <body class="text-dark" style="font-family: 'Fredoka One', 'Comfortaa',  sans-serif; {% if not user.profile.enable_gradient_bg %}background-color: #FDF4DC;{% endif %}">
 
 
         {% if user.profile.show_import_page %}

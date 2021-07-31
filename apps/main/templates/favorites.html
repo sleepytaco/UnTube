@@ -3,7 +3,7 @@
 {% block content %}
 
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Favorite Playlists
+        <h1 class="h2" id="favorite-playlists"><a href="#favorite-videos" style="color: rebeccapurple" class="mt-1 me-3"><i class="fas fa-angle-double-down"></i></a>Favorite Playlists
             <span class="badge bg-primary rounded-pill">{{ playlists.count|default:"0" }}</span>
 
         </h1>
@@ -32,7 +32,7 @@
     <br>
 
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Favorite Videos
+        <h1 class="h2" id="favorite-videos"><a href="#favorite-playlists" style="color: rebeccapurple" class="mt-1 me-3"><i class="fas fa-angle-double-up"></i></a>Favorite Videos
             <span class="badge bg-primary rounded-pill">{{ videos.count }}</span>
 
         </h1>
@@ -47,7 +47,7 @@
             {% endif %}
     </div>
 
-    <div>
+    <div id="favorite-videos">
         <div class="row row-cols-1 row-cols-md-3 g-4">
             {% if videos %}
                 {% include 'intercooler/video_cards.html' with videos=videos %}
@@ -56,4 +56,9 @@
             {% endif %}
         </div>
     </div>
+
+
+    <button class="scrollToTopBtn sticky-top bg-danger">
+        <i class="fa fa-angle-double-up fa-lg"></i></button>
+
 {% endblock %}

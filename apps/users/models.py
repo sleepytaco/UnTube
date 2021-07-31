@@ -30,13 +30,16 @@ class Profile(models.Model):
     user_summary = models.CharField(max_length=300, default="I think my arm is on backward.")
     user_location = models.CharField(max_length=100, default="Hell, Earth")
 
-    # preferences
+    ### GLOBAL preferences ###
+    # site preferences
     open_search_new_tab = models.BooleanField(default=True)  # open search page in new tab by default
     enable_gradient_bg = models.BooleanField(default=False)
 
-    # global playlist preferences (this will make all playlists)
-    hide_unavailable_videos = models.BooleanField(default=False)
+    # playlist preferences (this will apply to all playlists)
+    auto_check_for_updates = models.BooleanField(default=False)
+    hide_unavailable_videos = models.BooleanField(default=True)
     confirm_before_deleting = models.BooleanField(default=True)
+    ###########################
 
     # manage user
     objects = ProfileManager()
@@ -72,6 +75,9 @@ class Profile(models.Model):
             channels_list.append(entry['channel_name'])
 
         return channels_list
+
+    def get_playlists_list(self):
+        return self.user.playlists.all().filter(is_in_db=True)
 
 # as soon as one User object is created, create an associated profile object
 @receiver(post_save, sender=User)

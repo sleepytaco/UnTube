@@ -59,10 +59,7 @@ def home(request):
         return render(request, "import_in_progress.html")
     ##################################
 
-    user_playlists = request.user.playlists.filter(is_in_db=True)
-    total_num_playlists = user_playlists.count()
-    user_playlists = user_playlists.filter(num_of_accesses__gt=0).order_by(
-        "-num_of_accesses")
+    playlist_tags = request.user.playlist_tags.order_by('-times_viewed')
 
     videos = request.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
 
@@ -70,7 +67,7 @@ def home(request):
         'channel_name').annotate(channel_videos_count=Count('video_id'))
 
     return render(request, 'home.html', {"channel_found": channel_found,
-                                         "user_playlists": user_playlists,
+                                         "playlist_tags": playlist_tags,
                                          "watching": watching,
                                          "recently_accessed_playlists": recently_accessed_playlists,
                                          "recently_added_playlists": recently_added_playlists,
@@ -93,7 +90,7 @@ def view_video(request, video_id):
     if request.user.videos.filter(video_id=video_id).exists():
         video = request.user.videos.get(video_id=video_id)
 
-        if video.is_unavailable_on_yt or video.was_deleted_on_yt:
+        if video.is_unavailable_on_yt:
             messages.error(request, "Video went private/deleted on YouTube!")
             return redirect('home')
 
@@ -135,15 +132,18 @@ def view_playlist(request, playlist_id):
     # specific playlist requested
     if user_profile.playlists.filter(Q(playlist_id=playlist_id) & Q(is_in_db=True)).exists():
         playlist = user_profile.playlists.get(playlist_id__exact=playlist_id)
+        playlist_tags = playlist.tags.all()
 
-        # if its been 30 days since the last playlist visit, force refresh the playlist
-        if datetime.datetime.now(pytz.utc) - playlist.last_accessed_on > datetime.timedelta(days=15):
+        # if its been 1 days since the last full scan, force refresh the playlist
+        if playlist.last_full_scan_at + datetime.timedelta(days=2) < datetime.datetime.now(pytz.utc):
             playlist.has_playlist_changed = True
+            print("ITS BEEN 15 DAYS, FORCE REFRESHING PLAYLIST")
 
-        # only note down that the playlist as been viewed when 5mins has passed since the last access
-        if playlist.last_accessed_on + datetime.timedelta(minutes=1) < datetime.datetime.now(pytz.utc):
-            playlist.num_of_accesses += 1
+        # only note down that the playlist as been viewed when 30s has passed since the last access
+        if playlist.last_accessed_on + datetime.timedelta(seconds=30) < datetime.datetime.now(pytz.utc):
             playlist.last_accessed_on = datetime.datetime.now(pytz.utc)
+            playlist.num_of_accesses += 1
+            increment_tag_views(playlist_tags)
 
         playlist.save(update_fields=['num_of_accesses', 'last_accessed_on', 'has_playlist_changed'])
     else:
@@ -168,13 +168,10 @@ def view_playlist(request, playlist_id):
     playlist_items = playlist.playlist_items.select_related('video').order_by("video_position")
 
     user_created_tags = Tag.objects.filter(created_by=request.user)
-    playlist_tags = playlist.tags.all()
-
-    for tag in playlist_tags:
-        tag.times_viewed += 1
-        tag.save(update_fields=['times_viewed'])
-
     unused_tags = user_created_tags.difference(playlist_tags)
+
+    if request.user.profile.hide_unavailable_videos:
+        playlist_items.exclude(Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=False))
 
     return render(request, 'view_playlist.html', {"playlist": playlist,
                                                   "playlist_tags": playlist_tags,
@@ -183,6 +180,8 @@ def view_playlist(request, playlist_id):
                                                   "user_owned_playlists": user_owned_playlists,
                                                   "watching_message": generateWatchingMessage(playlist),
                                                   })
+
+
 
 
 @login_required
@@ -201,7 +200,9 @@ def library(request, library_type):
     """
     library_type = library_type.lower()
     watching = False
-    if library_type == "" or library_type == "all":
+    if library_type.lower() == "home":  # displays cards of all playlist types
+        return render(request, 'library.html')
+    elif library_type == "all":
         playlists = request.user.playlists.all().filter(is_in_db=True)
         library_type_display = "All Playlists"
     elif library_type == "user-owned":  # YT playlists owned by user
@@ -221,8 +222,9 @@ def library(request, library_type):
     elif library_type.lower() == "yt-mix":
         playlists = request.user.playlists.all().filter(Q(is_yt_mix=True) & Q(is_in_db=True))
         library_type_display = "Your YouTube Mixes"
-    elif library_type.lower() == "home":  # displays cards of all playlist types
-        return render(request, 'library.html')
+    elif library_type.lower() == "unavailable-videos":
+        videos = request.user.videos.all().filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=True))
+        return render(request, "unavailable_videos.html", {"videos": videos})
     elif library_type.lower() == "random":  # randomize playlist
         if request.method == "POST":
             playlists_type = request.POST["playlistsType"]
@@ -271,7 +273,7 @@ def order_playlist_by(request, playlist_id, order_by):
         playlist_items = playlist.playlist_items.select_related('video').order_by("-video__like_count")
     elif order_by == "date-published":
         videos_details = "Sorted by Date Published"
-        playlist_items = playlist.playlist_items.select_related('video').order_by("-published_at")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("published_at")
     elif order_by == "views":
         videos_details = "Sorted by View Count"
         playlist_items = playlist.playlist_items.select_related('video').order_by("-video__view_count")
@@ -304,7 +306,7 @@ def order_playlist_by(request, playlist_id, order_by):
                 playlist_items = recently_updated_videos.order_by("video_position")
     elif order_by == 'unavailable-videos':
         playlist_items = playlist.playlist_items.select_related('video').filter(
-            Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=True))
+            Q(video__is_unavailable_on_yt=False) & Q(video__was_deleted_on_yt=True))
         videos_details = "Sorted by Unavailable Videos"
         display_text = "None of the videos in this playlist have gone unavailable... yet."
     elif order_by == 'channel':
@@ -636,7 +638,7 @@ def load_more_videos(request, playlist_id, order_by, page):
     elif order_by == "popularity":
         playlist_items = playlist.playlist_items.select_related('video').order_by("-video__like_count")
     elif order_by == "date-published":
-        playlist_items = playlist.playlist_items.select_related('video').order_by("-published_at")
+        playlist_items = playlist.playlist_items.select_related('video').order_by("published_at")
     elif order_by == "views":
         playlist_items = playlist.playlist_items.select_related('video').order_by("-video__view_count")
     elif order_by == "has-cc":
@@ -668,6 +670,9 @@ def load_more_videos(request, playlist_id, order_by, page):
         channel_name = request.GET["channel-name"]
         playlist_items = playlist.playlist_items.select_related('video').filter(
             video__channel_name=channel_name).order_by("video_position")
+
+    if request.user.profile.hide_unavailable_videos:
+        playlist_items.exclude(Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=False))
 
     return HttpResponse(loader.get_template("intercooler/playlist_items.html")
         .render(

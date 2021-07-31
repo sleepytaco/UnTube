@@ -70,9 +70,18 @@
                 </div>
 
             </div>
-            <div class="col-lg-8" id="videos">
+            <div class="col-lg-10" id="videos">
 
                 <div class="row">
+                    <div class="col">
+                        Search in these playlists:
+                        <select class="visually-hidden" onchange="triggerSubmit()"
+                            id="choices-playlists" name="playlist-ids" placeholder="Add playlists to search within" multiple>
+                            {% for playlist in user.profile.get_playlists_list %}
+                                <option value="{{ playlist.playlist_id }}" {% if playlist.playlist_id == playlist_id %}selected{% endif %}>{{ playlist.name }} {% if playlist.user_label %}({{ playlist.user_label }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="col">
                         Filter by video channels:
                         <select class="visually-hidden" onchange="triggerSubmit()"
@@ -89,6 +98,7 @@
                                 Video type:
                                 <select onchange="triggerSubmit()" class="form-select mt-1" name="videosType">
                                     <option value="All" {% if item_type == "all" %}selected{% endif %}>All</option>
+                                    <option value="Liked" {% if item_type == "liked" %}selected{% endif %}>Liked</option>
                                     <option value="Favorite" {% if item_type == "favorite" %}selected{% endif %}>Favorite</option>
                                     <option value="Watched" {% if item_type == "watched" %}selected{% endif %}>Watched</option>
                                      <option value="Unavailable" {% if item_type == "unavailable" %}selected{% endif %}>Unavailable</option>
@@ -175,6 +185,9 @@
                     removeItemButton: true,
                 });
 
+                var choicesPlaylists = new Choices('#choices-playlists', {
+                    removeItemButton: true,
+                });
                 triggerSubmit();
             });
 

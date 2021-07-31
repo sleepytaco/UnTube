@@ -67,7 +67,7 @@
         <a href="{% url 'library' 'yt-mix' %}" class="text-decoration-none text-white">
         <div class="card h-100" style="background-color: #bd39a7;">
             <div class="card-body">
-                <h5 class="card-title">Your YouTube Mixes</h5>
+                <h5 class="card-title">Your YouTube Mixes <span class="badge bg-warning">BETA</span> </h5>
                 <p class="card-text">YouTube creates nice mixes that relate to songs you're currently jamming to. You can import those YT Mixes by going over to Manage. Any YouTube mixes you import will all be here.</p>
             </div>
         </div>
@@ -75,7 +75,7 @@
     </div>
 
     <div class="col">
-        <a href="#" class="text-decoration-none text-white">
+        <a href="{% url 'library' 'unavailable-videos' %}" class="text-decoration-none text-white">
         <div class="card h-100" style="background-color: #7f8675;">
             <div class="card-body">
                 <h5 class="card-title">Unavailable YouTube Videos</h5>

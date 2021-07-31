@@ -60,7 +60,7 @@
                 </div>
               </div>
             <hr>
-                    <a href="#navbar" hx-post="{% url 'update_settings' %}" hx-include="[id='settings-form']" hx-target="#settings-status-div" class="btn btn-success">Update</a>
+                    <a href="{% url 'update_settings' %}" class="btn btn-success">Update</a>
 
             </div>
           </div>
@@ -68,15 +68,11 @@
         </div>
         <div class="col-md-8">
 
-        <div id="settings-status-div" class="text-dark">
-
-        </div>
-
           <div class="card bg-dark text-white mb-3">
             <div class="card-body">
-                <div id="settings-form">
-
-                <div class="row">
+                <form action="{% url 'update_settings' %}" method="post">
+                    {% csrf_token %}
+                        <div class="row">
                 <div class="col-sm-3">
                   <h6 class="mb-0">Username</h6>
                 </div>
@@ -123,34 +119,36 @@
                         </div>
 
                         <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="flexSwitchCheckDefault">
-                        <label class="form-check-label" for="flexSwitchCheckDefault">Automatically check for playlist updates on visit</label>
+                        <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="auto-update-playlists" {% if user.profile.auto_check_for_updates %}checked{% endif %}>
+                        <label class="form-check-label" for="auto-update-playlists" >Automatically check for playlist updates on visit (this might slow down the playlist page for a bit)</label>
                         </div>
 
                         <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" name="hide videos" type="checkbox" id="hide-videos" {% if profile.hide_unavailable_videos %}checked{% endif %}>
+                        <input class="form-check-input" name="hide videos" type="checkbox" id="hide-videos" {% if user.profile.hide_unavailable_videos %}checked{% endif %}>
                         <label class="form-check-label" for="hide-videos">Hide deleted/private videos</label>
                         </div>
 
 
                         <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" name="confirm before deleting" type="checkbox" id="confirm-before-delete" {% if profile.confirm_before_deleting  %}checked{% endif %}>
+                        <input class="form-check-input" name="confirm before deleting" type="checkbox" id="confirm-before-delete" {% if user.profile.confirm_before_deleting  %}checked{% endif %}>
                         <label class="form-check-label" for="confirm-before-delete">Confirm before deleting</label>
                         </div>
 
                     </div>
                 </div>
                 <hr>
-            </div>
-
 
               <div class="row">
                 <div class="col-sm-12">
-                    <a href="#navbar" hx-post="{% url 'update_settings' %}" hx-include="[id='settings-form']" hx-target="#settings-status-div" class="btn btn-success">Save</a>
+
+                    <button type="submit" class="btn btn-success">Save</button>
                     <a class="btn btn-outline-danger" href="{% url 'delete_account' %}">Delete UnTube account</a>
 
                 </div>
               </div>
+                </form>
+
+
 
             </div>
           </div>
@@ -180,83 +178,4 @@
 
     </div>
 </div>
-
-<!--
-<div class="container-fluid">
-
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-
-        <h1 class="h2">Settings</h1>
-        <span><small>Logged in as <b>{{ user.username }}</b></small></span>
-
-    </div>
-
-        <div id="settings-status-div" class="text-dark">
-
-        </div>
-
-        <div id="settings-form">
-            <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" name="username" id="username" value="{{ user.username }}">
-            </div>
-
-            <fieldset disabled>
-            <div class="mb-3">
-            <label for="email" class="form-label">Email Address</label>
-            <input type="email" class="form-control" id="email" aria-describedby="emailHelp" value="{{ user.email }}">
-            <div id="emailHelp" class="form-text">This is the google account you logged in with.</div>
-            </div>
-
-            <div class="mb-3">
-            <label for="fullname" class="form-label">Full Name</label>
-            <input type="text" class="form-control" id="fullname" value="{{ user.get_full_name }}">
-            </div>
-
-            <div class="mb-3">
-            <label for="ytchannelid" class="form-label">YouTube Channel ID</label>
-            <input type="text" class="form-control" id="ytchannelid" aria-describedby="emailHelp" value="{{ user.profile.yt_channel_id }}">
-            </div>
-
-            <div class="mb-3">
-            <label for="accesstoken" class="form-label">Access Token</label>
-            <input type="text" class="form-control" id="accesstoken" value="{{ user.profile.access_token }}">
-            </div>
-
-            <div class="mb-3">
-            <label for="refreshtoken" class="form-label">Refresh Token</label>
-            <input type="text" class="form-control" id="refreshtoken" value="{{ user.profile.refresh_token }}">
-            </div>
-
-            <div class="mb-3">
-            <label for="expiresat" class="form-label">Expires At</label>
-            <input type="datetime-local" class="form-control" id="expiresat" value="{{ user.profile.expires_at }}">
-            </div>
-            </fieldset>
-
-            <div class="mb-3 form-check form-switch">
-            <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="flexSwitchCheckDefault">
-            <label class="form-check-label" for="flexSwitchCheckDefault">Automatically refresh playlists on visit</label>
-            </div>
-
-            <div class="mb-3 form-check form-switch">
-            <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
-            <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
-            </div>
-
-
-            <div class="mb-3 form-check form-switch">
-            <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" checked>
-            <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
-            </div>
-            </div>
-
-        <div>
-            <a class="btn btn-outline-danger" href="{% url 'delete_account' %}">Delete account</a>
-            <button type="button" hx-post="{% url 'update_settings' %}" hx-include="[id='settings-form']" hx-target="#settings-status-div" class="btn btn-success">Save</button>
-        </div>
-
-</div>
-
--->
 {% endblock %}

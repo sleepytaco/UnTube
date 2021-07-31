@@ -33,7 +33,7 @@
         {% if playlists %}
             <input   class="form-control border border-secondary" type="text"
                    name="search" placeholder="Begin to search playlists..."
-                   hx-post="{% url 'search_playlists' library_type %}"
+                   hx-post="{% url 'search_library' library_type %}"
                    hx-trigger="keyup changed delay:700ms"
                    hx-target="#search-results"
                    hx-indicator=".htmx-indicator"

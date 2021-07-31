@@ -33,7 +33,7 @@
                 </div>
             {% else %}
                 <div class="sticky-top mb-3" style="top: 0.5rem;">
-                    {% if not playlist.is_yt_mix and not playlist.playlist_id == "LL" %}
+                    {% if user.profile.auto_check_for_updates and not playlist.is_yt_mix %}
                         <div hx-get="{% url 'update_playlist' playlist.playlist_id 'checkforupdates' %}" hx-trigger="load" hx-swap="outerHTML" id="checkforupdates">
                             <div class="alert alert-info alert-dismissible fade show" role="alert">
                                 Checking playlist for updates...
@@ -442,7 +442,7 @@
                             <h5><span class="text-muted selected-videos-count">0 videos selected</span></h5>
                             <div id="delete-videos-confirm-box">
                                 <h5>You can select videos by clicking any where on the video box. Selected videos will be highlighted red.</h5>
-                                {% if not playlist.confirm_before_deleting %}
+                                {% if not user.profile.confirm_before_deleting %}
                                     <h5>Note: You have set confirm before deleting to False. Buttons below will take effect immediately when clicked.</h5>
                                     <hr>
                                 {% else %}
@@ -458,7 +458,7 @@
                             </div>
                             <div class="d-flex justify-content-start">
                                 <div class="btn-group me-2">
-                                    <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-vals='{"confirm before deleting": "{{ playlist.confirm_before_deleting }}"}' hx-target="#delete-videos-confirm-box" type="button" class="btn btn-primary">
+                                    <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-include="[id='video-checkboxes']" hx-vals='{"confirm before deleting": "{{ user.profile.confirm_before_deleting }}"}' hx-target="#delete-videos-confirm-box" type="button" class="btn btn-primary">
                                         Delete Selected
                                     </button>
                                 </div>
@@ -478,7 +478,7 @@
                                     </div>
                                 {% endif %}
                                 <div class="btn-group me-2">
-                                    <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-vals='{"all": "yes", "confirm before deleting": "{{ playlist.confirm_before_deleting }}"}' hx-target="#delete-videos-confirm-box" type="button" class="btn btn-danger">
+                                    <button hx-post="{% url 'delete_videos' playlist.playlist_id 'confirm' %}" hx-vals='{"all": "yes", "confirm before deleting": "{{ user.profile.confirm_before_deleting }}"}' hx-target="#delete-videos-confirm-box" type="button" class="btn btn-danger">
                                         Empty this Playlist
                                     </button>
                                 </div>
@@ -497,7 +497,7 @@
                     <div class="collapse border-danger" id="addVideosCollapse">
                         <div class="card card-body bg-dark text-white">
 
-                            <h5>Add new videos to this playlist <span class="text-muted selected-videos-count">0 videos selected</span></h5>
+                            <h5>Add new videos to this playlist</h5>
 
                             <div class="row d-flex justify-content-start">
 
@@ -523,7 +523,7 @@
 
                                 <div class="btn-group ms-1 mt-1">
                                     <button hx-indicator="#add-videos-loader" hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'copy' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-primary">
-                                        Add!
+                                        Add
                                     </button>
                                 </div>
                                 <div id="add-videos-box" class="d-flex align-items-end ms-2">
@@ -563,15 +563,15 @@
                             <div class="d-flex justify-content-start mt-2">
 
                                 <div class="btn-group ms-1 mt-1">
-                                    <button hx-indicator="#add-videos-loader" hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'copy' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-light">
-                                        Create!
+                                    <button hx-indicator="#create-playlist-loader" hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'copy' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-primary">
+                                        Create
                                     </button>
                                 </div>
                                 <div id="add-videos-box" class="d-flex align-items-end ms-2">
                                 </div>
-                                    <div class="htmx-indicator d-flex align-items-center" id="add-videos-loader">
+                                    <div class="htmx-indicator d-flex align-items-center" id="create-playlist-loader">
                                         <img src="{% static 'svg-loaders/grid.svg' %}" width="25" height="25" class="ms-2 mt-2">
-                                        <span class="mt-2 ms-2 text-warning">Adding videos, please wait... </span>
+                                        <span class="mt-2 ms-2 text-warning">Creating playlist, please wait... </span>
                                     </div>
                             </div>
 
@@ -753,10 +753,6 @@
                 removeItemButton: true,
             });
 
-            BackgroundCheck.init({
-                targets: '.ui',
-                images: '.ui-img'
-            });
         });
 
         $(function () {
@@ -867,7 +863,7 @@
         document.getElementById('manageBtn').addEventListener('click', function () {                document.getElementById("delete-videos-confirm-box").innerHTML = "";
             document.getElementById("delete-videos-confirm-box").innerHTML = `
                 <h5>You can select videos by clicking any where on the video box. Selected videos will be highlighted red.</h5>
-                {% if not playlist.confirm_before_deleting %}
+                {% if not user.profile.confirm_before_deleting %}
                     <h5>Note: You have set confirm before deleting to False. Buttons below will take effect immediately when clicked.</h5>
                     <hr>
                 {% else %}

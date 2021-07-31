@@ -186,49 +186,29 @@
                         </div>
                     </div>
                 </div>
-                <!-- Implement later
-                    <div class="row mt-3">
-                        <div class="col">
-
-                        </div>
-                        <div class="col-6">
-                        <div class="card">
-                            <a style="background: linear-gradient(-45deg, #e2b968, #68af5b, #8a97bc, #d69ab2); background-size: 400% 400%; animation: gradient 7s ease infinite;" href="#" class="list-group-item list-group-item-action" aria-current="true">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-center h1">
-                                        <i class="fas fa-history"></i>
-                                    </div>
-                                    <div class="d-flex justify-content-center h1">
-                                        YOUR
-                                    </div>
-                                    <div class="d-flex justify-content-center h1">
-                                        ACTIVITY
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        </div>
-                        <div class="col">
-
-                        </div>
-                    </div>
-                    -->
             </div>
             <div class="col">
-                <div class="card bg-transparent border border-0 text-black">
-                    <div class="card-body">
-                        <h3><span style="border-bottom: 3px #a35a5a dashed;">Most viewed playlists</span> <a href="{% url 'library' 'all' %}" class="pt-1"><i class="fas fa-binoculars"></i> </a></h3>
-                        {% if user_playlists %}
-                            <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
-                                {% include 'intercooler/playlists.html' with playlists=user_playlists|slice:"0:3" watching=False %}
-                            </div>
-                        {% else %}
-                            <br>
-                            <h5>Nothing to see here... yet.</h5>
-                        {% endif %}
+                <div class="d-flex justify-content-center">
+                    <h2>Popular Playlist Tags</h2>
+                </div>
 
-
+                <div class="d-flex justify-content-evenly h4">
+                    {% if playlist_tags %}
+                    <div class="w-100 d-flex justify-content-center flex-wrap">
+                    {% for tag in playlist_tags %}
+                        <a href="{% url 'tagged_playlists' tag.name %}" style="text-decoration: none" class="me-lg-1 mb-lg-1">
+                        <span class="badge rounded-pill bg-warning bg-gradient text-black-50">{{ tag.name }} <span class="badge bg-dark text-white">{{ tag.times_viewed_per_week }} views</span></span>
+                        </a>
+                    {% endfor %}
                     </div>
+                    {% else %}
+                        You haven't created any playlist tags yet.
+                    {% endif %}
+                </div>
+                <div class="d-flex justify-content-center">
+                    <h3>
+                        <a href="{% url 'search' %}" class="btn btn-success">Filter Playlists by Tags</a>
+                    </h3>
                 </div>
             </div>
         </div>
@@ -342,6 +322,7 @@
         <br>
 
 
+
         <footer class="footer mt-auto py-3 bg-transparent">
             <div class="container d-flex justify-content-center">
                 <span class="text-dark">Loved what I made?
@@ -350,6 +331,7 @@
                     </a></span>
             </div>
         </footer>
+
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 

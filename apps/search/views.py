@@ -106,7 +106,9 @@ def search_UnTube(request):
         videos_type = bleach.clean(request.POST["videosType"])
 
         all_videos = request.user.videos.filter(is_unavailable_on_yt=False)
-        if videos_type == "Favorite":
+        if videos_type == "Liked":
+            all_videos = all_videos.filter(liked=True)
+        elif videos_type == "Favorite":
             all_videos = all_videos.filter(is_favorite=True)
         elif videos_type == "Watched":
             all_videos = all_videos.filter(is_marked_as_watched=True)
@@ -142,6 +144,10 @@ def search_UnTube(request):
         if 'has-cc' in request.POST:
             videos = videos.filter(has_cc=True)
 
+        if 'playlist-ids' in request.POST:
+            playlist_ids = request.POST.getlist('playlist-ids')
+            videos = videos.filter(playlists__playlist_id__in=playlist_ids)
+
         return HttpResponse(loader.get_template("intercooler/search_untube_results.html")
                             .render({"videos": videos,
                                      "view_mode": "videos",
@@ -151,50 +157,56 @@ def search_UnTube(request):
 
 @login_required
 @require_POST
-def search_playlists(request, playlist_type):
+def search_library(request, library_type):
     # print(request.POST)  # prints <QueryDict: {'search': ['aa']}>
 
     search_query = request.POST["search"]
     watching = False
 
     playlists = None
-    if playlist_type == "all":
+    if library_type == "all":
         try:
             playlists = request.user.playlists.all().filter(Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_in_db=True))
         except:
             playlists = request.user.playlists.all()
-    elif playlist_type == "user-owned":  # YT playlists owned by user
+    elif library_type == "user-owned":  # YT playlists owned by user
         try:
             playlists = request.user.playlists.filter(
                 Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_user_owned=True) & Q(is_in_db=True))
         except:
             playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
-    elif playlist_type == "imported":  # YT playlists (public) owned by others
+    elif library_type == "imported":  # YT playlists (public) owned by others
         try:
             playlists = request.user.playlists.filter(
                 Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_user_owned=False) & Q(is_in_db=True))
         except:
             playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
-    elif playlist_type == "favorites":  # YT playlists (public) owned by others
+    elif library_type == "favorites":  # YT playlists (public) owned by others
         try:
             playlists = request.user.playlists.filter(
                 Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_favorite=True) & Q(is_in_db=True))
         except:
             playlists = request.user.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True))
-    elif playlist_type in ["watching", "plan-to-watch"]:
+    elif library_type in ["watching", "plan-to-watch"]:
         try:
             playlists = request.user.playlists.filter(
                 Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(marked_as=playlist_type) & Q(is_in_db=True))
         except:
             playlists = request.user.playlists.all().filter(Q(marked_as=playlist_type) & Q(is_in_db=True))
-        if playlist_type == "watching":
+        if library_type == "watching":
             watching = True
-    elif playlist_type == "yt-mix":  # YT playlists owned by user
+    elif library_type == "yt-mix":  # YT playlists owned by user
         try:
             playlists = request.user.playlists.filter(
                 Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_yt_mix=True) & Q(is_in_db=True))
         except:
             playlists = request.user.playlists.filter(Q(is_yt_mix=True) & Q(is_in_db=True))
+    elif library_type == 'unavailable-videos':
+        try:
+            videos = request.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=True)).filter(Q(name__startswith=search_query) | Q(user_label__startswith=search_query))
+        except:
+            videos = request.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=True))
+        return HttpResponse(loader.get_template("intercooler/video_cards.html").render({"videos": videos}))
 
     return HttpResponse(loader.get_template("intercooler/playlists.html")
                         .render({"playlists": playlists,

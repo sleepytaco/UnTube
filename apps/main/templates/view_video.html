@@ -24,6 +24,7 @@
             </div>
             <div class="card text-white bg-dark" style="max-width: 100%;">
                 <div class="row g-0">
+                    {% if not video.is_unavailable_on_yt and not video.was_deleted_on_yt %}
                     <div class="col-md-4 p-3">
                         <img  class="img-fluid rounded-3" src="{{ video.thumbnail_url }}" style="max-width:100%; height: auto;   object-fit: cover;">
                         <span class="d-flex justify-content-center">
@@ -44,7 +45,8 @@
                             </button>
                         </span>
                     </div>
-                    <div class="col-md-8">
+                    {% endif %}
+                    <div class="col{% if not video.is_unavailable_on_yt and not video.was_deleted_on_yt %}-md-8{% endif %}">
                         <div class="card-body">
                             <div class="row d-flex justify-content-between">
                                 <h2 class="card-title text-white col-10">
@@ -52,10 +54,22 @@
                                     <button class="btn btn-light btn-sm ms-2" onclick='document.getElementById("user-label-alert").style.display = "block";'>
                                         <i class="fas fa-pencil-alt" aria-hidden="true"></i>
                                     </button>
-
+                                    {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}
+                                    <button class="btn btn-dark" type="button" hx-get="{% url 'mark_video_favorite' video.video_id %}" hx-target="#video-fav">
+    <div id="video-fav">
+        {% if video.is_favorite %}
+            <i class="fas fa-heart" style="color: #fafa06"></i>
+        {% else %}
+            <i class="far fa-heart"></i>
+        {% endif %}
+    </div>
+</button>
+                                    {% endif %}
                                     <br><small class="h4">{% if video.user_label %}a.k.a <span style="border-bottom: 3px #ffffff dashed;"> {{ video.user_label }}</span>{% endif %}</small>
+
                                 </h2>
                             </div>
+                            {% if not video.is_unavailable_on_yt and not video.was_deleted_on_yt %}
                             <h6>by <a href="{% url 'search' %}?mode=videos&channel={{ video.channel_name }}" style="text-decoration: none; color: white"><span style="border-bottom: 3px #e35959 dashed;">{{ video.channel_name }}</span></a></h6>
                             <p class="card-text">
                                 {% if video.description %}
@@ -67,9 +81,11 @@
                                     <h5>No description</h5>
                                 {% endif %}
                             </p>
+                            {% endif %}
 
 
                             <h6 class="h5 text-uppercase overflow-auto text-black-50">
+                                {% if not video.is_unavailable_on_yt and not video.was_deleted_on_yt %}
                                 <a style="text-decoration: none" data-bs-toggle="collapse" href="#{{ video.video_id }}DurationCollapse" role="button" aria-expanded="false" aria-controls="{{ video.video_id }}DurationCollapse">
                                     <span class="badge bg-success mb-1">{{ video.duration }}</span>
                                 </a>
@@ -82,14 +98,17 @@
                                         </div>
                                     </div>
                                 </div>
+                                    {% endif %}
                                 <small>
+                                {% if not video.is_unavailable_on_yt and not video.was_deleted_on_yt %}
                                     {% if video.has_cc %}<span class="badge bg-danger mb-1">CC</span>{% endif %}
                                     {% if video.published_at %}<span class="badge bg-secondary mb-1">Video uploaded on {{ video.published_at }}</span>{% endif %}
                                     <span class="badge bg-primary text-white mb-1"><i class="fas fa-eye"></i> {% if video.view_count == -1 %}HIDDEN{% else %}{{ video.view_count|intcomma }}{% endif %}</span>
-                                    <span class="badge bg-warning text-black-50 mb-1"><i class="fas fa-thumbs-up"></i> {% if video.like_count == -1 %}HIDDEN{% else %}{{ video.like_count|intcomma }}{% endif %}</span>
+                                    <span class="badge bg-warning text-black-50 mb-1"><i class="fas fa-thumbs-up" {% if video.liked %}style="color: dodgerblue"{% endif %}></i> {% if video.like_count == -1 %}HIDDEN{% else %}{{ video.like_count|intcomma }}{% endif %}</span>
                                     <span class="badge bg-warning text-black-50 mb-1"><i class="fas fa-thumbs-down"></i> {% if video.dislike_count == -1 %}HIDDEN{% else %}{{ video.dislike_count|intcomma }}{% endif %}</span>
                                     <span class="badge bg-info text-black-50 mb-1"><i class="fas fa-comments"></i> {% if video.comment_count == -1 %}HIDDEN{% else %}{{ video.comment_count|intcomma }}{% endif %} </span>
-                                    {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}<span class="badge bg-light text-black-50 mb-1">UNAVAILABLE</span>{% endif %}
+                                {% endif %}
+                                    {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}<span class="badge bg-danger text-dark mb-1">UNAVAILABLE</span>{% endif %}
                                     <span class="badge bg-light text-black-50 mb-1"><a href="#found-in" style="text-decoration: none; color: grey"> Found in {{ video.playlists.all.count }} playlist{% if video.playlists.all.count > 1 %}s{% endif %}</a></span>
                                     {% if video.is_marked_as_watched %}
                                         <span class="badge bg-dark text-white" >
@@ -101,7 +120,7 @@
                                 </small>
 
                             </h6>
-                            <p class="card-text text-white-50"><small>Last updated {{ video.video_details_modified_at|naturalday }}</small> &bullet; <small>{{ video.num_of_accesses }} clicks </small></p>                        </div>
+                            <p class="card-text text-white-50"><small>Last updated {{ video.video_details_modified_at|naturalday }}</small> &bullet; <small>{{ video.num_of_accesses }} views </small></p>                        </div>
                     </div>
                 </div>
             </div>

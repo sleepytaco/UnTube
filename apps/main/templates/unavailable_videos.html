@@ -1,0 +1,43 @@
+
+{% extends 'base.html' %}
+{% block content %}
+
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 mb-3">
+            <h1 class="h2"><span style="border-bottom: 3px #e24949 dashed;">Unavailable Video Names</span> <span class="badge bg-primary rounded-pill">{{ videos.count }}</span></h1>
+
+
+        </div>
+
+        {% if videos %}
+            <input   class="form-control border border-secondary" type="text"
+                   name="search" placeholder="Begin to search playlists..."
+                   hx-post="{% url 'search_library' 'unavailable-videos'  %}"
+                   hx-trigger="keyup changed delay:700ms"
+                   hx-target="#search-results"
+                   hx-indicator=".htmx-indicator"
+                    aria-describedby="searchHelp">
+            <div id="searchHelp" class="form-text">For a more extensive name search and filtering, <a href="{% url 'search' %}?mode=videos&type=unavailable">click here</a>.</div>
+
+            <br>
+
+        <div id="search-results" class="row row-cols-1 row-cols-md-4 g-4">
+            {% include 'intercooler/video_cards.html' with videos=videos %}
+        </div>
+        {% else %}
+              <div class="card bg-dark text-white mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-center h3">
+                    Nothing here!
+                </div>
+                <div class="d-flex justify-content-center h5">
+                    Any video in your present UnTube collection that goes unavailable on YouTube will all show up here. Note that only
+                    video names will show up here.
+                </div>
+            </div>
+            </div>
+
+        {% endif %}
+        <br>
+
+{% endblock %}

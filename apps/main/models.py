@@ -1,3 +1,5 @@
+import datetime
+
 import requests
 from django.contrib.auth.models import User
 from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
@@ -542,14 +544,15 @@ class PlaylistManager(models.Manager):
                     except AttributeError:
                         break
 
-            playlist.last_full_scan_at = datetime.datetime.now(pytz.utc)
+            # playlist.last_full_scan_at = datetime.datetime.now(pytz.utc)
 
             playlist.save()
 
             deleted_videos = len(current_playlist_item_ids)  # left out video ids
 
             return [1, deleted_videos, unavailable_videos, added_videos]
-
+        else:
+            print("YOU CAN DO A FULL SCAN AGAIN IN", str(datetime.datetime.now(pytz.utc) - (playlist.last_full_scan_at + datetime.timedelta(minutes=1))))
         """
         print("DOING A SMOL SCAN")
 
@@ -900,6 +903,7 @@ class PlaylistManager(models.Manager):
         playlist.has_playlist_changed = False
         playlist.video_count = updated_playlist_video_count
         playlist.has_new_updates = True
+        playlist.last_full_scan_at = datetime.datetime.now(pytz.utc)
         playlist.save()
 
         deleted_playlist_item_ids = current_playlist_item_ids  # left out playlist_item_ids
@@ -974,8 +978,12 @@ class PlaylistManager(models.Manager):
 
                 if not playlist.playlist_items.filter(video__video_id=video.video_id).exists():
                     playlist.videos.remove(video)
-                    if video.playlists.all().count() == 0: # also delete the video if it is not found in other playlists
+                    if video.playlists.all().count() == 0:  # also delete the video if it is not found in other playlists
                         video.delete()
+
+                if playlist_id == "LL":
+                    video.liked = False
+                    video.save(update_fields=['liked'])
 
                 new_playlist_video_count -= 1
                 new_playlist_duration_in_seconds -= video.duration_in_seconds
@@ -985,7 +993,8 @@ class PlaylistManager(models.Manager):
             playlist.thumbnail_url = ""
         playlist.playlist_duration_in_seconds = new_playlist_duration_in_seconds
         playlist.playlist_duration = getHumanizedTimeString(new_playlist_duration_in_seconds)
-        playlist.save(update_fields=['video_count', 'playlist_duration', 'playlist_duration_in_seconds', 'thumbnail_url'])
+        playlist.save(
+            update_fields=['video_count', 'playlist_duration', 'playlist_duration_in_seconds', 'thumbnail_url'])
         # time.sleep(2)
 
         playlist_items = playlist.playlist_items.select_related('video').order_by("video_position")
@@ -1167,7 +1176,7 @@ class PlaylistManager(models.Manager):
                     pl_response = pl_request.execute()
                 except googleapiclient.errors.HttpError as e:  # failed to update add video to playlis
                     print("ERROR ADDDING VIDEOS TO PLAYLIST", e.status_code, e.error_details)
-                    if e.status_code == 400: # manualSortRequired - see errors https://developers.google.com/youtube/v3/docs/playlistItems/insert
+                    if e.status_code == 400:  # manualSortRequired - see errors https://developers.google.com/youtube/v3/docs/playlistItems/insert
                         pl_request = youtube.playlistItems().insert(
                             part="snippet",
                             body={
@@ -1200,7 +1209,10 @@ class Tag(models.Model):
     created_by = models.ForeignKey(User, related_name="playlist_tags", on_delete=models.CASCADE, null=True)
 
     times_viewed = models.IntegerField(default=0)
+    times_viewed_per_week = models.IntegerField(default=0)
     # type = models.CharField(max_length=10)  # either 'playlist' or 'video'
+
+    last_views_reset = models.DateTimeField(default=datetime.datetime.now)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

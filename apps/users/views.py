@@ -74,15 +74,17 @@ def update_settings(request):
     user = request.user
     username_input = request.POST['username'].strip()
     message_content = "Saved!"
-    message_type = "success"
+    #message_type = "success"
     if username_input != user.username:
         if User.objects.filter(username__exact=username_input).count() != 0:
-            message_type = "danger"
+            #message_type = "danger"
             message_content = f"Username {request.POST['username'].strip()} already taken"
+            messages.error(request, message_content)
         else:
             user.username = request.POST['username'].strip()
             # user.save()
             message_content = f"Username updated to {username_input}!"
+            messages.success(request, message_content)
 
     if 'open search in new tab' in request.POST:
         user.profile.open_search_new_tab = True
@@ -94,10 +96,27 @@ def update_settings(request):
     else:
         user.profile.enable_gradient_bg = False
 
+    if 'auto refresh playlists' in request.POST:
+        user.profile.auto_check_for_updates = True
+    else:
+        user.profile.auto_check_for_updates = False
+
+    if 'confirm before deleting' in request.POST:
+        user.profile.confirm_before_deleting = True
+    else:
+        user.profile.confirm_before_deleting = False
+
+    if 'hide videos' in request.POST:
+        user.profile.hide_unavailable_videos = True
+    else:
+        user.profile.hide_unavailable_videos = False
+
     user.save()
 
-    return HttpResponse(loader.get_template("intercooler/messages.html").render(
-        {"message_type": message_type, "message_content": message_content, "refresh_page": True}))
+    if message_content == "Saved!":
+        messages.success(request, message_content)
+
+    return redirect('settings')
 
 
 @login_required

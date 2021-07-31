@@ -2,9 +2,11 @@ import datetime
 import humanize
 import re
 
-
 # given amount of seconds makes it into this 54 MINUTES AND 53 SECONDS (from humanize) then
 # perform a bunch of replace operations to make it look like 54mins. 53secs.
+import pytz
+
+
 def getHumanizedTimeString(seconds):
     return humanize.precisedelta(
         datetime.timedelta(seconds=seconds)).upper(). \
@@ -73,3 +75,19 @@ def generateWatchingMessage(playlist):
     and using their durations
     """
     pass
+
+
+def increment_tag_views(playlist_tags):
+    """
+    Increments playlist tag overall views and views per week. If its been a week, views per week is reset to
+    zero.
+    """
+    for tag in playlist_tags:
+        # reset tag views if its been a week
+        if tag.last_views_reset + datetime.timedelta(days=7) < datetime.datetime.now(pytz.utc):
+            tag.times_viewed_per_week = 0
+            tag.last_views_reset = datetime.datetime.now(pytz.utc)
+        else:
+            tag.times_viewed_per_week += 1
+        tag.times_viewed += 1
+        tag.save(update_fields=['times_viewed', 'last_views_reset', 'times_viewed_per_week'])
