@@ -1284,8 +1284,8 @@ class Video(models.Model):
     is_marked_as_watched = models.BooleanField(default=False)  # mark video as watched
     is_favorite = models.BooleanField(default=False, blank=True)  # mark video as favorite
     num_of_accesses = models.IntegerField(default=0)  # tracks num of times this video was clicked on by user
-    user_label = models.CharField(max_length=100, default="")  # custom user given name for this video
-    user_notes = models.CharField(max_length=420, default="")  # user can take notes on the video and save them
+    user_label = models.CharField(max_length=100, blank=True)  # custom user given name for this video
+    user_notes = models.CharField(max_length=420, blank=True)  # user can take notes on the video and save them
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1339,9 +1339,9 @@ class Playlist(models.Model):
     # set playlist manager
     objects = PlaylistManager()
 
-    # playlist settings
-    hide_unavailable_videos = models.BooleanField(default=False)
-    confirm_before_deleting = models.BooleanField(default=True)
+    # playlist settings (moved to global preferences)
+    #hide_unavailable_videos = models.BooleanField(default=False)
+    #confirm_before_deleting = models.BooleanField(default=True)
 
     # for import
     is_in_db = models.BooleanField(default=False)  # is true when all the videos of a playlist have been imported

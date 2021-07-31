@@ -29,6 +29,16 @@
                     </div>
                   </div>
                     <hr>
+                    <div class="row">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Playlist User Label</h6>
+                    </div>
+                    <div class="col-sm-9 text-white-50">
+                        <input type="text" class="form-control" name="user_label" placeholder="Enter a user label to identify this playlist with" value="{{ playlist.user_label }}">
+                    </div>
+                  </div>
+
+                      <hr>
 
                       <div class="row">
                         <div class="col-sm-3">
@@ -62,25 +72,6 @@
                         </div>
                         </div>
                       <hr>
-                    <div class="row">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">Preferences</h6>
-                        </div>
-                        <div class="col-sm-9 text-white">
-
-                            <div class="mb-3 form-check form-switch">
-                            <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" {% if playlist.hide_unavailable_videos %}checked{% endif %}>
-                            <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
-                            </div>
-
-
-                            <div class="mb-3 form-check form-switch">
-                            <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" {% if playlist.confirm_before_deleting %}checked{% endif %}>
-                            <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
-                            </div>
-                        </div>
-                    </div>
-                    <hr>
                     <div class="row">
                         <div class="col-sm-3">
                           <h6 class="mb-0">Danger Zone</h6>
@@ -130,6 +121,16 @@
                   </div>
 
                       <hr>
+                        <div class="row">
+                    <div class="col-sm-3">
+                      <h6 class="mb-0">Playlist User Label</h6>
+                    </div>
+                    <div class="col-sm-9 text-white-50">
+                        <input type="text" class="form-control" name="user_label" placeholder="Enter a user label to identify this playlist with" value="{{ playlist.user_label }}">
+                    </div>
+                  </div>
+
+                      <hr>
                       <div class="row">
                         <div class="col-sm-3">
                           <h6 class="mb-0">Created By</h6>
@@ -138,25 +139,6 @@
                             <input type="text" class="form-control" id="fullname" value="{{ playlist.channel_name }}" disabled>
                         </div>
                       </div>
-                      <hr>
-                        <div class="row">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">Preferences</h6>
-                        </div>
-                        <div class="col-sm-9 text-white">
-
-                            <div class="mb-3 form-check form-switch">
-                            <input class="form-check-input" name="hide videos" type="checkbox" id="flexSwitchCheckChecked" checked>
-                            <label class="form-check-label" for="flexSwitchCheckChecked">Hide deleted/private videos</label>
-                            </div>
-
-
-                            <div class="mb-3 form-check form-switch">
-                            <input class="form-check-input" name="confirm before deleting" type="checkbox" id="flexSwitchCheckChecked" checked>
-                            <label class="form-check-label" for="flexSwitchCheckChecked">Confirm before deleting</label>
-                            </div>
-                        </div>
-                    </div>
 
                         <hr>
                       <div class="row">

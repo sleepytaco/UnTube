@@ -166,39 +166,39 @@ def search_library(request, library_type):
     playlists = None
     if library_type == "all":
         try:
-            playlists = request.user.playlists.all().filter(Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_in_db=True))
+            playlists = request.user.playlists.all().filter(Q(is_in_db=True)).filter(Q(name__startswith=search_query) | Q(user_label__startswith=search_query))
         except:
-            playlists = request.user.playlists.all()
+            playlists = request.user.playlists.all().filter(is_in_db=True)
     elif library_type == "user-owned":  # YT playlists owned by user
         try:
-            playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_user_owned=True) & Q(is_in_db=True))
+            playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True)).filter(
+                Q(name__startswith=search_query) | Q(user_label__startswith=search_query))
         except:
             playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
     elif library_type == "imported":  # YT playlists (public) owned by others
         try:
-            playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_user_owned=False) & Q(is_in_db=True))
+            playlists = request.user.playlists.filter(Q(is_user_owned=False) & Q(is_in_db=True)).filter(
+                Q(name__startswith=search_query) | Q(user_label__startswith=search_query))
         except:
             playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True))
     elif library_type == "favorites":  # YT playlists (public) owned by others
         try:
-            playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_favorite=True) & Q(is_in_db=True))
+            playlists = request.user.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True)).filter(
+                Q(name__startswith=search_query) | Q(user_label__startswith=search_query))
         except:
             playlists = request.user.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True))
     elif library_type in ["watching", "plan-to-watch"]:
         try:
-            playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(marked_as=playlist_type) & Q(is_in_db=True))
+            playlists = request.user.playlists.filter(Q(marked_as=library_type) & Q(is_in_db=True)).filter(
+                Q(name__startswith=search_query) | Q(user_label__startswith=search_query) )
         except:
-            playlists = request.user.playlists.all().filter(Q(marked_as=playlist_type) & Q(is_in_db=True))
+            playlists = request.user.playlists.all().filter(Q(marked_as=library_type) & Q(is_in_db=True))
         if library_type == "watching":
             watching = True
     elif library_type == "yt-mix":  # YT playlists owned by user
         try:
-            playlists = request.user.playlists.filter(
-                Q(name__startswith=search_query) | Q(user_label__startswith=search_query) & Q(is_yt_mix=True) & Q(is_in_db=True))
+            playlists = request.user.playlists.filter(Q(is_yt_mix=True) & Q(is_in_db=True)).filter(
+                Q(name__startswith=search_query) | Q(user_label__startswith=search_query))
         except:
             playlists = request.user.playlists.filter(Q(is_yt_mix=True) & Q(is_in_db=True))
     elif library_type == 'unavailable-videos':
@@ -216,7 +216,12 @@ def search_library(request, library_type):
 @login_required
 @require_POST
 def search_tagged_playlists(request, tag):
-    tag = get_object_or_404(Tag, created_by=request.user, name=tag)
-    playlists = tag.playlists.all()
+    search_query = request.POST["search"]
+    try:
+        playlists = request.user.playlists.all().filter(Q(is_in_db=True) & Q(tags__name=tag)).filter(
+            Q(name__startswith=search_query) | Q(user_label__startswith=search_query))
+    except:
+        playlists = request.user.playlists.all().filter(Q(is_in_db=True) & Q(tags__name=tag))
 
-    return HttpResponse("yay")
+    return HttpResponse(loader.get_template("intercooler/playlists.html")
+                        .render({"playlists": playlists}))

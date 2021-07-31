@@ -108,7 +108,7 @@
                                     <span class="badge bg-warning text-black-50 mb-1"><i class="fas fa-thumbs-down"></i> {% if video.dislike_count == -1 %}HIDDEN{% else %}{{ video.dislike_count|intcomma }}{% endif %}</span>
                                     <span class="badge bg-info text-black-50 mb-1"><i class="fas fa-comments"></i> {% if video.comment_count == -1 %}HIDDEN{% else %}{{ video.comment_count|intcomma }}{% endif %} </span>
                                 {% endif %}
-                                    {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}<span class="badge bg-danger text-dark mb-1">UNAVAILABLE</span>{% endif %}
+                                    {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}<span class="badge bg-danger text-light mb-1">VIDEO WENT UNAVAILABLE ON YT</span>{% endif %}
                                     <span class="badge bg-light text-black-50 mb-1"><a href="#found-in" style="text-decoration: none; color: grey"> Found in {{ video.playlists.all.count }} playlist{% if video.playlists.all.count > 1 %}s{% endif %}</a></span>
                                     {% if video.is_marked_as_watched %}
                                         <span class="badge bg-dark text-white" >
@@ -156,14 +156,11 @@
             <div >
                 <textarea name="video-notes-text-area"
                     hx-post="{% url 'video_notes' video.video_id %}"
-                    hx-trigger="keyup changed delay:1.5s"
+                    hx-trigger="keyup changed delay:0.7s"
                     hx-target="#notes-save-status"
                     class="form-control"
-                    id="video-notes-text-area"
-                    placeholder="Enter here"
-                    rows="13">
-                    {{ video.user_notes }}
-                </textarea>
+                    placeholder="Enter here. Automatically saved after every 1s of typing!"
+                    rows="13">{{ video.user_notes }}</textarea>
 
                 <div>
 

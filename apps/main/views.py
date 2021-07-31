@@ -25,7 +25,7 @@ def home(request):
     user_profile = request.user
     watching = user_profile.playlists.filter(Q(marked_as="watching") & Q(is_in_db=True)).order_by("-num_of_accesses")
     recently_accessed_playlists = user_profile.playlists.filter(is_in_db=True).filter(
-        updated_at__gt=user_profile.profile.updated_at).order_by("-updated_at")[:6]
+        updated_at__gt=user_profile.profile.created_at).order_by("-updated_at")[:6]
     recently_added_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-created_at")[:6]
 
     #### FOR NEWLY JOINED USERS ######
@@ -692,30 +692,25 @@ def update_playlist_settings(request, playlist_id):
     print(request.POST)
     playlist = request.user.playlists.get(playlist_id=playlist_id)
 
-    if 'confirm before deleting' in request.POST:
-        playlist.confirm_before_deleting = True
-    else:
-        playlist.confirm_before_deleting = False
+    if 'user_label' in request.POST:
+        playlist.user_label = request.POST["user_label"]
+        playlist.save(update_fields=['user_label'])
 
-    if 'hide videos' in request.POST:
-        playlist.hide_unavailable_videos = True
-    else:
-        playlist.hide_unavailable_videos = False
+    try:
+        valid_title = request.POST['playlistTitle'].replace(">", "greater than").replace("<", "less than")
+        valid_description = request.POST['playlistDesc'].replace(">", "greater than").replace("<", "less than")
+        details = {
+            "title": valid_title,
+            "description": valid_description,
+            "privacyStatus": True if request.POST['playlistPrivacy'] == "Private" else False
+        }
 
-    playlist.save(update_fields=['hide_unavailable_videos', 'confirm_before_deleting'])
-
-    valid_title = request.POST['playlistTitle'].replace(">", "greater than").replace("<", "less than")
-    valid_description = request.POST['playlistDesc'].replace(">", "greater than").replace("<", "less than")
-    details = {
-        "title": valid_title,
-        "description": valid_description,
-        "privacyStatus": True if request.POST['playlistPrivacy'] == "Private" else False
-    }
-
-    status = Playlist.objects.updatePlaylistDetails(request.user, playlist_id, details)
-    if status == -1:
-        message_type = "danger"
-        message_content = "Could not save :("
+        status = Playlist.objects.updatePlaylistDetails(request.user, playlist_id, details)
+        if status == -1:
+            message_type = "danger"
+            message_content = "Could not save :("
+    except:
+        pass
 
     return HttpResponse(loader.get_template("intercooler/messages.html")
         .render(

@@ -205,11 +205,13 @@
                         You haven't created any playlist tags yet.
                     {% endif %}
                 </div>
+            {% if playlist_tags %}
                 <div class="d-flex justify-content-center">
                     <h3>
                         <a href="{% url 'search' %}" class="btn btn-success">Filter Playlists by Tags</a>
                     </h3>
                 </div>
+                {% endif %}
             </div>
         </div>
 
@@ -305,7 +307,7 @@
 
                 {% if recently_accessed_playlists %}
                     <div class="row row-cols-1 row-cols-md-3 g-4 text-dark mt-0">
-                        {% include 'intercooler/playlists.html' with playlists=recently_accessed_playlists watching=False bg_color="#357779" show_controls=False %}
+                        {% include 'intercooler/playlists.html' with playlists=recently_accessed_playlists watching=False bg_color="#9363af" show_controls=False %}
                     </div>
                 {% else %}
                     <br>
