@@ -6,7 +6,9 @@
             <div class="row g-0">
                 {% if not video.is_unavailable_on_yt and not video.was_deleted_on_yt %}
                 <div class="col-md-4">
+                    <a href="{% url 'video' video.video_id %}" style="text-decoration: none; color: white">
                     <img src="{{ video.thumbnail_url }}" class="img-fluid" style="width: 100%; height: 15vw; object-fit: cover;">
+                    </a>
                 </div>
                 {% endif %}
                 <div class="col-md-8">

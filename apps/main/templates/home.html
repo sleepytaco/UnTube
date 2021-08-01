@@ -41,6 +41,7 @@
             <div hx-get="{% url 'user_playlists_updates' 'check-for-updates' %}" hx-trigger="load" hx-swap="outerHTML">
 
             </div>
+
         {% endif %}
 
         <div class="row">
@@ -195,7 +196,7 @@
                 <div class="d-flex justify-content-evenly h4">
                     {% if playlist_tags %}
                     <div class="w-100 d-flex justify-content-center flex-wrap">
-                    {% for tag in playlist_tags %}
+                    {% for tag in playlist_tags|slice:"0:19" %}
                         <a href="{% url 'tagged_playlists' tag.name %}" style="text-decoration: none" class="me-lg-1 mb-lg-1">
                         <span class="badge rounded-pill bg-warning bg-gradient text-black-50">{{ tag.name }} <span class="badge bg-dark text-white">{{ tag.times_viewed_per_week }} views</span></span>
                         </a>

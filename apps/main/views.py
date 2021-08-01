@@ -24,8 +24,7 @@ from .util import *
 def home(request):
     user_profile = request.user
     watching = user_profile.playlists.filter(Q(marked_as="watching") & Q(is_in_db=True)).order_by("-num_of_accesses")
-    recently_accessed_playlists = user_profile.playlists.filter(is_in_db=True).filter(
-        updated_at__gt=user_profile.profile.created_at).order_by("-updated_at")[:6]
+    recently_accessed_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-updated_at")[:6]
     recently_added_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-created_at")[:6]
 
     #### FOR NEWLY JOINED USERS ######
@@ -187,7 +186,7 @@ def view_playlist(request, playlist_id):
 @login_required
 def tagged_playlists(request, tag):
     tag = get_object_or_404(Tag, created_by=request.user, name=tag)
-    playlists = tag.playlists.all()
+    playlists = request.user.playlists.all().filter(Q(is_in_db=True) & Q(tags__name=tag.name)).order_by("-updated_at")
 
     return render(request, 'all_playlists_with_tag.html', {"playlists": playlists, "tag": tag})
 
@@ -248,7 +247,7 @@ def library(request, library_type):
     else:
         return redirect('home')
 
-    return render(request, 'all_playlists.html', {"playlists": playlists,
+    return render(request, 'all_playlists.html', {"playlists": playlists.order_by("-updated_at"),
                                                   "library_type": library_type,
                                                   "library_type_display": library_type_display,
                                                   "watching": watching})
@@ -396,7 +395,7 @@ def playlists_home(request):
 
 @login_required
 @require_POST
-def delete_videos(request, playlist_id, command):
+def playlist_delete_videos(request, playlist_id, command):
     all = False
     num_vids = 0
     playlist_item_ids = []
@@ -693,12 +692,18 @@ def update_playlist_settings(request, playlist_id):
     playlist = request.user.playlists.get(playlist_id=playlist_id)
 
     if 'user_label' in request.POST:
-        playlist.user_label = request.POST["user_label"]
-        playlist.save(update_fields=['user_label'])
+        playlist.user_label = bleach.clean(request.POST["user_label"])
+
+    if 'pl-auto-update' in request.POST:
+        playlist.auto_check_for_updates = True
+    else:
+        playlist.auto_check_for_updates = False
+
+    playlist.save(update_fields=['auto_check_for_updates', 'user_label'])
 
     try:
-        valid_title = request.POST['playlistTitle'].replace(">", "greater than").replace("<", "less than")
-        valid_description = request.POST['playlistDesc'].replace(">", "greater than").replace("<", "less than")
+        valid_title = bleach.clean(request.POST['playlistTitle'])
+        valid_description = bleach.clean(request.POST['playlistDesc'])
         details = {
             "title": valid_title,
             "description": valid_description,
@@ -1062,7 +1067,7 @@ def playlist_move_copy_videos(request, playlist_id, action):
                                                              playlist_item_ids=playlist_item_ids,
                                                              action="move")
         if result['status'] == -1:
-            if status[1] == 404:
+            if result['status'] == 404:
                 return HttpResponse(
                     "<span class='text-danger'>You cannot copy/move unavailable videos! De-select them and try again.</span>")
             return HttpResponse("Error moving!")
@@ -1134,3 +1139,38 @@ def add_playlist_user_label(request, playlist_id):
         playlist.user_label = bleach.clean(request.POST["user_label"].strip())
         playlist.save(update_fields=['user_label'])
     return redirect('playlist', playlist_id=playlist_id)
+
+
+@login_required
+@require_POST
+def playlist_add_new_videos(request, playlist_id):
+    textarea_input = bleach.clean(request.POST["add-videos-textarea"])
+    video_links = textarea_input.strip().split("\n")[:25]
+
+    video_ids = []
+    for video_link in video_links:
+        if video_link.strip() == "":
+            continue
+        video_id = getVideoId(video_link)
+        if video_id is None or video_id in video_ids:
+            continue
+        video_ids.append(video_id)
+    result = Playlist.objects.addVideosToPlaylist(request.user, playlist_id, video_ids)
+    added = result["num_added"]
+    max_limit_reached = result["playlistContainsMaximumNumberOfVideos"]
+    if max_limit_reached and added == 0:
+        message = "Could not add any new videos to this playlist as the max limit has been reached :("
+        messages.error(request, message)
+    elif max_limit_reached and added != 0:
+        message = f"Only added the first {added} video link(s) to this playlist as the max playlist limit has been reached :("
+        messages.warning(request, message)
+    #else:
+    #    message = f"Successfully added {added} videos to this playlist."
+    #    messages.success(request, message)
+
+    return HttpResponse("""
+        Done! Refreshing...
+            <script>
+            window.location.reload();
+            </script>
+    """)

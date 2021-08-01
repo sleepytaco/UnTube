@@ -33,12 +33,16 @@
                 </div>
             {% else %}
                 <div class="sticky-top mb-3" style="top: 0.5rem;">
-                    {% if user.profile.auto_check_for_updates and not playlist.is_yt_mix %}
-                        <div hx-get="{% url 'update_playlist' playlist.playlist_id 'checkforupdates' %}" hx-trigger="load" hx-swap="outerHTML" id="checkforupdates">
-                            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                                Checking playlist for updates...
-                            </div>
-                        </div>
+                    {% if not playlist.is_yt_mix %}
+                        {% if user.profile.auto_check_for_updates %}
+                            {% if playlist.auto_check_for_updates %}
+                                <div hx-get="{% url 'update_playlist' playlist.playlist_id 'checkforupdates' %}" hx-trigger="load" hx-swap="outerHTML" id="checkforupdates">
+                                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                        Checking playlist for updates...
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endif %}
                     {% endif %}
                     {% if playlist.marked_as == "watching" %}
                         <div id="playlist-watch-message">
@@ -503,18 +507,13 @@
 
 
                                 <div class="col-md-8 text-dark">
-                                    <div id="add-videos-from">
-                                        <textarea name="add-videos-textarea" class="form-control" id="add-videos-text-area" placeholder="Enter video links or video IDs line by line here" rows="5"
-                                            hx-post="{% url 'manage_save' 'manage_playlists_import_textarea' %}"
-                                            hx-trigger="keyup changed delay:500ms"
-                                            hx-indicator="#spinner">{{ manage_playlists_import_textarea }}</textarea>
-                                        <div id="add-videos-text-area" class="form-text">
-                                            <a href="{% url 'search' %}?mode=videos&type=all" target="_blank" style="color: #398439; text-decoration: none">search on UnTube <i class="fas fa-external-link-alt"></i> </a> or
-                                            <a href="https://www.youtube.com/" target="_blank" style="color: #ec2d90; text-decoration: none">search on YouTube <i class="fas fa-external-link-alt"></i> </a>
-                                        </div>
-
+                                    <textarea name="add-videos-textarea" class="form-control" id="add-videos-textarea" placeholder="Enter video links or video IDs line by line here"
+                                        rows="5">{{ manage_playlists_import_textarea }}</textarea>
+                                    <div class="form-text">
+                                        Note: You can only add 25 videos at a time. Find videos by
+                                        <a href="{% url 'search' %}?mode=videos&type=all" target="_blank" style="color: #398439; text-decoration: none">searching on UnTube <i class="fas fa-external-link-alt"></i> </a> or
+                                        <a href="https://www.youtube.com/" target="_blank" style="color: #ec2d90; text-decoration: none">searching on YouTube <i class="fas fa-external-link-alt"></i> </a>
                                     </div>
-
                                 </div>
 
                             </div>
@@ -522,16 +521,17 @@
                             <div class="d-flex justify-content-start mt-2">
 
                                 <div class="btn-group ms-1 mt-1">
-                                    <button hx-indicator="#add-videos-loader" hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'copy' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-primary">
+                                    <button hx-indicator="#add-videos-loader" hx-post="{% url 'playlist_add_new_videos' playlist.playlist_id %}" hx-include="#add-videos-textarea" hx-target="#add-videos-box" type="button" class="btn btn-primary">
                                         Add
                                     </button>
                                 </div>
-                                <div id="add-videos-box" class="d-flex align-items-end ms-2">
+                                <div id="add-videos-box" class="d-flex align-items-end ms-2 text-warning">
+
                                 </div>
-                                    <div class="htmx-indicator d-flex align-items-center" id="add-videos-loader">
-                                        <img src="{% static 'svg-loaders/grid.svg' %}" width="25" height="25" class="ms-2 mt-2">
-                                        <span class="mt-2 ms-2 text-warning">Adding videos, please wait... </span>
-                                    </div>
+                                <div class="htmx-indicator d-flex align-items-center" id="add-videos-loader">
+                                    <img src="{% static 'svg-loaders/grid.svg' %}" width="25" height="25" class="ms-2 mt-2">
+                                    <span class="mt-2 ms-2 text-warning">Adding videos, please wait... </span>
+                                </div>
                             </div>
 
                         </div>
@@ -569,10 +569,10 @@
                                 </div>
                                 <div id="add-videos-box" class="d-flex align-items-end ms-2">
                                 </div>
-                                    <div class="htmx-indicator d-flex align-items-center" id="create-playlist-loader">
-                                        <img src="{% static 'svg-loaders/grid.svg' %}" width="25" height="25" class="ms-2 mt-2">
-                                        <span class="mt-2 ms-2 text-warning">Creating playlist, please wait... </span>
-                                    </div>
+                                <div class="htmx-indicator d-flex align-items-center" id="create-playlist-loader">
+                                    <img src="{% static 'svg-loaders/grid.svg' %}" width="25" height="25" class="ms-2 mt-2">
+                                    <span class="mt-2 ms-2 text-warning">Creating playlist, please wait... </span>
+                                </div>
                             </div>
 
                         </div>
@@ -713,15 +713,52 @@
 
                         </div>
                     {% else %}
-                        <div class="card bg-dark text-white mb-3">
+                        <div class="card bg-dark text-white">
                             <div class="card-body">
-                                <div class="d-flex justify-content-center align-content-center">
+                                <div class="d-flex justify-content-center align-content-center mt-2">
                                     Playlist is empty ;-;
                                 </div>
                                 <div class="d-flex justify-content-center align-content-center">
                                     Consider moving/copying videos from other playlists into this playlist by copying and using this playlist's ID.
                                 </div>
+                                <div class="d-flex justify-content-center align-content-center">
+                                    - OR -
+                                </div>
+                                <div class="d-flex justify-content-center align-content-center">
+                                    Add new videos to this playlist
+                                </div>
 
+                                <div class="d-flex justify-content-center mt-2">
+                                    <textarea name="add-videos-textarea" class="form-control w-50" id="add-videos-textarea" placeholder="Enter video links or video IDs line by line here"
+                                        rows="5">{{ manage_playlists_import_textarea }}</textarea>
+
+                                </div>
+                                <div class="d-flex justify-content-center">
+
+                                    <div class="form-text">
+                                        Note: You can only add 25 videos at a time. Find videos by
+                                        <a href="{% url 'search' %}?mode=videos&type=all" target="_blank" style="color: #398439; text-decoration: none">searching on UnTube <i class="fas fa-external-link-alt"></i> </a> or
+                                        <a href="https://www.youtube.com/" target="_blank" style="color: #ec2d90; text-decoration: none">searching on YouTube <i class="fas fa-external-link-alt"></i> </a>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-center mt-2">
+
+                                    <div class="btn-group ms-1 mt-1">
+                                        <button hx-indicator="#add-videos-loader" hx-post="{% url 'playlist_add_new_videos' playlist.playlist_id %}" hx-include="#add-videos-textarea" hx-target="#add-videos-box" type="button" class="btn btn-primary">
+                                            Add
+                                        </button>
+                                    </div>
+
+                                </div>
+                                <div class="d-flex justify-content-center mt-2">
+                                    <div id="add-videos-box" class="d-flex align-items-end ms-2 text-warning">
+
+                                    </div>
+                                    <div class="htmx-indicator d-flex align-items-center" id="add-videos-loader">
+                                        <img src="{% static 'svg-loaders/grid.svg' %}" width="25" height="25" class="ms-2 mt-2">
+                                        <span class="mt-2 ms-2 text-warning">Adding videos, please wait... </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

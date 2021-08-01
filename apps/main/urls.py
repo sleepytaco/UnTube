@@ -38,7 +38,7 @@ urlpatterns = [
     path("playlist/<slug:playlist_id>/get-tags", views.get_playlist_tags, name="get_playlist_tags"),
     path("playlist/<slug:playlist_id>/get-unused-tags", views.get_unused_playlist_tags, name="get_unused_playlist_tags"),
     path("playlist/<slug:playlist_id>/get-watch-message", views.get_watch_message, name="get_watch_message"),
-    path("playlist/<slug:playlist_id>/delete-videos/<slug:command>", views.delete_videos, name='delete_videos'),
+    path("playlist/<slug:playlist_id>/delete-videos/<slug:command>", views.playlist_delete_videos, name='delete_videos'),
     path("playlist/<slug:playlist_id>/delete-specific-videos/<slug:command>", views.delete_specific_videos, name='delete_specific_videos'),
     path("playlist/<slug:playlist_id>/delete-playlist", views.delete_playlist, name="delete_playlist"),
     path("playlist/<slug:playlist_id>/reset-watched", views.reset_watched, name="reset_watched"),
@@ -46,6 +46,8 @@ urlpatterns = [
     path("playlist/<slug:playlist_id>/open-random-video", views.playlist_open_random_video, name="playlist_open_random_video"),
     path("playlist/<slug:playlist_id>/get-playlist-completion-times", views.playlist_completion_times,
          name="playlist_completion_times"),
+    path("playlist/<slug:playlist_id>/add-new-videos", views.playlist_add_new_videos,
+         name="playlist_add_new_videos"),
 
     ### STUFF RELATED TO PLAYLISTS IN BULK
     path("playlists/<slug:playlist_type>/order-by/<slug:order_by>", views.order_playlists_by, name='order_playlists_by'),

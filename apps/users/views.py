@@ -86,29 +86,35 @@ def update_settings(request):
             message_content = f"Username updated to {username_input}!"
             messages.success(request, message_content)
 
-    if 'open search in new tab' in request.POST:
+    if 'open search in new tab' in request.POST and user.profile.open_search_new_tab is False:
         user.profile.open_search_new_tab = True
-    else:
+    elif 'open search in new tab' not in request.POST and user.profile.open_search_new_tab is True:
         user.profile.open_search_new_tab = False
 
-    if 'enable gradient bg' in request.POST:
+    if 'enable gradient bg' in request.POST and user.profile.enable_gradient_bg is False:
         user.profile.enable_gradient_bg = True
-    else:
+    elif 'enable gradient bg' not in request.POST and user.profile.enable_gradient_bg is True:
         user.profile.enable_gradient_bg = False
 
-    if 'auto refresh playlists' in request.POST:
+    if 'auto refresh playlists' in request.POST and user.profile.auto_check_for_updates is False:
         user.profile.auto_check_for_updates = True
-    else:
+        for playlist in user.playlists.all():
+            playlist.auto_check_for_updates = True
+            playlist.save(update_fields=['auto_check_for_updates'])
+    elif 'auto refresh playlists' not in request.POST and user.profile.auto_check_for_updates is True:
         user.profile.auto_check_for_updates = False
+        for playlist in user.playlists.all():
+            playlist.auto_check_for_updates = False
+            playlist.save(update_fields=['auto_check_for_updates'])
 
-    if 'confirm before deleting' in request.POST:
+    if 'confirm before deleting' in request.POST and user.profile.confirm_before_deleting is False:
         user.profile.confirm_before_deleting = True
-    else:
+    elif 'confirm before deleting' not in request.POST and user.profile.confirm_before_deleting is True:
         user.profile.confirm_before_deleting = False
 
-    if 'hide videos' in request.POST:
+    if 'hide videos' in request.POST and user.profile.hide_unavailable_videos is False:
         user.profile.hide_unavailable_videos = True
-    else:
+    elif 'hide videos' not in request.POST and user.profile.hide_unavailable_videos is True:
         user.profile.hide_unavailable_videos = False
 
     user.save()

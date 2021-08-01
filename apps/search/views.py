@@ -209,7 +209,7 @@ def search_library(request, library_type):
         return HttpResponse(loader.get_template("intercooler/video_cards.html").render({"videos": videos}))
 
     return HttpResponse(loader.get_template("intercooler/playlists.html")
-                        .render({"playlists": playlists,
+                        .render({"playlists": playlists.order_by("-updated_at"),
                                  "watching": watching}))
 
 
@@ -221,7 +221,7 @@ def search_tagged_playlists(request, tag):
         playlists = request.user.playlists.all().filter(Q(is_in_db=True) & Q(tags__name=tag)).filter(
             Q(name__startswith=search_query) | Q(user_label__startswith=search_query))
     except:
-        playlists = request.user.playlists.all().filter(Q(is_in_db=True) & Q(tags__name=tag))
+        playlists = request.user.playlists.all().filter(Q(is_in_db=True) & Q(tags__name=tag)).order_by("-updated_at")
 
     return HttpResponse(loader.get_template("intercooler/playlists.html")
                         .render({"playlists": playlists}))

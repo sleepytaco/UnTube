@@ -1342,6 +1342,7 @@ class Playlist(models.Model):
     # playlist settings (moved to global preferences)
     #hide_unavailable_videos = models.BooleanField(default=False)
     #confirm_before_deleting = models.BooleanField(default=True)
+    auto_check_for_updates = models.BooleanField(default=False)
 
     # for import
     is_in_db = models.BooleanField(default=False)  # is true when all the videos of a playlist have been imported

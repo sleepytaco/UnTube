@@ -77,6 +77,20 @@ def generateWatchingMessage(playlist):
     pass
 
 
+def getVideoId(video_link):
+    """
+    takes in a valid video link and returns a video id
+    """
+    if "?" not in video_link:
+        return video_link
+
+    temp = video_link.split("?")[-1].split("&")
+
+    for el in temp:
+        if "v=" in el:
+            return el.split("v=")[-1]
+
+
 def increment_tag_views(playlist_tags):
     """
     Increments playlist tag overall views and views per week. If its been a week, views per week is reset to
