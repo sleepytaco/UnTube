@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'apps.users',  # has stuff related to user management in it (login, signup, show homepage, import)
     'apps.main',  # main app, shows user their homepage
+    'apps.manage_playlists',
     'apps.charts',
     'apps.search',
 ]

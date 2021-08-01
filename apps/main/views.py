@@ -539,89 +539,6 @@ def mark_video_watched(request, playlist_id, video_id):
 ###########
 
 
-@login_required
-def manage_playlists(request):
-    return render(request, "manage_playlists.html")
-
-
-@login_required
-def manage_view_page(request, page):
-    if page == "import":
-        return render(request, "manage_playlists_import.html",
-                      {"manage_playlists_import_textarea": request.user.profile.manage_playlists_import_textarea})
-    elif page == "create":
-        return render(request, "manage_playlists_create.html")
-    else:
-        return HttpResponse('Working on this!')
-
-
-@login_required
-@require_POST
-def manage_save(request, what):
-    if what == "manage_playlists_import_textarea":
-        request.user.profile.manage_playlists_import_textarea = request.POST["import-playlist-textarea"]
-        request.user.save()
-
-    return HttpResponse("")
-
-
-@login_required
-@require_POST
-def manage_import_playlists(request):
-    playlist_links = request.POST["import-playlist-textarea"].replace(",", "").split("\n")
-
-    num_playlists_already_in_db = 0
-    num_playlists_initialized_in_db = 0
-    num_playlists_not_found = 0
-    new_playlists = []
-    old_playlists = []
-    not_found_playlists = []
-
-    done = []
-    for playlist_link in playlist_links:
-        if playlist_link.strip() != "" and playlist_link.strip() not in done:
-            pl_id = Playlist.objects.getPlaylistId(playlist_link.strip())
-            if pl_id is None:
-                num_playlists_not_found += 1
-                continue
-
-            status = Playlist.objects.initializePlaylist(request.user, pl_id)["status"]
-            if status == -1 or status == -2:
-                print("\nNo such playlist found:", pl_id)
-                num_playlists_not_found += 1
-                not_found_playlists.append(playlist_link)
-            elif status == -3:  # playlist already in db
-                num_playlists_already_in_db += 1
-                playlist = request.user.playlists.get(playlist_id__exact=pl_id)
-                old_playlists.append(playlist)
-            else:  # only if playlist exists on YT, so import its videos
-                print(status)
-                Playlist.objects.getAllVideosForPlaylist(request.user, pl_id)
-                playlist = request.user.playlists.get(playlist_id__exact=pl_id)
-                new_playlists.append(playlist)
-                num_playlists_initialized_in_db += 1
-            done.append(playlist_link.strip())
-
-    request.user.profile.manage_playlists_import_textarea = ""
-    request.user.save()
-
-    return HttpResponse(loader.get_template("intercooler/manage_playlists_import_results.html")
-        .render(
-        {"new_playlists": new_playlists,
-         "old_playlists": old_playlists,
-         "not_found_playlists": not_found_playlists,
-         "num_playlists_already_in_db": num_playlists_already_in_db,
-         "num_playlists_initialized_in_db": num_playlists_initialized_in_db,
-         "num_playlists_not_found": num_playlists_not_found
-         }))
-
-
-@login_required
-@require_POST
-def manage_create_playlist(request):
-    print(request.POST)
-    return HttpResponse("")
-
 
 @login_required
 def load_more_videos(request, playlist_id, order_by, page):
@@ -1174,3 +1091,41 @@ def playlist_add_new_videos(request, playlist_id):
             window.location.reload();
             </script>
     """)
+
+@login_required
+@require_POST
+def playlist_create_new_playlist(request, playlist_id):
+    playlist_name = bleach.clean(request.POST["playlist-name"].strip())
+    playlist_description = bleach.clean(request.POST["playlist-description"])
+    if playlist_name == "":
+        return HttpResponse("Enter a playlist name first!")
+
+    unclean_playlist_item_ids = request.POST.getlist("video-id", default=[])
+    clean_playlist_item_ids = [bleach.clean(playlist_item_id) for playlist_item_id in unclean_playlist_item_ids]
+    playlist_items = request.user.playlists.get(playlist_id=playlist_id).playlist_items.filter(playlist_item_id__in=clean_playlist_item_ids)
+
+    if not playlist_items.exists():
+        return HttpResponse("Select some videos first!")
+    else:
+        result = Playlist.objects.createNewPlaylist(request.user, playlist_name, playlist_description)
+        if result["status"] == 0:  # playlist created on youtube
+            new_playlist_id = result["playlist_id"]
+        elif result["status"] == -1:
+            return HttpResponse("Error creating playlist!")
+        elif result["status"] == 400:
+            return HttpResponse("Max playlists limit reached!")
+
+    video_ids = []
+    for playlist_item in playlist_items:
+        video_ids.append(playlist_item.video.video_id)
+
+    result = Playlist.objects.addVideosToPlaylist(request.user, new_playlist_id, video_ids)
+
+    added = result["num_added"]
+    max_limit_reached = result["playlistContainsMaximumNumberOfVideos"]
+    if max_limit_reached:
+        message = f"Only added the first {added} video link(s) to the new playlist as the max playlist limit has been reached :("
+    else:
+        message = f"""Successfully created '{playlist_name}' and added {added} videos to it. Visit the <a href="/home/" target="_blank" style="text-decoration: none; color: white" class="ms-1 me-1">dashboard</a> to import it into UnTube."""
+
+    return HttpResponse(message)

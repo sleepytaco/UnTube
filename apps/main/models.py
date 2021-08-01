@@ -552,7 +552,8 @@ class PlaylistManager(models.Manager):
 
             return [1, deleted_videos, unavailable_videos, added_videos]
         else:
-            print("YOU CAN DO A FULL SCAN AGAIN IN", str(datetime.datetime.now(pytz.utc) - (playlist.last_full_scan_at + datetime.timedelta(minutes=1))))
+            print("YOU CAN DO A FULL SCAN AGAIN IN",
+                  str(datetime.datetime.now(pytz.utc) - (playlist.last_full_scan_at + datetime.timedelta(minutes=1))))
         """
         print("DOING A SMOL SCAN")
 
@@ -1028,6 +1029,40 @@ class PlaylistManager(models.Manager):
 
         self.deletePlaylistItems(user, playlist_id, playlist_item_ids)
 
+    def createNewPlaylist(self, user, playlist_name, playlist_description):
+        """
+        Takes in playlist details and creates a new private playlist in the user's account
+        """
+        credentials = self.getCredentials(user)
+        result = {
+            "status": 0,
+            "playlist_id": None
+        }
+        with build('youtube', 'v3', credentials=credentials) as youtube:
+            pl_request = youtube.playlists().insert(
+                part='snippet,status',
+                body={
+                    "snippet": {
+                        "title": playlist_name,
+                        "description": playlist_description,
+                        "defaultLanguage": "en"
+                    },
+                    "status": {
+                        "privacyStatus": "private"
+                    }
+                }
+            )
+            try:
+                pl_response = pl_request.execute()
+            except googleapiclient.errors.HttpError as e:  # failed to create playlist
+                print(e.status_code, e.error_details)
+                if e.status_code == 400:  # maxPlaylistExceeded
+                    result["status"] = 400
+                result["status"] = -1
+            result["playlist_id"] = pl_response["id"]
+
+        return result
+
     def updatePlaylistDetails(self, user, playlist_id, details):
         """
         Takes in playlist itemids for the videos in a particular playlist
@@ -1147,8 +1182,6 @@ class PlaylistManager(models.Manager):
         """
         credentials = self.getCredentials(user)
 
-        playlist = user.playlists.get(playlist_id=playlist_id)
-
         result = {
             "num_added": 0,
             "playlistContainsMaximumNumberOfVideos": False,
@@ -1198,9 +1231,14 @@ class PlaylistManager(models.Manager):
                     continue
                 added += 1
         result["num_added"] = added
-        if added > 0:
-            playlist.has_playlist_changed = True
-            playlist.save(update_fields=['has_playlist_changed'])
+
+        try:
+            playlist = user.playlists.get(playlist_id=playlist_id)
+            if added > 0:
+                playlist.has_playlist_changed = True
+                playlist.save(update_fields=['has_playlist_changed'])
+        except:
+            pass
         return result
 
 
@@ -1340,8 +1378,8 @@ class Playlist(models.Model):
     objects = PlaylistManager()
 
     # playlist settings (moved to global preferences)
-    #hide_unavailable_videos = models.BooleanField(default=False)
-    #confirm_before_deleting = models.BooleanField(default=True)
+    # hide_unavailable_videos = models.BooleanField(default=False)
+    # confirm_before_deleting = models.BooleanField(default=True)
     auto_check_for_updates = models.BooleanField(default=False)
 
     # for import

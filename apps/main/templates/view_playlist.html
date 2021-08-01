@@ -447,14 +447,19 @@
                             <div id="delete-videos-confirm-box">
                                 <h5>You can select videos by clicking any where on the video box. Selected videos will be highlighted red.</h5>
                                 {% if not user.profile.confirm_before_deleting %}
-                                    <h5>Note: You have set confirm before deleting to False. Buttons below will take effect immediately when clicked.</h5>
+
+                                    <h5>
+                                    <i class="fas fa-exclamation-triangle" style="color: yellow"></i>
+                                        You have set confirm before deleting to False. Buttons below will take effect immediately when clicked.
+                                    <i class="fas fa-exclamation-triangle" style="color: yellow"></i>
+                                    </h5>
                                     <hr>
                                 {% else %}
                                     {% if playlist.has_unavailable_videos %}
-                                        <h5>Note: Clicking on delete unavailable videos button will take immediate effect. All videos labelled unavailable in this playlist will be deleted from your YouTube playlist.</h5>
+                                        <h5><i class="fas fa-exclamation-triangle" style="color: yellow"></i> Clicking on delete unavailable videos button will take immediate effect. All videos labelled unavailable in this playlist will be deleted from your YouTube playlist.</h5>
                                     {% endif %}
                                     {% if playlist.has_duplicate_videos %}
-                                        <h5>Note: Clicking on delete duplicate videos button will take immediate effect. All videos labelled duplicate in this playlist will be deleted from your YouTube playlist.</h5>
+                                        <h5><i class="fas fa-exclamation-triangle" style="color: yellow"></i> Clicking on delete duplicate videos button will take immediate effect. All videos labelled duplicate in this playlist will be deleted from your YouTube playlist.</h5>
                                     {% endif %}
                                     <hr>
                                 {% endif %}
@@ -550,10 +555,8 @@
                                 <div class="col-md-8 text-dark">
                                     <div id="create-playlist-from">
                                         <input type="text" name="playlist-name" class="form-control" placeholder="Enter new playlist name">
-                                        <textarea name="create-playlist-textarea" class="form-control mt-2" id="create-playlist-text-area" placeholder="Enter playlist description here" rows="5"
-                                            hx-post="{% url 'manage_save' 'manage_playlists_import_textarea' %}"
-                                            hx-trigger="keyup changed delay:500ms"
-                                            hx-indicator="#spinner">{{ manage_playlists_import_textarea }}</textarea>
+                                        <textarea name="playlist-description" class="form-control mt-2" placeholder="Enter playlist description here"
+                                                  rows="5">{{ manage_playlists_import_textarea }}</textarea>
                                     </div>
 
                                 </div>
@@ -563,11 +566,11 @@
                             <div class="d-flex justify-content-start mt-2">
 
                                 <div class="btn-group ms-1 mt-1">
-                                    <button hx-indicator="#create-playlist-loader" hx-post="{% url 'playlist_move_copy_videos' playlist.playlist_id 'copy' %}" hx-include="#playlists-to-move-to, #video-checkboxes" hx-target="#move-copy-videos-box" type="button" class="btn btn-primary">
+                                    <button hx-indicator="#create-playlist-loader" hx-post="{% url 'playlist_create_new_playlist' playlist.playlist_id %}" hx-include="#create-playlist-from, #video-checkboxes" hx-target="#create-playlist-box" type="button" class="btn btn-primary">
                                         Create
                                     </button>
                                 </div>
-                                <div id="add-videos-box" class="d-flex align-items-end ms-2">
+                                <div id="create-playlist-box" class="d-flex align-items-end ms-2 text-warning">
                                 </div>
                                 <div class="htmx-indicator d-flex align-items-center" id="create-playlist-loader">
                                     <img src="{% static 'svg-loaders/grid.svg' %}" width="25" height="25" class="ms-2 mt-2">
@@ -719,7 +722,7 @@
                                     Playlist is empty ;-;
                                 </div>
                                 <div class="d-flex justify-content-center align-content-center">
-                                    Consider moving/copying videos from other playlists into this playlist by copying and using this playlist's ID.
+                                    Consider moving/copying videos from other playlists into this playlist.
                                 </div>
                                 <div class="d-flex justify-content-center align-content-center">
                                     - OR -
@@ -901,11 +904,15 @@
             document.getElementById("delete-videos-confirm-box").innerHTML = `
                 <h5>You can select videos by clicking any where on the video box. Selected videos will be highlighted red.</h5>
                 {% if not user.profile.confirm_before_deleting %}
-                    <h5>Note: You have set confirm before deleting to False. Buttons below will take effect immediately when clicked.</h5>
+                    <h5>
+                    <i class="fas fa-exclamation-triangle" style="color: yellow"></i>
+                    Note: You have set confirm before deleting to False. Buttons below will take effect immediately when clicked.
+                    <i class="fas fa-exclamation-triangle" style="color: yellow"></i>
+                    </h5>
                     <hr>
                 {% else %}
                     {% if playlist.has_unavailable_videos %}
-                        <h5>Note: Clicking on delete unavailable videos button will take immediate effect. All videos labelled unavailable in this playlist will be deleted from your YouTube playlist.</h5>
+                        <h5><i class="fas fa-exclamation-triangle" style="color: yellow"></i> Clicking on delete unavailable videos button will take immediate effect. All videos labelled unavailable in this playlist will be deleted from your YouTube playlist.</h5>
                     {% endif %}
                     {% if playlist.has_duplicate_videos %}
                         <h5>Note: Clicking on delete duplicate videos button will take immediate effect. All videos labelled duplicate in this playlist will be deleted from your YouTube playlist.</h5>

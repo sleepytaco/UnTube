@@ -348,7 +348,9 @@ def user_playlists_updates(request, action):
 
         return HttpResponse("""
         <div class="alert alert-success alert-dismissible fade show d-flex justify-content-center" role="alert">
-          <h4 class="">Successfully imported new playlists into UnTube! Refresh :)</h4>
+          <h4 class="">Successfully imported new playlists into UnTube!</h4>
+            <meta http-equiv="refresh" content="0;url=/home/#recent-playlists" />
+            <meta http-equiv="refresh" content="2;url=/home/" />
 
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-la bel="Close"></button>
         </div>
