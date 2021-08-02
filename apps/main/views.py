@@ -85,6 +85,17 @@ def favorites(request):
 
 
 @login_required
+def planned_to_watch(request):
+    planned_to_watch_playlists = request.user.playlists.filter(Q(marked_as='plan-to-watch') & Q(is_in_db=True)).order_by(
+        '-last_accessed_on')
+    planned_to_watch_videos = request.user.videos.filter(is_planned_to_watch=True).order_by('updated_at')
+
+    return render(request, 'planned_to_watch.html', {"playlists": planned_to_watch_playlists,
+                                              "videos": planned_to_watch_videos})
+
+
+
+@login_required
 def view_video(request, video_id):
     if request.user.videos.filter(video_id=video_id).exists():
         video = request.user.videos.get(video_id=video_id)
@@ -236,11 +247,11 @@ def library(request, library_type):
             elif playlists_type == "Plan to Watch":
                 playlists = request.user.playlists.filter(Q(marked_as="plan-to-watch") & Q(is_in_db=True))
             else:
-                return redirect('/playlists/home')
+                return redirect('/library/home')
 
             if not playlists.exists():
                 messages.info(request, f"No playlists in {playlists_type}")
-                return redirect('/playlists/home')
+                return redirect('/library/home')
             random_playlist = random.choice(playlists)
             return redirect(f'/playlist/{random_playlist.playlist_id}')
         return render(request, 'library.html')
@@ -513,6 +524,21 @@ def mark_video_favortie(request, video_id):
         video.is_favorite = True
         video.save(update_fields=['is_favorite'])
         return HttpResponse('<i class="fas fa-heart" style="color: #fafa06"></i>')
+
+
+@login_required
+def mark_video_planned_to_watch(request, video_id):
+    video = request.user.videos.get(video_id=video_id)
+
+    if video.is_planned_to_watch:
+        video.is_planned_to_watch = False
+        video.save(update_fields=['is_planned_to_watch'])
+        return HttpResponse('<i class="far fa-clock"></i>')
+    else:
+        video.is_planned_to_watch = True
+        video.save(update_fields=['is_planned_to_watch'])
+        return HttpResponse('<i class="fas fa-clock" style="color: #000000"></i>')
+
 
 
 @login_required

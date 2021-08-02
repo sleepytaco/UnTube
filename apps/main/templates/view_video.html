@@ -43,6 +43,15 @@
                                     {% endif %}
                                 </div>
                             </button>
+                            <button title="Mark or unmark video as plan to watch!" class="btn btn-warning mt-3 ms-2" type="button" hx-get="{% url 'mark_video_planned_to_watch' video.video_id %}" hx-target="#video-{{ forloop.counter }}-planned">
+                                <div id="video-{{ forloop.counter }}-planned">
+                                    {% if video.is_planned_to_watch %}
+                                        <i class="fas fa-clock" style="color: #000000"></i>
+                                    {% else %}
+                                        <i class="far fa-clock"></i>
+                                    {% endif %}
+                                </div>
+                            </button>
                         </span>
                     </div>
                     {% endif %}
@@ -56,14 +65,23 @@
                                     </button>
                                     {% if video.is_unavailable_on_yt or video.was_deleted_on_yt %}
                                     <button class="btn btn-dark" type="button" hx-get="{% url 'mark_video_favorite' video.video_id %}" hx-target="#video-fav">
-    <div id="video-fav">
-        {% if video.is_favorite %}
-            <i class="fas fa-heart" style="color: #fafa06"></i>
-        {% else %}
-            <i class="far fa-heart"></i>
-        {% endif %}
-    </div>
-</button>
+                                <div id="video-fav">
+                                    {% if video.is_favorite %}
+                                        <i class="fas fa-heart" style="color: #fafa06"></i>
+                                    {% else %}
+                                        <i class="far fa-heart"></i>
+                                    {% endif %}
+                                </div>
+                            </button>
+                                        <button title="Mark or unmark video as plan to watch!" class="btn btn-warning" type="button" hx-get="{% url 'mark_video_planned_to_watch' video.video_id %}" hx-target="#video-{{ forloop.counter }}-planned">
+                                <div id="video-{{ forloop.counter }}-planned">
+                                    {% if video.is_planned_to_watch %}
+                                        <i class="fas fa-clock" style="color: #000000"></i>
+                                    {% else %}
+                                        <i class="far fa-clock"></i>
+                                    {% endif %}
+                                </div>
+                            </button>
                                     {% endif %}
                                     <br><small class="h4">{% if video.user_label %}a.k.a <span style="border-bottom: 3px #ffffff dashed;"> {{ video.user_label }}</span>{% endif %}</small>
 

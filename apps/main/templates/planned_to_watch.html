@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block content %}
+
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2" id="planned-to-watch-playlists"><a href="#planned-to-watch-videos" style="color: rebeccapurple" class="mt-1 me-3"><i class="fas fa-angle-double-down"></i></a>Planned to Watch Playlists
+            <span class="badge bg-primary rounded-pill">{{ playlists.count|default:"0" }}</span>
+
+        </h1>
+        {% if playlists %}
+                    <form method="get" action="{% url 'search' %}" >
+                    <input size="50" class="form-control border border-secondary" type="text"
+                   name="query" placeholder="Search your planned to watch playlists...">
+                    <input type="text" class="visually-hidden" name="mode" value="playlists">
+                    <input type="text" class="visually-hidden" name="type" value="plan-to-watch">
+                    <button type="submit" class="visually-hidden"></button>
+                    </form>
+            {% endif %}
+    </div>
+
+    <div>
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            {% if playlists %}
+                {% include 'intercooler/playlists.html' with playlists=playlists %}
+            {% else %}
+                <h5 class="text-dark align-content-center">Nothing here :(</h5>
+            {% endif %}
+        </div>
+    </div>
+
+    <br>
+    <br>
+
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2" id="planned-to-watch-videos"><a href="#planned-to-watch-playlists" style="color: rebeccapurple" class="mt-1 me-3"><i class="fas fa-angle-double-up"></i></a>Planned to Watch Videos
+            <span class="badge bg-primary rounded-pill">{{ videos.count }}</span>
+
+        </h1>
+            {% if videos %}
+                    <form method="get" action="{% url 'search' %}" >
+                    <input size="50" class="form-control border border-secondary" type="text"
+                   name="query" placeholder="Search your planned to watch videos...">
+                    <input type="text" class="visually-hidden" name="mode" value="videos">
+                    <input type="text" class="visually-hidden" name="type" value="plan-to-watch">
+                    <button type="submit" class="visually-hidden"></button>
+                    </form>
+            {% endif %}
+    </div>
+
+    <div id="planned-to-watch-videos">
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% if videos %}
+                {% include 'intercooler/video_cards.html' with videos=videos %}
+            {% else %}
+                <h5 class="text-dark align-content-center">Nothing here :(</h5>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <button class="scrollToTopBtn sticky-top bg-danger">
+        <i class="fa fa-angle-double-up fa-lg"></i></button>
+
+{% endblock %}

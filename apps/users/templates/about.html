@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <!-- Template taken from https://www.bootdey.com/snippets/view/profile-with-data-and-skills#html -->
+    <div class="d-flex justify-content-center flex-column">
+    <div class="d-flex justify-content-center">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item active">FAQ</li>
+      <li class="breadcrumb-item"><a href="#">Tips</a></li>
+
+        <li class="breadcrumb-item"><a href="#">Feedback</a></li>
+      </ol>
+    </nav>
+        </div>
+    <div class="accordion text-black-50" id="accordionExample">
+  <div class="accordion-item ">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        What is UnTube?
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        <strong>This is the first item's accordion body.</strong> It is shown by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingTwo">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+          What data of mine will be stored on UnTube?
+      </button>
+    </h2>
+    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingThree">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+        Where can I learn more about the site's features?
+      </button>
+    </h2>
+    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        <strong>This is the third item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+      </div>
+    </div>
+  </div>
+          <div class="accordion-item">
+    <h2 class="accordion-header" id="headingFour">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+        What did you use to build this site? How long did it take to build this site?
+      </button>
+    </h2>
+    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        <strong>This website is primarily built using Django, Bootstrap 5 and htmx.</strong>
+            Django helped me swiftly set up the backend and organize them into separate apps. All of the UI you see on UnTube was built purely using Bootstrap 5. I started off with some free base templates
+          I've found online, and slowly began designing the site myself as I was getting used to seeing repetitive Bootstrap code over and over again.
+          By the end of this project, I've grown accustomed to using the official docs and figuring out a way to implement any feature that I've cooked up in my mind.
+          <br>
+          <strong>I cannot be thankful enough for the existence of htmx.</strong> Most of the dynamic interactivity on this site was made possible due to htmx.
+          When I began implementing core site features like moving, deleting, checking for updates etc. I found myself writing a LOT of AJAX code each and everytime, for even the simplest of interactivity. It was
+          when I found htmx my development process sped up like crazy. Who would have thought that instead of replacing the whole page with the response, just
+          replacing a particular target element with the HttpResponse would do wonders?
+          Some of the major places I've used htmx on this site:
+          <ul>
+              <li><strong>HTMX Triggers</strong> htmx offers various triggers upon which it sends requests. One example is the <code>load</code> trigger. <em>After</em> the dashboard finishes loading, I've set up htmx to automatically send a GET request to the backend (this only happens once upon the page load) to check for
+              playlist updates. From the backend, the update status is sent back via a HttpResponse which htmx promptly loads into a target div I specified. That way I did not need to check for updates inside
+              the main view that loaded the page. In a way, htmx helped me check for updates in the "background".
+                  I've used this <code>load</code> trigger many other places on the site, one other example is the playlist completion time info is loaded <em>after</em> the playlist page is loaded.
+              <br> Instead of sending requests on <code>load</code>, it is also possible to send htmx requests
+                  when any HTML element is <code>click</code>ed or <code>revealed</code>. I've used this <click>click</click> trigger on the mark playlist/video as favorite buttons and the mark videos as watched buttons. Below, I discuss about using the <code>revealed</code> to achieve infinite scrolling.
+              </li>
+              <li><strong>Active Search</strong> The whole search page heavily relies on htmx. On the frontend, via htmx the textfield (as well as the select and radio buttons) is hooked up to automatically send requests with the search query
+                  to the backend right after certain milliseconds of typing. In Django, I've set up a view to receive these htmx requests and send back a HttpResponse using a template loader.
+                  htmx then loads the received response into a target search results div that I've set up. Check out this <a href="https://htmx.org/examples/active-search/" target="_blank">search example</a> from htmx's website. </li>
+              <li><strong>Infinite Scrolling</strong> For playlists with more than 50 videos, the next 50 videos are automatically loaded onto the screen only when the user scrolls down to the bottom.
+                    htmx's <code>hx-trigger="revealed"</code> and <code>hx-swap="afterend"</code> attributes helped me achieve this functionality. When the 50th video is revealed on the screen, htmx makes a GET request to the backend to get the next
+                  50 videos (if available) and appends the HttpResponse after the 50th video. Until htmx gets back a response from the backend, it can be set up to show the user a loading spinner!
+                  <br>The main advantage of this feature was that for playlists with 100s or even 1000s of videos, it only needs to load the first 50 videos everytime and hence vastly improving the playlist page load speed.
+              </li>
+          </ul>
+          <strong>Any questions on how I've implemented some of the features on this site?</strong> Head over to <a href="">feedback</a> and send me your
+          questions. I will be happy to share my code and thought process to illustrate how I implemented the site's features using htmx.
+      </div>
+    </div>
+  </div>
+
+</div>
+    </div>
+{% endblock %}

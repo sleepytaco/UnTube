@@ -112,6 +112,8 @@ def search_UnTube(request):
             all_videos = all_videos.filter(is_favorite=True)
         elif videos_type == "Watched":
             all_videos = all_videos.filter(is_marked_as_watched=True)
+        elif videos_type == "Planned to Watch":
+            all_videos = all_videos.filter(is_planned_to_watch=True)
         elif videos_type == "Unavailable":
             all_videos = all_videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=True))
 

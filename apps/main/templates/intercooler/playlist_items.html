@@ -79,13 +79,22 @@
                 <div class="ms-5">
                 {% if playlist_item.video.is_unavailable_on_yt or playlist_item.video.was_deleted_on_yt %}
                 <a class="btn btn-sm  btn-primary mb-1" href="{% url 'video' playlist_item.video.video_id %}"><i class="fas fa-info"></i></a>
-                <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist_item.video.video_id %}"
+                <button title="Mark or unmark video favorite!" class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist_item.video.video_id %}"
                         hx-target="#video-{{ page }}-{{ forloop.counter }}-fav">
                     <div id="video-{{ page }}-{{ forloop.counter }}-fav">
                         {% if playlist_item.video.is_favorite %}
                             <i class="fas fa-heart" style="color: #fafa06"></i>
                         {% else %}
                             <i class="far fa-heart"></i>
+                        {% endif %}
+                    </div>
+                </button>
+                <button title="Mark or unmark video as plan to watch!" class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_planned_to_watch' playlist_item.video.video_id %}" hx-target="#video-{{ forloop.counter }}-planned">
+                    <div id="video-{{ forloop.counter }}-planned">
+                        {% if playlist_item.video.is_planned_to_watch %}
+                            <i class="fas fa-clock" style="color: #000000"></i>
+                        {% else %}
+                            <i class="far fa-clock"></i>
                         {% endif %}
                     </div>
                 </button>
@@ -97,7 +106,7 @@
                     <i class="far fa-copy" aria-hidden="true"></i>
                 </button>
                 <a class="btn btn-sm  btn-primary mb-1" href="{% url 'video' playlist_item.video.video_id %}"><i class="fas fa-info"></i></a>
-                <button class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist_item.video.video_id %}" hx-target="#video-{{ page }}-{{ forloop.counter }}-fav">
+                <button title="Mark or unmark video as favorite!" class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_favorite' playlist_item.video.video_id %}" hx-target="#video-{{ page }}-{{ forloop.counter }}-fav">
                     <div id="video-{{ page }}-{{ forloop.counter }}-fav">
                         {% if playlist_item.video.is_favorite %}
                             <i class="fas fa-heart" style="color: #fafa06"></i>
@@ -106,8 +115,20 @@
                         {% endif %}
                     </div>
                 </button>
+                    {% if not playlist_item.is_duplicate %}
+                    <button title="Mark or unmark video as plan to watch!" class="btn btn-sm btn-dark mb-1" type="button" hx-get="{% url 'mark_video_planned_to_watch' playlist_item.video.video_id %}" hx-target="#video-{{ forloop.counter }}-planned">
+                            <div id="video-{{ forloop.counter }}-planned">
+                                {% if playlist_item.video.is_planned_to_watch %}
+                                    <i class="fas fa-clock" style="color: #000000"></i>
+                                {% else %}
+                                    <i class="far fa-clock"></i>
+                                {% endif %}
+                            </div>
+                        </button>
+                    {% endif %}
                     {% if playlist.marked_as == "watching" and not playlist_item.is_duplicate %}
-                    <button class="btn btn-sm btn-light mb-1" type="button" hx-get="{% url 'mark_video_watched' playlist.playlist_id playlist_item.video.video_id %}" hx-target="#video-{{ page }}-{{ forloop.counter }}-watched">
+
+                    <button title="Mark or unmark video as watched!" class="btn btn-sm btn-light mb-1" type="button" hx-get="{% url 'mark_video_watched' playlist.playlist_id playlist_item.video.video_id %}" hx-target="#video-{{ page }}-{{ forloop.counter }}-watched">
                         <div id="video-{{ page }}-{{ forloop.counter }}-watched">
                             {% if playlist_item.video.is_marked_as_watched %}
                                 <i class="fas fa-check-circle"></i>

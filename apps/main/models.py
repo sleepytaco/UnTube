@@ -1319,6 +1319,7 @@ class Video(models.Model):
         default=False)  # True if the video was unavailable (private/deleted) when the API call was first made
     was_deleted_on_yt = models.BooleanField(default=False)  # True if video became unavailable on a subsequent API call
 
+    is_planned_to_watch = models.BooleanField(default=False)  # mark video as plan to watch later
     is_marked_as_watched = models.BooleanField(default=False)  # mark video as watched
     is_favorite = models.BooleanField(default=False, blank=True)  # mark video as favorite
     num_of_accesses = models.IntegerField(default=0)  # tracks num of times this video was clicked on by user

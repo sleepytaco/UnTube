@@ -8,6 +8,7 @@ urlpatterns = [
     path("unlike-untube/", views.unlike_untube, name="unlike_untube"),
 
     path("profile/", views.profile, name='profile'),
+    path("about/", views.about, name='about'),
     path("logout/", views.log_out, name='log_out'),
     path("update/settings", views.update_settings, name='update_settings'),
     path('accounts/', include('allauth.urls')),

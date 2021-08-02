@@ -29,6 +29,10 @@ def index(request):
         return redirect('home')
 
 
+def about(request):
+    return render(request, 'about.html')
+
+
 @login_required
 def profile(request):
     user_playlists = request.user.playlists.all()
@@ -74,10 +78,10 @@ def update_settings(request):
     user = request.user
     username_input = request.POST['username'].strip()
     message_content = "Saved!"
-    #message_type = "success"
+    # message_type = "success"
     if username_input != user.username:
         if User.objects.filter(username__exact=username_input).count() != 0:
-            #message_type = "danger"
+            # message_type = "danger"
             message_content = f"Username {request.POST['username'].strip()} already taken"
             messages.error(request, message_content)
         else:
@@ -319,7 +323,8 @@ def user_playlists_updates(request, action):
             print("No new updates")
             playlists = []
         else:
-            playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).exclude(playlist_id="LL")
+            playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).exclude(
+                playlist_id="LL")
             print(
                 f"New updates found! {playlists.count()} newly added and {len(deleted_playlist_ids)} playlists deleted!")
             print(deleted_playlist_names)
@@ -328,7 +333,8 @@ def user_playlists_updates(request, action):
             {"playlists": playlists,
              "deleted_playlist_names": deleted_playlist_names}))
     elif action == 'init-update':
-        unimported_playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).exclude(playlist_id="LL").count()
+        unimported_playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).exclude(
+            playlist_id="LL").count()
 
         return HttpResponse(f"""
         <div hx-get="/updates/user-playlists/start-update" hx-trigger="load" hx-target="#user-pl-updates">
@@ -341,7 +347,8 @@ def user_playlists_updates(request, action):
         </div>
         """)
     elif action == 'start-update':
-        unimported_playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).exclude(playlist_id="LL")
+        unimported_playlists = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=False)).exclude(
+            playlist_id="LL")
 
         for playlist in unimported_playlists:
             Playlist.objects.getAllVideosForPlaylist(request.user, playlist.playlist_id)

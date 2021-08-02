@@ -7,11 +7,13 @@ urlpatterns = [
     ### STUFF RELATED TO WHOLE SITE
     path("home/", views.home, name='home'),
     path("favorites", views.favorites, name="favorites"),
+    path("planned-to-watch", views.planned_to_watch, name="planned_to_watch"),
     path("library/<slug:library_type>", views.library, name='library'),
 
     ### STUFF RELATED TO INDIVIDUAL VIDEOS
     path("video/<slug:video_id>", views.view_video, name='video'),
-    path("video/<slug:video_id>/video-details/favorite", views.mark_video_favortie, name='mark_video_favorite'),
+    path("video/<slug:video_id>/mark/favorite", views.mark_video_favortie, name='mark_video_favorite'),
+    path("video/<slug:video_id>/mark/planned-to-watch", views.mark_video_planned_to_watch, name='mark_video_planned_to_watch'),
     path("video/<slug:video_id>/notes", views.video_notes, name='video_notes'),
     path("video/<slug:video_id>/get-video-completion-times", views.video_completion_times, name="video_completion_times"),
     path("video/<slug:video_id>/add-user-label", views.add_video_user_label, name='add_video_user_label'),
@@ -22,7 +24,7 @@ urlpatterns = [
     path("playlist/<slug:playlist_id>", views.view_playlist, name='playlist'),
     path("playlist/<slug:playlist_id>/add-user-label", views.add_playlist_user_label, name='add_playlist_user_label'),
 
-    path('playlist/<slug:playlist_id>/<slug:video_id>/video-details/watched', views.mark_video_watched,
+    path('playlist/<slug:playlist_id>/<slug:video_id>/mark/watched', views.mark_video_watched,
          name='mark_video_watched'),
     path("playlist/<slug:playlist_id>/settings", views.view_playlist_settings, name="view_playlist_settings"),
     path("playlist/<slug:playlist_id>/order-by/<slug:order_by>", views.order_playlist_by,
