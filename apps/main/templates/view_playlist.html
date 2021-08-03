@@ -34,7 +34,7 @@
             {% else %}
                 <div class="sticky-top mb-3" style="top: 0.5rem;">
                     {% if not playlist.is_yt_mix %}
-                        {% if user.profile.auto_check_for_updates or playlist.auto_check_for_updates %}
+                        {% if playlist.auto_check_for_updates %}
                                 <div hx-get="{% url 'update_playlist' playlist.playlist_id 'checkforupdates' %}" hx-trigger="load" hx-swap="outerHTML" id="checkforupdates">
                                     <div class="alert alert-info alert-dismissible fade show" role="alert">
                                         Checking playlist for updates...

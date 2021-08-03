@@ -979,8 +979,8 @@ class PlaylistManager(models.Manager):
 
                 if not playlist.playlist_items.filter(video__video_id=video.video_id).exists():
                     playlist.videos.remove(video)
-                    if video.playlists.all().count() == 0:  # also delete the video if it is not found in other playlists
-                        video.delete()
+                    #if video.playlists.all().count() == 0:  # also delete the video if it is not found in other playlists
+                    #    video.delete()
 
                 if playlist_id == "LL":
                     video.liked = False

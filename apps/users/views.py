@@ -100,17 +100,6 @@ def update_settings(request):
     elif 'enable gradient bg' not in request.POST and user.profile.enable_gradient_bg is True:
         user.profile.enable_gradient_bg = False
 
-    if 'auto refresh playlists' in request.POST and user.profile.auto_check_for_updates is False:
-        user.profile.auto_check_for_updates = True
-        for playlist in user.playlists.all():
-            playlist.auto_check_for_updates = True
-            playlist.save(update_fields=['auto_check_for_updates'])
-    elif 'auto refresh playlists' not in request.POST and user.profile.auto_check_for_updates is True:
-        user.profile.auto_check_for_updates = False
-        for playlist in user.playlists.all():
-            playlist.auto_check_for_updates = False
-            playlist.save(update_fields=['auto_check_for_updates'])
-
     if 'confirm before deleting' in request.POST and user.profile.confirm_before_deleting is False:
         user.profile.confirm_before_deleting = True
     elif 'confirm before deleting' not in request.POST and user.profile.confirm_before_deleting is True:

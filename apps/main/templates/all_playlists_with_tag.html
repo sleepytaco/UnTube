@@ -2,10 +2,39 @@
 {% extends 'base.html' %}
 {% block content %}
 
+        <div class="alert alert-dark alert-dismissible fade show" role="alert" id="user-label-alert"  style="display:none;">
+            <form method="post" action="{% url 'edit_tag' tag.name %}" class="d-flex justify-content-center">
+                {% csrf_token %}
+                <span class="mt-2 me-1">Edit this tag's name:</span>
+                <input class="form-control w-25 me-2" type="text" placeholder="Enter here" name="tag_name" value="{{ tag.name }}" aria-label="user label">
+                <button type="submit" class="btn btn-primary">Update</button>
+
+            </form>
+            <button type="button" class="btn-close mt-2 me-2" onclick='document.getElementById("user-label-alert").style.display = "none";' aria-label="Close"></button>
+
+        </div>
+
+        <div class="alert alert-dark alert-dismissible fade show" role="alert" id="user-delete-alert"  style="display:none;">
+            <form method="post" action="{% url 'delete_tag' tag.name %}" class="d-flex justify-content-center">
+                {% csrf_token %}
+                <span class="mt-2 me-1">Are you sure you want to delete this tag{% if playlists.count != 0 %} and remove it from all the playlists below{% endif %}?</span>
+                <br>
+                <button type="submit" class="btn btn-danger btn-sm mt-1">Yes, delete it</button>
+
+            </form>
+            <button type="button" class="btn-close mt-2 me-2" onclick='document.getElementById("user-label-alert").style.display = "none";' aria-label="Close"></button>
+
+        </div>
 
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 mb-3">
-            <h1 class="h2"> <span style="border-bottom: 3px #e24949 dashed;" class="pt-3">Playlists Tagged as</span> <kbd>{{ tag.name }}</kbd> <span class="badge bg-warning rounded-pill">{{ playlists.count }}</span> </h1>
-
+            <h1 class="h2"> <span style="border-bottom: 3px #e24949 dashed;" class="pt-3">Playlists Tagged as</span> <kbd>{{ tag.name }}</kbd> <span class="badge bg-warning rounded-pill">{{ playlists.count }}</span>
+                <a href="#" style="text-decoration: none; color: black">
+                <i class="fas fa-pencil-alt fa-sm" onclick='document.getElementById("user-label-alert").style.display = "block";document.getElementById("user-delete-alert").style.display = "none";'></i>
+                </a>
+            </h1>
+            <a href="#" style="text-decoration: none; color: darkred">
+            <h1 class="h2"><i class="fas fa-trash-alt fa-sm me-2" style="color: darkred" onclick='document.getElementById("user-delete-alert").style.display = "block";document.getElementById("user-label-alert").style.display = "none";'></i></h1>
+            </a>
         </div>
 
         {% if playlists %}

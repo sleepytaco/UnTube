@@ -128,15 +128,9 @@
                         </div>
 
                         <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" name="auto refresh playlists" type="checkbox" id="auto-update-playlists" {% if user.profile.auto_check_for_updates %}checked{% endif %}>
-                        <label class="form-check-label" for="auto-update-playlists" >Automatically check for playlist updates on visit (this might slow down the playlist page for a bit)</label>
-                        </div>
-
-                        <div class="mb-3 form-check form-switch">
                         <input class="form-check-input" name="hide videos" type="checkbox" id="hide-videos" {% if user.profile.hide_unavailable_videos %}checked{% endif %}>
                         <label class="form-check-label" for="hide-videos">Hide deleted/private videos</label>
                         </div>
-
 
                         <div class="mb-3 form-check form-switch">
                         <input class="form-check-input" name="confirm before deleting" type="checkbox" id="confirm-before-delete" {% if user.profile.confirm_before_deleting  %}checked{% endif %}>
@@ -150,7 +144,7 @@
               <div class="row">
                 <div class="col-sm-12">
 
-                    <button type="submit" class="btn btn-success">Save</button>
+                    <button type="submit" class="btn btn-success me-1">Save</button>
                     <a class="btn btn-outline-danger" href="{% url 'delete_account' %}">Delete UnTube account</a>
 
                 </div>

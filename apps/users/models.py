@@ -36,7 +36,6 @@ class Profile(models.Model):
     enable_gradient_bg = models.BooleanField(default=False)
 
     # playlist preferences (this will apply to all playlists)
-    auto_check_for_updates = models.BooleanField(default=False)
     hide_unavailable_videos = models.BooleanField(default=True)
     confirm_before_deleting = models.BooleanField(default=True)
     ###########################

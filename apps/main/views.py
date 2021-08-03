@@ -58,7 +58,7 @@ def home(request):
         return render(request, "import_in_progress.html")
     ##################################
 
-    playlist_tags = request.user.playlist_tags.order_by('-times_viewed')
+    playlist_tags = request.user.playlist_tags.filter(times_viewed_per_week__gte=1).order_by('-times_viewed_per_week')
 
     videos = request.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
 
@@ -78,7 +78,7 @@ def home(request):
 def favorites(request):
     favorite_playlists = request.user.playlists.filter(Q(is_favorite=True) & Q(is_in_db=True)).order_by(
         '-last_accessed_on')
-    favorite_videos = request.user.videos.filter(is_favorite=True).order_by('updated_at')
+    favorite_videos = request.user.videos.filter(is_favorite=True).order_by('-num_of_accesses')
 
     return render(request, 'favorites.html', {"playlists": favorite_playlists,
                                               "videos": favorite_videos})
@@ -86,13 +86,13 @@ def favorites(request):
 
 @login_required
 def planned_to_watch(request):
-    planned_to_watch_playlists = request.user.playlists.filter(Q(marked_as='plan-to-watch') & Q(is_in_db=True)).order_by(
+    planned_to_watch_playlists = request.user.playlists.filter(
+        Q(marked_as='plan-to-watch') & Q(is_in_db=True)).order_by(
         '-last_accessed_on')
-    planned_to_watch_videos = request.user.videos.filter(is_planned_to_watch=True).order_by('updated_at')
+    planned_to_watch_videos = request.user.videos.filter(is_planned_to_watch=True).order_by('-num_of_accesses')
 
     return render(request, 'planned_to_watch.html', {"playlists": planned_to_watch_playlists,
-                                              "videos": planned_to_watch_videos})
-
+                                                     "videos": planned_to_watch_videos})
 
 
 @login_required
@@ -190,8 +190,6 @@ def view_playlist(request, playlist_id):
                                                   "user_owned_playlists": user_owned_playlists,
                                                   "watching_message": generateWatchingMessage(playlist),
                                                   })
-
-
 
 
 @login_required
@@ -540,7 +538,6 @@ def mark_video_planned_to_watch(request, video_id):
         return HttpResponse('<i class="fas fa-clock" style="color: #000000"></i>')
 
 
-
 @login_required
 def mark_video_watched(request, playlist_id, video_id):
     playlist = request.user.playlists.get(playlist_id=playlist_id)
@@ -563,7 +560,6 @@ def mark_video_watched(request, playlist_id, video_id):
 
 
 ###########
-
 
 
 @login_required
@@ -897,12 +893,15 @@ def add_playlist_tag(request, playlist_id):
     if tag_name == 'Pick from existing unused tags':
         return HttpResponse("Pick something! >w<")
 
+    try:
+        tag = request.user.playlist_tags.get(name__iexact=tag_name)
+    except:
+        return HttpResponse("Uh-oh, looks like this tag was deleted :(")
+
     playlist = request.user.playlists.get(playlist_id=playlist_id)
 
     playlist_tags = playlist.tags.all()
     if not playlist_tags.filter(name__iexact=tag_name).exists():  # tag not on this playlist, so add it
-        tag = Tag.objects.filter(Q(created_by=request.user) & Q(name__iexact=tag_name)).first()
-
         # add it to playlist
         playlist.tags.add(tag)
     else:
@@ -1076,6 +1075,28 @@ def add_video_user_label(request, video_id):
 
 @login_required
 @require_POST
+def edit_tag(request, tag):
+    tag = request.user.playlist_tags.get(name=tag)
+
+    if 'tag_name' in request.POST:
+        tag.name = bleach.clean(request.POST["tag_name"])
+        tag.save(update_fields=['name'])
+        messages.success(request, "Successfully updated the tag's name!")
+
+    return redirect('tagged_playlists', tag=tag.name)
+
+
+@login_required
+@require_POST
+def delete_tag(request, tag):
+    tag = request.user.playlist_tags.get(name__iexact=tag)
+    tag.delete()
+    messages.success(request, f"Successfully deleted the tag '{tag.name}'")
+    return redirect('/library/home')
+
+
+@login_required
+@require_POST
 def add_playlist_user_label(request, playlist_id):
     playlist = request.user.playlists.get(playlist_id=playlist_id)
     if "user_label" in request.POST:
@@ -1107,7 +1128,7 @@ def playlist_add_new_videos(request, playlist_id):
     elif max_limit_reached and added != 0:
         message = f"Only added the first {added} video link(s) to this playlist as the max playlist limit has been reached :("
         messages.warning(request, message)
-    #else:
+    # else:
     #    message = f"Successfully added {added} videos to this playlist."
     #    messages.success(request, message)
 
@@ -1117,6 +1138,7 @@ def playlist_add_new_videos(request, playlist_id):
             window.location.reload();
             </script>
     """)
+
 
 @login_required
 @require_POST
@@ -1128,7 +1150,8 @@ def playlist_create_new_playlist(request, playlist_id):
 
     unclean_playlist_item_ids = request.POST.getlist("video-id", default=[])
     clean_playlist_item_ids = [bleach.clean(playlist_item_id) for playlist_item_id in unclean_playlist_item_ids]
-    playlist_items = request.user.playlists.get(playlist_id=playlist_id).playlist_items.filter(playlist_item_id__in=clean_playlist_item_ids)
+    playlist_items = request.user.playlists.get(playlist_id=playlist_id).playlist_items.filter(
+        playlist_item_id__in=clean_playlist_item_ids)
 
     if not playlist_items.exists():
         return HttpResponse("Select some videos first!")

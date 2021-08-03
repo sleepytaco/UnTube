@@ -212,6 +212,7 @@ def search_library(request, library_type):
 
     return HttpResponse(loader.get_template("intercooler/playlists.html")
                         .render({"playlists": playlists.order_by("-updated_at"),
+                                 "show_controls": True,
                                  "watching": watching}))
 
 

@@ -56,4 +56,7 @@ urlpatterns = [
     ### STUFF RELATED TO PLAYLISTS IN BULK
     path("playlists/<slug:playlist_type>/order-by/<slug:order_by>", views.order_playlists_by, name='order_playlists_by'),
     path("playlists/tag/<str:tag>", views.tagged_playlists, name='tagged_playlists'),
+    path("playlists/tag/<str:tag>/edit", views.edit_tag, name='edit_tag'),
+    path("playlists/tag/<str:tag>/delete", views.delete_tag, name='delete_tag'),
+
 ]

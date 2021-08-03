@@ -201,9 +201,14 @@
                         <span class="badge rounded-pill bg-warning bg-gradient text-black-50">{{ tag.name }} <span class="badge bg-dark text-white">{{ tag.times_viewed_per_week }} views</span></span>
                         </a>
                     {% endfor %}
+
                     </div>
                     {% else %}
+                        {% if user.playlist_tags.all.count != 0 %}
+                        No playlist tag views this week.
+                        {% else %}
                         You haven't created any playlist tags yet.
+                            {% endif %}
                     {% endif %}
                 </div>
             {% if playlist_tags %}
