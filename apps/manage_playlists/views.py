@@ -1,3 +1,4 @@
+import bleach
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -26,7 +27,7 @@ def manage_view_page(request, page):
 @require_POST
 def manage_save(request, what):
     if what == "manage_playlists_import_textarea":
-        request.user.profile.manage_playlists_import_textarea = request.POST["import-playlist-textarea"]
+        request.user.profile.manage_playlists_import_textarea = bleach.clean(request.POST["import-playlist-textarea"])
         request.user.save()
 
     return HttpResponse("")
@@ -35,7 +36,7 @@ def manage_save(request, what):
 @login_required
 @require_POST
 def manage_import_playlists(request):
-    playlist_links = request.POST["import-playlist-textarea"].replace(",", "").split("\n")
+    playlist_links = [bleach.clean(link) for link in request.POST["import-playlist-textarea"].replace(",", "").split("\n")]
 
     num_playlists_already_in_db = 0
     num_playlists_initialized_in_db = 0

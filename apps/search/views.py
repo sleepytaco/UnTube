@@ -14,27 +14,27 @@ def search(request):
     if request.method == "GET":
         print(request.GET)
         if 'mode' in request.GET:
-            mode = request.GET['mode']
+            mode = bleach.clean(request.GET['mode'])
         else:
             mode = "playlists"
 
         if 'type' in request.GET:
-            item_type = request.GET["type"]
+            item_type = bleach.clean(request.GET["type"])
         else:
             item_type = "all"
 
         if 'query' in request.GET:
-            query = request.GET["query"]
+            query = bleach.clean(request.GET["query"])
         else:
             query = ''
 
         if 'tag' in request.GET:
-            pl_tag = request.GET["tag"]
+            pl_tag = bleach.clean(request.GET["tag"])
         else:
             pl_tag = ""
 
         if 'channel' in request.GET:
-            vid_channel_name = request.GET["channel"]
+            vid_channel_name = bleach.clean(request.GET["channel"])
         else:
             vid_channel_name = ""
 
@@ -52,10 +52,7 @@ def search(request):
 @login_required
 @require_POST
 def search_UnTube(request):
-    print(request.POST)
-
     search_query = bleach.clean(request.POST["search"])
-    print(search_query)
 
     if request.POST['search-settings'] == 'playlists':
         playlist_type = bleach.clean(request.POST["playlistsType"])
@@ -75,7 +72,7 @@ def search_UnTube(request):
             all_playlists = all_playlists.filter(is_yt_mix=True)
 
         if 'playlist-tags' in request.POST:
-            tags = request.POST.getlist('playlist-tags')
+            tags = [bleach.clean(t) for t in request.POST.getlist('playlist-tags')]
             for tag in tags:
                 all_playlists = all_playlists.filter(tags__name=tag)
 
@@ -118,7 +115,7 @@ def search_UnTube(request):
             all_videos = all_videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=True))
 
         if 'channel-names' in request.POST:
-            channels = request.POST.getlist('channel-names')
+            channels = [bleach.clean(name) for name in request.POST.getlist('channel-names')]
             all_videos = all_videos.filter(channel_name__in=channels)
 
         videos = all_videos.filter(
@@ -147,7 +144,7 @@ def search_UnTube(request):
             videos = videos.filter(has_cc=True)
 
         if 'playlist-ids' in request.POST:
-            playlist_ids = request.POST.getlist('playlist-ids')
+            playlist_ids = [bleach.clean(pl_id) for pl_id in request.POST.getlist('playlist-ids')]
             videos = videos.filter(playlists__playlist_id__in=playlist_ids)
 
         return HttpResponse(loader.get_template("intercooler/search_untube_results.html")
@@ -162,7 +159,7 @@ def search_UnTube(request):
 def search_library(request, library_type):
     # print(request.POST)  # prints <QueryDict: {'search': ['aa']}>
 
-    search_query = request.POST["search"]
+    search_query = bleach.clean(request.POST["search"])
     watching = False
 
     playlists = None
@@ -219,7 +216,7 @@ def search_library(request, library_type):
 @login_required
 @require_POST
 def search_tagged_playlists(request, tag):
-    search_query = request.POST["search"]
+    search_query = bleach.clean(request.POST["search"])
     try:
         playlists = request.user.playlists.all().filter(Q(is_in_db=True) & Q(tags__name=tag)).filter(
             Q(name__startswith=search_query) | Q(user_label__startswith=search_query))

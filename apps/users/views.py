@@ -1,3 +1,4 @@
+import bleach
 from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
@@ -76,16 +77,16 @@ def settings(request):
 def update_settings(request):
     print(request.POST)
     user = request.user
-    username_input = request.POST['username'].strip()
+    username_input = bleach.clean(request.POST['username'].strip())
     message_content = "Saved!"
     # message_type = "success"
     if username_input != user.username:
         if User.objects.filter(username__exact=username_input).count() != 0:
             # message_type = "danger"
-            message_content = f"Username {request.POST['username'].strip()} already taken"
+            message_content = f"Username {username_input} already taken"
             messages.error(request, message_content)
         else:
-            user.username = request.POST['username'].strip()
+            user.username = username_input
             # user.save()
             message_content = f"Username updated to {username_input}!"
             messages.success(request, message_content)

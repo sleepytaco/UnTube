@@ -116,7 +116,6 @@ def view_video(request, video_id):
 @login_required
 @require_POST
 def video_notes(request, video_id):
-    print(request.POST)
     if request.user.videos.filter(video_id=video_id).exists():
         video = request.user.videos.get(video_id=video_id)
 
@@ -235,7 +234,7 @@ def library(request, library_type):
         return render(request, "unavailable_videos.html", {"videos": videos})
     elif library_type.lower() == "random":  # randomize playlist
         if request.method == "POST":
-            playlists_type = request.POST["playlistsType"]
+            playlists_type = bleach.clean(request.POST["playlistsType"])
             if playlists_type == "All":
                 playlists = request.user.playlists.all().filter(is_in_db=True)
             elif playlists_type == "Favorites":
@@ -318,7 +317,7 @@ def order_playlist_by(request, playlist_id, order_by):
         videos_details = "Sorted by Unavailable Videos"
         display_text = "None of the videos in this playlist have gone unavailable... yet."
     elif order_by == 'channel':
-        channel_name = request.GET["channel-name"]
+        channel_name = bleach.clean(request.GET["channel-name"])
         playlist_items = playlist.playlist_items.select_related('video').filter(
             video__channel_name=channel_name).order_by("video_position")
         videos_details = f"Sorted by Channel '{channel_name}'"
@@ -408,7 +407,6 @@ def playlist_delete_videos(request, playlist_id, command):
     all = False
     num_vids = 0
     playlist_item_ids = []
-    print(request.POST)
     if "all" in request.POST:
         if request.POST["all"] == "yes":
             all = True
@@ -417,7 +415,7 @@ def playlist_delete_videos(request, playlist_id, command):
                 playlist_item_ids = [playlist_item.playlist_item_id for playlist_item in
                                      request.user.playlists.get(playlist_id=playlist_id).playlist_items.all()]
     else:
-        playlist_item_ids = request.POST.getlist("video-id", default=[])
+        playlist_item_ids = [bleach.clean(item_id) for item_id in request.POST.getlist("video-id", default=[])]
         num_vids = len(playlist_item_ids)
 
     extra_text = " "
@@ -605,7 +603,7 @@ def load_more_videos(request, playlist_id, order_by, page):
         playlist_items = playlist.playlist_items.select_related('video').filter(
             Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=True))
     elif order_by == 'channel':
-        channel_name = request.GET["channel-name"]
+        channel_name = bleach.clean(request.GET["channel-name"])
         playlist_items = playlist.playlist_items.select_related('video').filter(
             video__channel_name=channel_name).order_by("video_position")
 
@@ -627,7 +625,6 @@ def update_playlist_settings(request, playlist_id):
     message_type = "success"
     message_content = "Saved!"
 
-    print(request.POST)
     playlist = request.user.playlists.get(playlist_id=playlist_id)
 
     if 'user_label' in request.POST:
@@ -855,7 +852,7 @@ def get_watch_message(request, playlist_id):
 @login_required
 @require_POST
 def create_playlist_tag(request, playlist_id):
-    tag_name = request.POST["createTagField"]
+    tag_name = bleach.clean(request.POST["createTagField"])
 
     if tag_name.lower() == 'Pick from existing unused tags'.lower():
         return HttpResponse("Can't use that! Try again >_<")
@@ -888,7 +885,7 @@ def create_playlist_tag(request, playlist_id):
 @login_required
 @require_POST
 def add_playlist_tag(request, playlist_id):
-    tag_name = request.POST["playlistTag"]
+    tag_name = bleach.clean(request.POST["playlistTag"])
 
     if tag_name == 'Pick from existing unused tags':
         return HttpResponse("Pick something! >w<")
@@ -982,8 +979,8 @@ def reset_watched(request, playlist_id):
 @login_required
 @require_POST
 def playlist_move_copy_videos(request, playlist_id, action):
-    playlist_ids = request.POST.getlist("playlist-ids", default=[])
-    playlist_item_ids = request.POST.getlist("video-id", default=[])
+    playlist_ids = [bleach.clean(pl_id) for pl_id in request.POST.getlist("playlist-ids", default=[])]
+    playlist_item_ids = [bleach.clean(item_id) for item_id in request.POST.getlist("video-id", default=[])]
 
     # basic processing
     if not playlist_ids and not playlist_item_ids:
