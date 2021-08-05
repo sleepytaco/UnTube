@@ -11,7 +11,7 @@ SECURE_SSL_REDIRECT = True
 # ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME'], '127.0.0.1'] if 'WEBSITE_HOSTNAME' in os.environ else []
 
 # configure the domain name using the environment variable found on pythonanywhere
-ALLOWED_HOSTS = ['bakaabu.pythonanywhere.com', '127.0.0.1'] if 'PYTHONANYWHERE_SITE' in os.environ else []
+ALLOWED_HOSTS = ['bakaabu.pythonanywhere.com', '127.0.0.1'] if 'PYTHONANYWHERE_SITE' in os.environ else ['bakaabu.pythonanywhere.com']
 SITE_ID = 8
 
 # WhiteNoise configuration
