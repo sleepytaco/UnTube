@@ -29,7 +29,7 @@ YOUTUBE_V3_API_KEY = SECRETS['YOUTUBE_V3_API_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'bakaabu.pythonanywhere.com']
+ALLOWED_HOSTS = ['127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -169,7 +169,3 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# django_heroku.settings(locals())
-# options = DATABASES['default'].get('OPTIONS', {})
-# options.pop('sslmode', None)

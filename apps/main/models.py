@@ -152,7 +152,7 @@ class PlaylistManager(models.Manager):
             playlist_ids.append(playlist_id)
 
             # check if this playlist already exists in user's untube collection
-            if user.playlists.filter(playlist_id=playlist_id).exists():
+            if user.playlists.filter(Q(playlist_id=playlist_id) & Q(is_in_db=True)).exists():
                 playlist = user.playlists.get(playlist_id=playlist_id)
                 print(f"PLAYLIST {playlist.name} ({playlist_id}) ALREADY EXISTS IN DB")
 
@@ -169,6 +169,9 @@ class PlaylistManager(models.Manager):
                     return result
             else:  # no such playlist in database
                 print(f"CREATING {item['snippet']['title']} ({playlist_id})")
+                if user.playlists.filter(Q(playlist_id=playlist_id) & Q(is_in_db=False)).exists():
+                    unimported_playlist = user.playlists.filter(Q(playlist_id=playlist_id) & Q(is_in_db=False)).first()
+                    unimported_playlist.delete()
 
                 ### MAKE THE PLAYLIST AND LINK IT TO CURRENT_USER
                 playlist = Playlist(  # create the playlist and link it to current user
@@ -979,7 +982,7 @@ class PlaylistManager(models.Manager):
 
                 if not playlist.playlist_items.filter(video__video_id=video.video_id).exists():
                     playlist.videos.remove(video)
-                    #if video.playlists.all().count() == 0:  # also delete the video if it is not found in other playlists
+                    # if video.playlists.all().count() == 0:  # also delete the video if it is not found in other playlists
                     #    video.delete()
 
                 if playlist_id == "LL":
@@ -1256,24 +1259,6 @@ class Tag(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class Channel(models.Model):
-    channel_id = models.CharField(max_length=420, default="")
-    name = models.CharField(max_length=420, default="")
-    description = models.CharField(max_length=420, default="No description")
-    thumbnail_url = models.CharField(max_length=420, blank=True)
-    published_at = models.DateTimeField(blank=True)
-
-    # statistics
-    view_count = models.IntegerField(default=0)
-    subscriberCount = models.IntegerField(default=0)
-    hidden_subscriber_count = models.BooleanField(null=True)
-    video_ount = models.IntegerField(default=0)
-    is_private = models.BooleanField(null=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-
 class Video(models.Model):
     untube_user = models.ForeignKey(User, related_name="videos", on_delete=models.CASCADE, null=True)
 
@@ -1282,9 +1267,9 @@ class Video(models.Model):
     name = models.CharField(max_length=100, blank=True)
     duration = models.CharField(max_length=100, blank=True)
     duration_in_seconds = models.IntegerField(default=0)
-    thumbnail_url = models.CharField(max_length=420, blank=True)
+    thumbnail_url = models.TextField(blank=True)
     published_at = models.DateTimeField(blank=True, null=True)
-    description = models.CharField(max_length=420, default="")
+    description = models.TextField(default="")
     has_cc = models.BooleanField(default=False, blank=True, null=True)
     liked = models.BooleanField(default=False)  # whether this video liked on YouTube by user or not
 
@@ -1295,12 +1280,12 @@ class Video(models.Model):
     dislike_count = models.IntegerField(default=0)
     comment_count = models.IntegerField(default=0)
 
-    yt_player_HTML = models.CharField(max_length=420, blank=True)
+    yt_player_HTML = models.TextField(blank=True)
 
     # video is made by this channel
     # channel = models.ForeignKey(Channel, related_name="videos", on_delete=models.CASCADE)
-    channel_id = models.CharField(max_length=420, blank=True)
-    channel_name = models.CharField(max_length=420, blank=True)
+    channel_id = models.TextField(blank=True)
+    channel_name = models.TextField(blank=True)
 
     # which playlist this video belongs to, and position of that video in the playlist (i.e ALL videos belong to some pl)
     # playlist = models.ForeignKey(Playlist, related_name="videos", on_delete=models.CASCADE)
@@ -1324,7 +1309,7 @@ class Video(models.Model):
     is_favorite = models.BooleanField(default=False, blank=True)  # mark video as favorite
     num_of_accesses = models.IntegerField(default=0)  # tracks num of times this video was clicked on by user
     user_label = models.CharField(max_length=100, blank=True)  # custom user given name for this video
-    user_notes = models.CharField(max_length=420, blank=True)  # user can take notes on the video and save them
+    user_notes = models.TextField(blank=True)  # user can take notes on the video and save them
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1340,22 +1325,22 @@ class Playlist(models.Model):
     untube_user = models.ForeignKey(User, related_name="playlists", on_delete=models.CASCADE, null=True)
 
     # playlist is made by this channel
-    channel_id = models.CharField(max_length=420, blank=True)
-    channel_name = models.CharField(max_length=420, blank=True)
+    channel_id = models.TextField(blank=True)
+    channel_name = models.TextField(blank=True)
 
     # playlist details
     is_yt_mix = models.BooleanField(default=False)
     playlist_id = models.CharField(max_length=150)
     name = models.CharField(max_length=150, blank=True)  # YT PLAYLIST NAMES CAN ONLY HAVE MAX OF 150 CHARS
-    thumbnail_url = models.CharField(max_length=420, blank=True)
-    description = models.CharField(max_length=420, default="No description")
+    thumbnail_url = models.TextField(blank=True)
+    description = models.TextField(default="No description")
     video_count = models.IntegerField(default=0)
     published_at = models.DateTimeField(blank=True)
     is_private_on_yt = models.BooleanField(default=False)
     videos = models.ManyToManyField(Video, related_name="playlists")
 
     # eg. "<iframe width=\"640\" height=\"360\" src=\"http://www.youtube.com/embed/videoseries?list=PLFuZstFnF1jFwMDffUhV81h0xeff0TXzm\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe>"
-    playlist_yt_player_HTML = models.CharField(max_length=420, blank=True)
+    playlist_yt_player_HTML = models.TextField(blank=True)
 
     playlist_duration = models.CharField(max_length=69, blank=True)  # string version of playlist dureation
     playlist_duration_in_seconds = models.IntegerField(default=0)
@@ -1366,7 +1351,7 @@ class Playlist(models.Model):
     last_watched = models.DateTimeField(auto_now_add=True, null=True)
 
     # manage playlist
-    user_notes = models.CharField(max_length=420, default="")  # user can take notes on the playlist and save them
+    user_notes = models.TextField(default="")  # user can take notes on the playlist and save them
     user_label = models.CharField(max_length=100, default="")  # custom user given name for this playlist
     marked_as = models.CharField(default="none",
                                  max_length=100)  # can be set to "none", "watching", "on-hold", "plan-to-watch"

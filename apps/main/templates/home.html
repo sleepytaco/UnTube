@@ -8,7 +8,7 @@
             <p>
                 There's no playlists in your UnTube right now. You can change that by heading over to <a href="{% url 'manage_playlists' %}" class="btn btn-sm btn-primary">Manage</a> to import some public playlists into your UnTube.
                 {% if not user.profile.imported_yt_playlists %}
-                    Or you could always head over to your <a href="{% url 'profile' %}" class="btn btn-sm btn-primary">Profile</a> to import all of your public/private YouTube playlists.
+                    Or you could always head over to your <a href="{% url 'settings' %}" class="btn btn-sm btn-primary">Profile</a> to import all of your public/private YouTube playlists.
                 {% else %}
                     Keep in mind that your own YouTube playlists will automatically be imported into UnTube.
                 {% endif %}

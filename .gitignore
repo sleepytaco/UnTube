@@ -1,15 +1,14 @@
 /venv/
+.azure
 /UnTube/client_secrets.json
 /db.sqlite3
-/modules/t.json
-/modules/you.py
-/modules/youtube-api.py
-/modules/youtube-api-oauth.py
+/modules
 /.idea/
 __pycache__/
 *.log
 *.pot
 *.pyc
 /static/
+.staticfiles
 .env
 

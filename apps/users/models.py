@@ -20,7 +20,7 @@ class Untube(models.Model):
 
 # extension of the built in User model made by Django
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    untube_user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -43,7 +43,7 @@ class Profile(models.Model):
     # manage user
     objects = ProfileManager()
     show_import_page = models.BooleanField(default=True)  # shows the user tips for a week
-    yt_channel_id = models.CharField(max_length=420, default='')
+    yt_channel_id = models.TextField(default='')
     import_in_progress = models.BooleanField(
         default=False)  # if True, will not let the user access main site until they import their YT playlists
     imported_yt_playlists = models.BooleanField(default=False)  # True if user imported all their YT playlists
@@ -54,7 +54,7 @@ class Profile(models.Model):
     expires_at = models.DateTimeField(blank=True, null=True)
 
     # import playlist page
-    manage_playlists_import_textarea = models.CharField(max_length=420, default="")
+    manage_playlists_import_textarea = models.TextField(default="")
 
     # create playlist page
     create_playlist_name = models.CharField(max_length=50, default="")
@@ -65,7 +65,7 @@ class Profile(models.Model):
 
     def get_channels_list(self):
         channels_list = []
-        videos = self.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
+        videos = self.untube_user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
 
         queryset = videos.values(
             'channel_name').annotate(channel_videos_count=Count('video_id')).order_by('-channel_videos_count')
@@ -76,13 +76,13 @@ class Profile(models.Model):
         return channels_list
 
     def get_playlists_list(self):
-        return self.user.playlists.all().filter(is_in_db=True)
+        return self.untube_user.playlists.all().filter(is_in_db=True)
 
 # as soon as one User object is created, create an associated profile object
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user=instance)
+        Profile.objects.create(untube_user=instance)
 
 
 # whenever User.save() happens, Profile.save() also happens
