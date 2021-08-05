@@ -46,6 +46,7 @@ hostname = os.environ['DBHOST']
 # }
 
 # Configure MySQL database on pythonanywhere
+# See https://django-mysql.readthedocs.io/en/latest/checks.html for options
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -53,5 +54,10 @@ DATABASES = {
         'USER': f'{os.environ["DBUSER"]}',
         'PASSWORD': f'{os.environ["DBPASS"]}',
         'HOST': hostname,
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES', innodb_strict_mode=1",
+            'charset': 'utf8mb4',
+            "autocommit": True,
+        }
     }
 }
