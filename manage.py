@@ -6,7 +6,7 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    settings_module = "UnTube.production" if 'WEBSITE_HOSTNAME' in os.environ else 'UnTube.settings'
+    settings_module = "UnTube.production" if 'PYTHONANYWHERE_SITE' in os.environ else 'UnTube.settings'
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
     try:
         from django.core.management import execute_from_command_line
