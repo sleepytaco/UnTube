@@ -68,3 +68,4 @@ uritemplate==3.0.1
 urllib3==1.26.5
 webencodings==0.5.1
 whitenoise==5.2.0
+mysqlclient
