@@ -1403,6 +1403,9 @@ class Playlist(models.Model):
         return [num_channels, channels_list]
 
     def generate_playlist_thumbnail_url(self):
+        """
+        Generates a playlist thumnail url based on the playlist name
+        """
         pl_name = self.name
         response = requests.get(
             f'https://api.unsplash.com/search/photos/?client_id={SECRETS["UNSPLASH_API_ACCESS_KEY"]}&page=1&query={pl_name}')
@@ -1411,6 +1414,13 @@ class Playlist(models.Model):
         print(image)
 
         return image
+
+    def get_playlist_thumbnail_url(self):
+        playlist_items = self.playlist_items.filter(Q(video__was_deleted_on_yt=False) & Q(video__is_unavailable_on_yt=False))
+        if playlist_items.exists():
+            return playlist_items.first().video.thumbnail_url
+        else:
+            return "https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg"
 
     def get_unavailable_videos_count(self):
         return self.video_count - self.get_watchable_videos_count()

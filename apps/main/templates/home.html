@@ -2,11 +2,11 @@
 {% extends 'base.html' %}
 {% load humanize %}
 {% block content %}
-    {% if user.playlists.all.count == 0 %}
+    {% if user.playlists.all.count|add:"-1" == 0 %}
         <div class="alert alert-success" role="alert">
             <h4 class="alert-heading">It's empty in here</h4>
             <p>
-                There's no playlists in your UnTube right now. You can change that by heading over to <a href="{% url 'manage_playlists' %}" class="btn btn-sm btn-primary">Manage</a> to import some public playlists into your UnTube.
+                There's no playlists in your UnTube right now. You can change that by heading over to <a href="{% url 'manage_view_page' 'import' %}" class="btn btn-sm btn-primary">Import</a> to import some public playlists into your UnTube.
                 {% if not user.profile.imported_yt_playlists %}
                     Or you could always head over to your <a href="{% url 'settings' %}" class="btn btn-sm btn-primary">Profile</a> to import all of your public/private YouTube playlists.
                 {% else %}
@@ -49,7 +49,7 @@
             <div class="col-6 mb-4">
                 <div class="card bg-transparent text-dark">
                     <div class="card-body">
-                        <h6 class="d-flex justify-content-center align-items-center mb-3">You have a total of <span class="text-warning ms-1 me-1">{{ user.playlists.count }}</span> Playlists in your UnTube collection</h6>
+                        <h6 class="d-flex justify-content-center align-items-center mb-3">You have a total of <span class="text-warning ms-1 me-1">{{ user.playlists.count|add:"-1" }}</span> Playlists in your UnTube collection</h6>
                         <div class="d-flex align-items-center mb-3">
 
                             <canvas id="overall-playlists-distribution" data-url="{% url 'overall_playlists_distribution' %}">

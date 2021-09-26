@@ -4,7 +4,7 @@
         <div class="col">
 
             <div class="card overflow-auto" style="background-color: {{ bg_color|default:"#357779" }};">
-                <img  class="bd-placeholder-img card-img-top" src="{% if playlist.playlist_items.all.count > 0 %}{{ playlist.playlist_items.all.0.video.thumbnail_url }}{% else %}https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg{% endif %}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
+                <img  class="bd-placeholder-img card-img-top" src="{{ playlist.get_playlist_thumbnail_url }}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
 
                 <div class="card-body">
                     <h5 class="card-title"><a href="{% url 'playlist' playlist.playlist_id %}" class="stretched-link" style="text-decoration: none; color: white">{{ playlist.name }}</a></h5>
@@ -23,7 +23,7 @@
         <div class="col">
             <div class="card overflow-auto" style="background-color: {{ bg_color|default:"#357779" }};">
                 <a href="{% url 'playlist' playlist.playlist_id %}" style="text-decoration: none; color: black">
-                    <img  class="bd-placeholder-img card-img-top" src="{% if playlist.playlist_items.all.count > 0 %}{{ playlist.playlist_items.all.0.video.thumbnail_url }}{% else %}https://i.ytimg.com/vi/9219YrnwDXE/maxresdefault.jpg{% endif %}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
+                    <img  class="bd-placeholder-img card-img-top" src="{{ playlist.get_playlist_thumbnail_url }}" style="max-width:100%; height: 200px;   object-fit: cover;" alt="{{ playlist.name }} thumbnail">
                 </a>
                 <div class="card-body">
                     <h5 class="card-title">

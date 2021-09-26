@@ -9,11 +9,6 @@ from django.dispatch import receiver
 
 
 # Create your models here.
-class ProfileManager(models.Manager):
-    def updateUserProfile(self, details):
-        pass
-
-
 class Untube(models.Model):
     page_likes = models.IntegerField(default=0)
 
@@ -41,7 +36,6 @@ class Profile(models.Model):
     ###########################
 
     # manage user
-    objects = ProfileManager()
     show_import_page = models.BooleanField(default=True)  # shows the user tips for a week
     yt_channel_id = models.TextField(default='')
     import_in_progress = models.BooleanField(

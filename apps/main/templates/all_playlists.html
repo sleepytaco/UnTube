@@ -57,13 +57,13 @@
                     {% elif library_type == "all" %}
                         There's no playlists in your UnTube right now.
                     {% elif library_type == "imported" %}
-                        To import public playlists into your UnTube collection you can head over to <a href="{% url 'manage_playlists' %}" class="btn btn-sm btn-primary ms-2">Manage</a>
+                        To import public playlists into your UnTube collection you can head over to <a href="{% url 'manage_view_page' 'import' %}" class="btn btn-sm btn-primary ms-2">Import</a>
                     {% elif library_type == "plan-to-watch" %}
                         You can mark a playlist as plan to watch by heading over to the playlist and marking it from the dropdown.
                     {% elif library_type == "favorites" %}
                         You can mark a playlist as favorite by heading over to the playlist page and pressing the star icon.
                     {% elif library_type == "yt-mix" %}
-                        No YouTube mixes imported. Head over to Manage to import the ones you like.
+                        No YouTube mixes imported. Head over to Import to import the ones you like.
                     {% elif library_type == "user-owned" %}
                         {% if user.profile.imported_yt_playlists %}
                             Looks like you have no playlists on YouTube.

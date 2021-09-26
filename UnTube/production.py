@@ -1,18 +1,16 @@
 from .settings import *
 import os
 
+SECRET_KEY = os.environ['SECRET_KEY']
+
+# configure the domain name using the environment variable found on pythonanywhere
+ALLOWED_HOSTS = ['bakaabu.pythonanywhere.com', '127.0.0.1', 'untube.it'] if 'UNTUBE' in os.environ else ['bakaabu.pythonanywhere.com', 'untube.it']
+SITE_ID = 8
+
 DEBUG = False
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = True
-
-# Configure the domain name using the environment variable
-# that Azure automatically creates for us.
-# ALLOWED_HOSTS = [os.environ['WEBSITE_HOSTNAME'], '127.0.0.1'] if 'WEBSITE_HOSTNAME' in os.environ else []
-
-# configure the domain name using the environment variable found on pythonanywhere
-ALLOWED_HOSTS = ['bakaabu.pythonanywhere.com', '127.0.0.1'] if 'PYTHONANYWHERE_SITE' in os.environ else ['bakaabu.pythonanywhere.com']
-SITE_ID = 8
 
 # WhiteNoise configuration
 MIDDLEWARE = [
@@ -32,18 +30,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # DBHOST is only the server name, not the full URL (azure)
 hostname = os.environ['DBHOST']
-
-# Configure Postgres database; the full username is username@servername,
-# which we construct using the DBHOST value.
-# DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': os.environ['DBNAME'],
-#        'HOST': hostname + ".postgres.database.azure.com",
-#        'USER': os.environ['DBUSER'] + "@" + hostname,
-#        'PASSWORD': os.environ['DBPASS']
-#    }
-# }
 
 # Configure MySQL database on pythonanywhere
 # See https://django-mysql.readthedocs.io/en/latest/checks.html for options

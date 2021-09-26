@@ -45,7 +45,7 @@ def overall_playlists_distribution(request):
     labels = []
     data = []
 
-    user_playlists = request.user.playlists.filter(is_in_db=True)
+    user_playlists = request.user.playlists.filter(is_in_db=True).exclude(playlist_id="LL")
     total_num_playlists = user_playlists.count()
 
 
