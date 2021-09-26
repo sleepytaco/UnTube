@@ -1,6 +1,0 @@
-SOCIAL_AUTH_GOOGLE_CLIENT_ID = '901333803283-1lscbdmukcjj3qp0t3relmla63h6l9k6.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_CLIENT_SECRET = 'ekdBniL-_mAnNPwCmugfIL2q'
-
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/home/'
-SOCIAL_AUTH_LOGIN_URL = '/'
-
