@@ -1,7 +1,7 @@
 from .settings import *
 import os
 
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = SECRETS['SECRET_KEY']
 
 # configure the domain name using the environment variable found on pythonanywhere
 ALLOWED_HOSTS = ['bakaabu.pythonanywhere.com', '127.0.0.1', 'untube.it'] if 'UNTUBE' in os.environ else ['bakaabu.pythonanywhere.com', 'untube.it']
