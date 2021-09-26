@@ -15,7 +15,7 @@ settings_module = "UnTube.production" if 'UNTUBE' in os.environ else 'UnTube.set
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
 
 # to use env variables on pythonanywhere
-project_folder = os.path.expanduser('~/bakaabu.pythonanywhere.com')
+project_folder = os.path.expanduser('~')
 load_dotenv(os.path.join(project_folder, '.env'))
 
 application = get_asgi_application()
