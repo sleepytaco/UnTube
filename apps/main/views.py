@@ -177,14 +177,14 @@ def view_playlist(request, playlist_id):
     playlist_items = playlist.playlist_items.select_related('video').order_by("video_position")
 
     user_created_tags = Tag.objects.filter(created_by=request.user)
-    unused_tags = user_created_tags.difference(playlist_tags)
+    # unused_tags = user_created_tags.difference(playlist_tags)
 
     if request.user.profile.hide_unavailable_videos:
         playlist_items.exclude(Q(video__is_unavailable_on_yt=True) & Q(video__was_deleted_on_yt=False))
 
     return render(request, 'view_playlist.html', {"playlist": playlist,
                                                   "playlist_tags": playlist_tags,
-                                                  "unused_tags": unused_tags,
+                                                  "unused_tags": user_created_tags,
                                                   "playlist_items": playlist_items,
                                                   "user_owned_playlists": user_owned_playlists,
                                                   "watching_message": generateWatchingMessage(playlist),
@@ -833,11 +833,11 @@ def get_unused_playlist_tags(request, playlist_id):
     user_created_tags = Tag.objects.filter(created_by=request.user)
     playlist_tags = playlist.tags.all()
 
-    unused_tags = user_created_tags.difference(playlist_tags)
+    # unused_tags = user_created_tags.difference(playlist_tags)
 
     return HttpResponse(loader.get_template("intercooler/playlist_tags_unused.html")
         .render(
-        {"unused_tags": unused_tags}))
+        {"unused_tags": user_created_tags}))
 
 
 @login_required

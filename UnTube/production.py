@@ -28,7 +28,7 @@ MIDDLEWARE = [
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# DBHOST is only the server name, not the full URL (azure)
+# DBHOST is only the server name
 hostname = os.environ['DBHOST']
 
 # Configure MySQL database on pythonanywhere
