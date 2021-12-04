@@ -52,3 +52,4 @@ Additional interactive features such as the progress bar and tagging playlist we
 - Verify my application with Google to remove the 'unverified app warning' screen when a user first signs up.
 - Request Google to increase the quota limit for my web app.
 - Fix issues with storing huge video count in the database.
+- Add tutorial to setup and run this project locally.
