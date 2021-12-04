@@ -2,7 +2,7 @@
 {% extends 'base.html' %}
 {% load humanize %}
 {% block content %}
-    {% if user.playlists.all.count|add:"-1" == 0 %}
+    {% if user.playlists.all.count|add:"-1" >= -1 %}
         <div class="alert alert-success" role="alert">
             <h4 class="alert-heading">It's empty in here</h4>
             <p>
