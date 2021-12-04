@@ -200,10 +200,10 @@
     Some more features:
 </h1>
   <h3>
-      <span style="border-bottom: 4px #c2d56b dashed;">merging multiple playlists into one</span>,
+      <span style="border-bottom: 4px #c2d56b dashed;">take notes on videos</span>,
   </h3>
 <h3>
-      <span style="border-bottom: 4px #c2d56b dashed;">deleting multiple playlists at once</span>,
+      <span style="border-bottom: 4px #c2d56b dashed;">filter and sort playlists/videos</span>,
   </h3>
     <h3>
       <span style="border-bottom: 4px #c2d56b dashed;">auto-update your playlists with YouTube</span>,
@@ -249,7 +249,7 @@
           </a>
           -->
                     <small><i class="fas fa-circle fa-sm"></i></small>
-        <i class="fab fa-github fa-lg" style="color: black;"></i>
+        <a style="text-decoration: none; color: black" href="https://github.com/sleepytaco/UnTube" target="_blank"><i class="fab fa-github fa-lg" style="color: black;"></i></a>
           <small><i class="fas fa-circle fa-sm"></i></small>
           <a {% if request.session.liked_untube %}hx-post="{% url 'unlike_untube' %}"{% else %}hx-post="{% url 'like_untube' %}"{% endif %} hx-trigger="click" hx-swap="outerHTML" style="text-decoration: none; color: black">
             <i class="fas fa-heart" {% if request.session.liked_untube %}style="color: #d02e2e"{% endif %}></i> {{ likes }} likes {% if not request.session.liked_untube %}(click it){% endif %}

@@ -2,7 +2,7 @@
 {% extends 'base.html' %}
 {% load humanize %}
 {% block content %}
-    {% if user.playlists.all.count|add:"-1" >= -1 %}
+    {% if user.playlists.all.count|add:"-1" <= -1 %}
         <div class="alert alert-success" role="alert">
             <h4 class="alert-heading">It's empty in here</h4>
             <p>
@@ -49,7 +49,7 @@
             <div class="col-6 mb-4">
                 <div class="card bg-transparent text-dark">
                     <div class="card-body">
-                        <h6 class="d-flex justify-content-center align-items-center mb-3">You have a total of <span class="text-warning ms-1 me-1">{{ user.playlists.count|add:"-1" }}</span> Playlists in your UnTube collection</h6>
+                        <h6 class="d-flex justify-content-center align-items-center mb-3">You have a total of <span class="text-warning ms-1 me-1">{{ user.playlists.count }}</span> Playlists in your UnTube collection</h6>
                         <div class="d-flex align-items-center mb-3">
 
                             <canvas id="overall-playlists-distribution" data-url="{% url 'overall_playlists_distribution' %}">

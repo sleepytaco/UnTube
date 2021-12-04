@@ -1266,7 +1266,7 @@ class Video(models.Model):
     video_id = models.CharField(max_length=100)
     name = models.CharField(max_length=100, blank=True)
     duration = models.CharField(max_length=100, blank=True)
-    duration_in_seconds = models.IntegerField(default=0)
+    duration_in_seconds = models.BigIntegerField(default=0)
     thumbnail_url = models.TextField(blank=True)
     published_at = models.DateTimeField(blank=True, null=True)
     description = models.TextField(default="")
@@ -1275,10 +1275,10 @@ class Video(models.Model):
 
     # video stats
     public_stats_viewable = models.BooleanField(default=True)
-    view_count = models.IntegerField(default=0)
-    like_count = models.IntegerField(default=0)
-    dislike_count = models.IntegerField(default=0)
-    comment_count = models.IntegerField(default=0)
+    view_count = models.BigIntegerField(default=0)
+    like_count = models.BigIntegerField(default=0)
+    dislike_count = models.BigIntegerField(default=0)
+    comment_count = models.BigIntegerField(default=0)
 
     yt_player_HTML = models.TextField(blank=True)
 
@@ -1343,7 +1343,7 @@ class Playlist(models.Model):
     playlist_yt_player_HTML = models.TextField(blank=True)
 
     playlist_duration = models.CharField(max_length=69, blank=True)  # string version of playlist dureation
-    playlist_duration_in_seconds = models.IntegerField(default=0)
+    playlist_duration_in_seconds = models.BigIntegerField(default=0)
 
     # watch playlist details
     # watch_time_left = models.CharField(max_length=150, default="")
