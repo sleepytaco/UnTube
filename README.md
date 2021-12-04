@@ -40,8 +40,9 @@ Additional interactive features such as the progress bar and tagging playlist we
 - [htmx](https://htmx.org) - Used this beautiful library all throughout my site to help simplify making AJAX calls and focus on building highly interactive site with just a little bit of code.
 - [fontawesome](fontawesome.com/) - All the lovely icons are provided by fontawesome.
 - [Charts.js](https://www.chartjs.org/) - All the charts that you see on the site were made using Charts.js
-- [robohash](https://robohash.org/) - Used robohash to generate a unique robot profile picture for users based on their username.
+- [Choices.js](https://github.com/Choices-js/Choices) - The search bar uses this library to effectively search through 100s of channels or tags.
 - [Clipboard.js](https://clipboardjs.com/) - The copy-paste buttons on the site were made possible because of this library.
+- [robohash](https://robohash.org/) - Used robohash to generate a unique robot profile picture for users based on their username.
 - [SVG Loaders](https://github.com/SamHerbert/SVG-Loaders) - SVG loader signs found all over the site were taken from SamHerbert. All the previews of the loaders can be found at [his site](https://samherbert.net/svg-loaders/)
 - [Bleach](https://pypi.org/project/bleach/) - Utilized this wherever I took in input from the user (import playlists, video notes, labels, tags, etc.)
 - [djhtml](https://github.com/rtts/djhtml) - Django/Jinja template indenter. My HTML templates were getting messy pretty quickly, so using an indenter saved me a lot of time.
@@ -51,3 +52,4 @@ Additional interactive features such as the progress bar and tagging playlist we
 - Verify my application with Google to remove the 'unverified app warning' screen when a user first signs up.
 - Request Google to increase the quota limit for my web app.
 - Fix issues with storing huge video count in the database.
+- Add tutorial to setup and run this project locally.
