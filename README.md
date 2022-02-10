@@ -19,7 +19,9 @@ Apart from the base features mentioned above, UnTube offers more:
 
 ## Walkthroughs
 
-Check out the [landing page for UnTube](https://bakaabu.pythonanywhere.com/) for a more detailed GIF walkthroughs of some of the above features.
+![UnTube bulk playlist operations](https://bakaabu.pythonanywhere.com/static/assets/imgs/features.70cfacf34e92.gif)
+
+Check out the [landing page for UnTube](https://bakaabu.pythonanywhere.com/) for more GIF walkthroughs.
 
 ## Notes
 
