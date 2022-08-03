@@ -7,7 +7,7 @@ chardet==4.0.0
 charset-normalizer==2.0.4
 cryptography==3.4.7
 defusedxml==0.7.1
-Django==3.2.6
+Django==3.2.15
 django-allauth==0.44.0
 django-appconf==1.0.4
 django-classy-tags==2.0.0
