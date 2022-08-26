@@ -28,7 +28,7 @@ class PlaylistManager(models.Manager):
             refresh_token=user.profile.refresh_token,
             token_uri="https://oauth2.googleapis.com/token",
             client_id=app.client_id,
-            client_secret=app.client_secret,
+            client_secret=app.secret,
             scopes=['https://www.googleapis.com/auth/youtube']
         )
 
