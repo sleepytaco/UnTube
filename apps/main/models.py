@@ -22,18 +22,17 @@ def get_message_from_httperror(e):
 
 class PlaylistManager(models.Manager):
     def getCredentials(self, user):
+        app = SocialApp.objects.get(provider='google')
         credentials = Credentials(
             token=user.profile.access_token,
             refresh_token=user.profile.refresh_token,
-            # id_token=session.token.get("id_token"),
             token_uri="https://oauth2.googleapis.com/token",
-            client_id=SECRETS["GOOGLE_OAUTH_CLIENT_ID"],
-            client_secret=SECRETS["GOOGLE_OAUTH_CLIENT_SECRET"],
-            scopes=SECRETS["GOOGLE_OAUTH_SCOPES"]
+            client_id=app.client_id,
+            client_secret=app.client_secret,
+            scopes=['https://www.googleapis.com/auth/youtube']
         )
 
         if not credentials.valid:
-            # if credentials and credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())
             user.profile.access_token = credentials.token
             user.profile.refresh_token = credentials.refresh_token
