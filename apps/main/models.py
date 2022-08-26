@@ -1,19 +1,15 @@
-import datetime
-
+import googleapiclient.errors
 import requests
-from django.contrib.auth.models import User
 from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
+from django.contrib.auth.models import User
+from django.db import models
+from django.db.models import Q, Sum
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+
 from apps.users.models import Profile
 from .util import *
-import pytz
-from UnTube.secrets import SECRETS
-from django.db import models
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
-from datetime import timedelta
-from googleapiclient.discovery import build
-import googleapiclient.errors
-from django.db.models import Q, Sum
 
 
 def get_message_from_httperror(e):
@@ -22,27 +18,28 @@ def get_message_from_httperror(e):
 
 class PlaylistManager(models.Manager):
     def getCredentials(self, user):
-        credentials = Credentials(
-            user.profile.access_token,
-            refresh_token=user.profile.refresh_token,
-            # id_token=session.token.get("id_token"),
+        app = SocialApp.objects.get(provider='google')
+        account = SocialAccount.objects.get(user=user)
+
+        user_tokens = account.socialtoken_set.first()
+
+        creds = Credentials(
+            token=user_tokens.token,
+            refresh_token=user_tokens.refresh_token,
             token_uri="https://oauth2.googleapis.com/token",
-            client_id=SECRETS["GOOGLE_OAUTH_CLIENT_ID"],
-            client_secret=SECRETS["GOOGLE_OAUTH_CLIENT_SECRET"],
-            scopes=SECRETS["GOOGLE_OAUTH_SCOPES"]
+            client_id=app.client_id,
+            client_secret=app.client_secret,
+            scopes=['https://www.googleapis.com/auth/youtube']
         )
 
-        credentials.expiry = user.profile.expires_at.replace(tzinfo=None)
+        # refresh credentials if expired
+        if not creds or not creds.valid:
+            creds.refresh(Request())
+            user_tokens.token = creds.token
+            user_tokens.refresh_token = creds.refresh_token
+            user_tokens.save()
 
-        if not credentials.valid:
-            # if credentials and credentials.expired and credentials.refresh_token:
-            credentials.refresh(Request())
-            user.profile.expires_at = credentials.expiry
-            user.profile.access_token = credentials.token
-            user.profile.refresh_token = credentials.refresh_token
-            user.save()
-
-        return credentials
+        return creds
 
     def getPlaylistId(self, playlist_link):
         if "?" not in playlist_link:
@@ -57,6 +54,9 @@ class PlaylistManager(models.Manager):
     # Used to check if the user has a vaild YouTube channel
     # Will return -1 if user does not have a YouTube channel
     def getUserYTChannelID(self, user):
+        if user.profile.yt_channel_id != '':
+            return 0
+
         credentials = self.getCredentials(user)
 
         with build('youtube', 'v3', credentials=credentials) as youtube:

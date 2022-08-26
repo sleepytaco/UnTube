@@ -39,13 +39,7 @@ def home(request):
         show_import_page is only set false in the import_in_progress.html page, i.e when user cancels YT import
         """
         # user_profile.show_import_page = False
-        if user_profile.profile.access_token.strip() == "" or user_profile.profile.refresh_token.strip() == "":
-            user_social_token = SocialToken.objects.get(account__user=request.user)
-            user_profile.profile.access_token = user_social_token.token
-            user_profile.profile.refresh_token = user_social_token.token_secret
-            user_profile.profile.expires_at = user_social_token.expires_at
-            user_profile.save()
-            Playlist.objects.getUserYTChannelID(request.user)
+        Playlist.objects.getUserYTChannelID(request.user)
 
         if user_profile.profile.imported_yt_playlists:
             user_profile.profile.show_import_page = False  # after user imports all their YT playlists no need to show_import_page again
