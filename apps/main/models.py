@@ -23,7 +23,7 @@ def get_message_from_httperror(e):
 class PlaylistManager(models.Manager):
     def getCredentials(self, user):
         credentials = Credentials(
-            user.profile.access_token,
+            token=user.profile.access_token,
             refresh_token=user.profile.refresh_token,
             # id_token=session.token.get("id_token"),
             token_uri="https://oauth2.googleapis.com/token",
@@ -32,12 +32,9 @@ class PlaylistManager(models.Manager):
             scopes=SECRETS["GOOGLE_OAUTH_SCOPES"]
         )
 
-        credentials.expiry = user.profile.expires_at.replace(tzinfo=None)
-
         if not credentials.valid:
             # if credentials and credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())
-            user.profile.expires_at = credentials.expiry
             user.profile.access_token = credentials.token
             user.profile.refresh_token = credentials.refresh_token
             user.save()
@@ -1416,7 +1413,8 @@ class Playlist(models.Model):
         return image
 
     def get_playlist_thumbnail_url(self):
-        playlist_items = self.playlist_items.filter(Q(video__was_deleted_on_yt=False) & Q(video__is_unavailable_on_yt=False))
+        playlist_items = self.playlist_items.filter(
+            Q(video__was_deleted_on_yt=False) & Q(video__is_unavailable_on_yt=False))
         if playlist_items.exists():
             return playlist_items.first().video.thumbnail_url
         else:
