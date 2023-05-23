@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "untube"
+version = "0.1.0"
+description = ""
+authors = ["Mohammed Khan <abukhan363@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+django = "^4.2.1"
+djangorestframework = "^3.14.0"
+django-filter = "^23.2"
+psycopg2 = "^2.9.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
