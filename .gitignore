@@ -1,15 +1,75 @@
-/venv/
-.azure
-/UnTube/client_secrets.json
-/db.sqlite3
-/modules
-/.idea/
-__pycache__/
+# Backup files
+*.bak
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+*.manifest
+*.spec
+.Python build/
+.eggs/
+.installed.cfg
+develop-eggs/
+dist/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+
+# Django
 *.log
 *.pot
 *.pyc
-/static/
-.staticfiles
-.env
+/staticfiles
+__pycache__
+db.sqlite3
+media
 
+# Environments
+.venv
+/.env
+/local
+ENV/
+env.bak/
+env/
+venv
+venv.bak/
+venv/
 
+# IDEs
+.DS_Store
+.idea
+.vscode
+
+# Installer logs
+pip-delete-this-directory.txt
+pip-log.txt
+
+# mypy
+.mypy_cache
+
+# pyenv
+.python-version
+
+# pytest
+.pytest_cache
+
+# Python
+*$py.class
+*.py[cod]
+
+# Unit test / coverage reports
+*.cover
+.cache
+.coverage
+.coverage.*
+.hypothesis/
+.pytest_cache/
+.tox/
+coverage.xml
+htmlcov/
+nosetests.xml
