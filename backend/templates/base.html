@@ -1,0 +1,281 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="icon" href="{% static 'fontawesome-free-5.15.3-web/svgs/solid/../../apps/main/static/fontawesome-free-5.15.3-web/svgs/solid/underline.svg' %}">
+
+        <meta charset="utf-8">
+        <meta name="keywords" content="youtube, playlists, videos, delete videos, delete playlists, delete multiple videos, move multiple videos, merge playlists, video manager, playlist manager, youtube playlists, untube, google">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="UnTube is a simple Youtube playlist manager. Modify and keep track of your YouTube playlists with ease.">
+        <meta name="author" content="Mohammed Abu Bakar Khan">
+        <title>UnTube - A Youtube Playlist Manager</title>
+
+        <style type="text/css">
+            html {
+                scroll-behavior: smooth;
+            }
+
+            body {
+                margin: 0;
+                {% if user.profile.enable_gradient_bg %}
+                background: linear-gradient(-45deg, #e2b968, #68af5b, #8a97bc, #d69ab2);
+                    background-size: 400% 400%;
+                animation: gradient 10s ease infinite;
+                {% endif %}
+                //background: linear-gradient(-45deg, #B2A3FF, #84bcf3, #AE876B, #B0E7AE);
+                //background: linear-gradient(-45deg, #0645a4, #2480cd, #84bcf3, #b7d6f7);
+                //background: linear-gradient(-45deg, #AE876B, #ABA27B, #A7BC8A, #A3D69A);
+
+                }
+
+            .gradient-bg {
+                background: linear-gradient(-45deg, #AE876B, #ABA27B, #A7BC8A, #A3D69A);
+                background-size: 400% 400%;
+                animation: gradient 10s ease infinite;
+            }
+
+            .gradient-bg-2 {
+                background: linear-gradient(-45deg, #e2b968, #68af5b, #8a97bc, #d69ab2);
+                background-size: 400% 400%;
+                animation: gradient 10s ease infinite;
+            }
+
+            .gradient-bg-3 {
+                background: linear-gradient(-45deg, #B2A3FF, #84bcf3, #AE876B, #B0E7AE);;
+                background-size: 400% 400%;
+                animation: gradient 10s ease infinite;
+            }
+            @keyframes gradient {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+
+
+            .scrollToTopBtn {
+              background-color: black;
+              border: none;
+              border-radius: 50%;
+              color: white;
+              cursor: pointer;
+              font-size: 16px;
+              line-height: 58px;
+              width: 58px;
+
+              /* place it at the bottom right corner */
+              position: relative;
+              bottom: 20px;
+                right: 0px;
+              left: 30px;
+
+              /* hide with opacity */
+              opacity: 0;
+              /* also add a translate effect */
+              transform: translateY(100px);
+              /* and a transition */
+              transition: all .5s ease
+            }
+
+            .showBtn {
+              opacity: 1;
+              transform: translateY(0)
+            }
+
+
+
+             #btn-back-to-top {
+              display: none; /* Hidden by default */
+              position: fixed; /* Fixed/sticky position */
+              bottom: 20px; /* Place the button at the bottom of the page */
+              right: 30px; /* Place the button 30px from the right */
+              z-index: 99999; /* Make sure it does not overlap */
+              border: none; /* Remove borders */
+              outline: none; /* Remove outline */
+              background-color: red; /* Set a background color */
+              color: white; /* Text color */
+              cursor: pointer; /* Add a mouse pointer on hover */
+              padding: 15px; /* Some padding */
+              border-radius: 10px; /* Rounded corners */
+              font-size: 18px; /* Increase font size */
+            }
+
+            #btn-back-to-top:hover {
+              background-color: #555; /* Add a dark-grey background on hover */
+            }
+
+            .big-checkbox {width: 30px; height: 30px;}
+
+        </style>
+
+         <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Comfortaa&family=Fredoka+One&display=swap" rel="stylesheet">
+
+        <link href="{% static 'fontawesome-free-5.15.3-web/css/../../apps/main/static/fontawesome-free-5.15.3-web/css/all.min.css' %}" rel="stylesheet">
+        <link href="{% static 'bootstrap5.0.1/css/../../apps/main/static/bootstrap5.0.1/css/bootstrap.min.css' %}" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'choices.js/../../apps/main/static/choices.js/choices.min.css' %}">
+
+        <script src="{% static 'htmx/../../apps/main/static/htmx/htmx.min.js' %}" type="application/javascript"></script>
+        <script src="{% static 'jquery3.6.0/js/../../apps/main/static/jquery3.6.0/js/jquery-3.6.0.min.js' %}" type="application/javascript"></script>
+        <script src="{% static 'bootstrap5.0.1/js/../../apps/main/static/bootstrap5.0.1/js/bootstrap.bundle.min.js' %}" type="application/javascript"></script>
+            </head>
+    <body class="text-dark" style="font-family: 'Fredoka One', 'Comfortaa',  sans-serif; {% if not user.profile.enable_gradient_bg %}background-color: #FDF4DC;{% endif %}">
+
+
+        {% if user.profile.show_import_page %}
+            <meta http-equiv="refresh" content="0;url=/import/init" />
+        {% endif %}
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{% url 'home' %}"><h3><kbd>UnTube</kbd></h3></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="{% url 'home' %}">Dashboard</a>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link" href="{% url 'library' 'home' %}">
+                                Library
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="quickViewDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Quick View
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="quickViewDropdown" style="z-index: 1021;">
+                                <li><a class="dropdown-item" href="{% url 'library' 'favorites' %}">Favorites</a></li>
+                                <li><a class="dropdown-item" href="{% url 'library' 'watching' %}">Watching</a></li>
+                                <li><a class="dropdown-item" href="{% url 'library' 'plan-to-watch' %}">Plan to Watch</a></li>
+                                <li><a class="dropdown-item" href="{% url 'library' 'user-owned' %}">Your YT Playlists</a></li>
+                                <li><a class="dropdown-item" href="{% url 'library' 'imported' %}">Imported</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'library' 'all' %}">View all</a></li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'manage_view_page' 'import' %}">Import</a>
+                        </li>
+
+
+                        <li class="nav-item">
+                            <a class="nav-link" target="_blank" href="https://github.com/sleepytaco/UnTube">About</a>
+                        </li>
+
+                    </ul>
+
+
+                    <div class="navbar-nav justify-content-end">
+                        <!--
+                        <input class="form-control border border-secondary bg-dark text-white-50 me-lg-2 bg-dark mb-1" id="unTubeSearchBar" type="text" placeholder="Search UnTube">
+                        -->
+                        <a class="nav-link btn-lg me-1 mt-2" href="{% url 'search' %}" {% if user.profile.open_search_new_tab %}target="_blank"{% endif %}>
+                            <i class="fas fa-search"></i>
+                        </a>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="quickViewDropdown" role="button" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                                <img src="https://robohash.org/{{ user.username }}.png?set=set{{ user.profile.robohash_set }}" alt="{{ user.username }}" class="border border-3 border-primary rounded-circle" width="42" height="42">
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-lg-end" aria-labelledby="quickViewDropdown" style="z-index: 1021;">
+                                <li class="dropdown-item overflow-auto">Logged in as <span style="border-bottom: 3px #020000 dashed;">{{ user.username }}</span></li>
+                                <!-- <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li> -->
+                                <li><a class="dropdown-item" href="{% url 'settings' %}">Settings</a></li>
+
+                                <!-- <li><hr class="dropdown-divider"></li> -->
+                                <li><a class="dropdown-item" href="{% url 'log_out' %}">Log out</a></li>
+                            </ul>
+                        </li>
+
+
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+
+
+        <div class="container-fluid text-dark">
+
+            <div class="row">
+                <main class="ms-lg-auto px-lg-5">
+                {% if messages %}
+                    {% for message in messages %}
+                      <div class="alert alert-{% if message.tags == "error" %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                          {{ message }}
+                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                      </div>
+                    {% endfor %}
+                {% endif %}
+                {% block content %}
+                {% endblock %}
+
+                </main>
+            </div>
+
+        </div>
+
+        <br>
+
+        <script src="{% static 'clipboard.js/../../apps/main/static/clipboard.js/clipboard.min.js' %}" type="application/javascript"></script>
+        <script async src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha384-GNFwBvfVxBkLMJpYMOABq3c+d3KnQxudP/mGPkzpZSTYykLBNsZEnG2D9G/X/+7D" crossorigin="anonymous"></script>
+        <script src="{% static 'choices.js/../../apps/main/static/choices.js/choices.min.js' %}"></script>
+
+        <script type="application/javascript">
+
+            // copy functionality
+            var clipboard = new ClipboardJS('.copy-btn');
+
+            // send csrf_token when htmx does a post request
+            document.body.addEventListener('htmx:configRequest', (event) => {
+                event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+              })
+
+
+            var scrollToTopBtn = document.querySelector(".scrollToTopBtn")
+            var rootElement = document.documentElement
+
+            function handleScroll() {
+              // Do something on scroll
+              var scrollTotal = rootElement.scrollHeight - rootElement.clientHeight
+              if ((rootElement.scrollTop / scrollTotal ) > 0.10) {
+                // Show button
+                scrollToTopBtn.classList.add("showBtn")
+              } else {
+                // Hide button
+                scrollToTopBtn.classList.remove("showBtn");
+              }
+            }
+
+            function scrollToTop() {
+              // Scroll to top logic
+              rootElement.scrollTo({
+                top: 0,
+                behavior: "smooth"
+              })
+            }
+            scrollToTopBtn.addEventListener("click", scrollToTop)
+            document.addEventListener("scroll", handleScroll)
+
+
+
+
+            // window.onbeforeunload = function() {
+        //return "Dude, are you sure you want to leave? Think of the kittens!";
+            //}
+
+        </script>
+
+    </body>
+</html>

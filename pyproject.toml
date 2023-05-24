@@ -12,6 +12,13 @@ django = "^4.2.1"
 djangorestframework = "^3.14.0"
 django-filter = "^23.2"
 psycopg2 = "^2.9.6"
+django-crispy-forms = "^2.0"
+bleach = "^6.0.0"
+humanize = "^4.6.0"
+google-auth = "^2.18.1"
+google-api-python-client = "^2.86.0"
+django-allauth = "^0.54.0"
+whitenoise = "^6.4.0"
 
 
 [build-system]
