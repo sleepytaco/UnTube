@@ -1,5 +1,8 @@
 # UnTube
+
 A simple, comprehensive YouTube playlist manager web app powered by [YouTube Data API V3](https://developers.google.com/youtube/v3/). Built with ❤ using Django, htmx and Bootstrap. 
+
+### _Note: I am currently working on redesigning UnTube with a React.js frontend and DRF for the backend. I will also be revising the project structure and using package managers to make it easier for people to run UnTube locally and contribute to this project. You can check my progress under the `django-react` branch._
 
 ## About
 
