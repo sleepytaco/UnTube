@@ -10,7 +10,7 @@ https://docs.djangoproject.com/en/3.2/howto/deployment/wsgi/
 import os
 from django.core.wsgi import get_wsgi_application
 
-settings_module = "UnTube.production" if 'UNTUBE' in os.environ else 'UnTube.settings'
+settings_module = 'backend.UnTube.settings'
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
 
 # to use env variables on pythonanywhere

@@ -10,24 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
-from pathlib import Path
 from backend.UnTube.secrets import SECRETS
+from backend.UnTube.settings import BASE_DIR
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+DEBUG = False
+SECRET_KEY = NotImplemented
 
-# PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = SECRETS['SECRET_KEY']
 YOUTUBE_V3_API_KEY = SECRETS['YOUTUBE_V3_API_KEY']
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1']
 
@@ -66,11 +56,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
 ]
 
 ROOT_URLCONF = 'backend.UnTube.urls'  # path to the urls.py file in root UnTube app folder
-print(BASE_DIR)
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -171,4 +160,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = Path(BASE_DIR / 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR / 'media')
