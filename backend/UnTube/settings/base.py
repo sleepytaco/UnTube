@@ -10,14 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
-from backend.UnTube.secrets import SECRETS
 from backend.UnTube.settings import BASE_DIR
 
 DEBUG = False
 SECRET_KEY = NotImplemented
-
-YOUTUBE_V3_API_KEY = SECRETS['YOUTUBE_V3_API_KEY']
-
 
 ALLOWED_HOSTS = ['127.0.0.1']
 
@@ -45,8 +41,6 @@ INSTALLED_APPS = [
     'backend.charts',
     'backend.search',
 ]
-
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -82,22 +76,6 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend'
 ]
 
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-            'https://www.googleapis.com/auth/youtube',
-        ],
-        'AUTH_PARAMS': {
-            # To refresh authentication in the background, set AUTH_PARAMS['access_type'] to offline.
-            'access_type': 'offline',
-        }
-    }
-}
-
-SITE_ID = 10
-
 LOGIN_URL = '/'
 
 LOGIN_REDIRECT_URL = '/home/'
@@ -113,12 +91,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# DATABASES = {}
-# DATABASES['default'] = dj_database_url.config(conn_max_age=600)
-
-# DATABASE_URL = os.environ['DATABASE_URL']
-# conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

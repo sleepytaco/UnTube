@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from allauth.socialaccount.models import SocialApp
 from .util import *
 import pytz
-from backend.UnTube.secrets import SECRETS
 from django.db import models
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -1394,18 +1393,18 @@ class Playlist(models.Model):
 
         return [num_channels, channels_list]
 
-    def generate_playlist_thumbnail_url(self):
-        """
-        Generates a playlist thumnail url based on the playlist name
-        """
-        pl_name = self.name
-        response = requests.get(
-            f'https://api.unsplash.com/search/photos/?client_id={SECRETS["UNSPLASH_API_ACCESS_KEY"]}&page=1&query={pl_name}')
-        image = response.json()["results"][0]["urls"]["small"]
-
-        print(image)
-
-        return image
+    # def generate_playlist_thumbnail_url(self):
+    #     """
+    #     Generates a playlist thumnail url based on the playlist name
+    #     """
+    #     pl_name = self.name
+    #     response = requests.get(
+    #         f'https://api.unsplash.com/search/photos/?client_id={SECRETS["UNSPLASH_API_ACCESS_KEY"]}&page=1&query={pl_name}')
+    #     image = response.json()["results"][0]["urls"]["small"]
+    #
+    #     print(image)
+    #
+    #     return image
 
     def get_playlist_thumbnail_url(self):
         playlist_items = self.playlist_items.filter(

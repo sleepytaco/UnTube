@@ -44,3 +44,5 @@ if IN_PYTHONANYWHERE:  # type: ignore
             }
         }
     }
+
+    print("Using Pythonanywhere settings...")
