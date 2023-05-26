@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from allauth.socialaccount.models import SocialToken, SocialApp
+from allauth.socialaccount.models import SocialApp
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -168,6 +168,7 @@ def log_out(request):
     return redirect('/')
 
 
+@login_required
 def cancel_import(request):
     user_profile = request.user.profile
     user_profile.imported_yt_playlists = False
@@ -177,6 +178,7 @@ def cancel_import(request):
     return redirect('home')
 
 
+@login_required
 def import_user_yt_playlists(request):
     request.user.profile.show_import_page = True
     request.user.profile.save(update_fields=['show_import_page'])
@@ -189,8 +191,6 @@ def start_import(request):
     """
     Initializes only the user's playlist data in the database. Returns the progress bar, which will
     keep calling continue_import
-    :param request:
-    :return:
     """
     user_profile = request.user.profile
 
@@ -212,8 +212,8 @@ def start_import(request):
 
         print("User has no playlists on YT")
 
-        if request.user.profile.yt_channel_id == "":
-            Playlist.objects.getUserYTChannelID(request.user)
+        # if request.user.profile.yt_channel_id == "":
+        #     Playlist.objects.getUserYTChannelID(request.user)
 
         Playlist.objects.initializePlaylist(request.user, "LL")
 
@@ -224,8 +224,8 @@ def start_import(request):
              "progress": 100,
              "channel_found": True}))
     else:
-        if request.user.profile.yt_channel_id == "":
-            Playlist.objects.getUserYTChannelID(request.user)
+        # if request.user.profile.yt_channel_id == "":
+        #     Playlist.objects.getUserYTChannelID(request.user)
 
         Playlist.objects.initializePlaylist(request.user, "LL")
 

@@ -19,7 +19,7 @@ def home(request):
     user_profile = request.user
 
     #### FOR NEWLY JOINED USERS ######
-    channel_found = True
+    # channel_found = True
     if user_profile.profile.show_import_page:
         """
         Logic:
@@ -29,6 +29,8 @@ def home(request):
         
         show_import_page is only set false in the import_in_progress.html page, i.e when user cancels YT import
         """
+        Playlist.objects.getUserYTChannelID(request.user)
+
         # after user imports all their YT playlists no need to show_import_page again
         if user_profile.profile.imported_yt_playlists:
             user_profile.profile.show_import_page = False
@@ -37,7 +39,6 @@ def home(request):
                 playlist_id="LL").count()
             return render(request, "home.html", {"import_successful": True, "imported_playlists_count": imported_playlists_count})
 
-        Playlist.objects.getUserYTChannelID(request.user)
         return render(request, "import_in_progress.html")
     ##################################
 
@@ -48,7 +49,7 @@ def home(request):
     videos = request.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
     channels = videos.values('channel_name').annotate(channel_videos_count=Count('video_id'))
 
-    return render(request, 'home.html', {"channel_found": channel_found,
+    return render(request, 'home.html', {# "channel_found": channel_found,
                                          "playlist_tags": playlist_tags,
                                          "watching": watching,
                                          "recently_accessed_playlists": recently_accessed_playlists,

@@ -44,7 +44,11 @@ class PlaylistManager(models.Manager):
     # Used to check if the user has a vaild YouTube channel
     # Will return -1 if user does not have a YouTube channel
     def getUserYTChannelID(self, user):
-        credentials = user.profile.get_credentials()
+        user_profile = user.profile
+        if user_profile.yt_channel_id != "":
+            return 0
+
+        credentials = user_profile.get_credentials()
 
         with build('youtube', 'v3', credentials=credentials) as youtube:
             pl_request = youtube.channels().list(
@@ -60,8 +64,8 @@ class PlaylistManager(models.Manager):
                 print("Looks like do not have a channel on youtube. Create one to import all of your playlists. Retry?")
                 return -1
             else:
-                user.profile.yt_channel_id = pl_response['items'][0]['id']
-                user.save()
+                user_profile.yt_channel_id = pl_response['items'][0]['id']
+                user_profile.save(update_fields=['yt_channel_id'])
 
         return 0
 
