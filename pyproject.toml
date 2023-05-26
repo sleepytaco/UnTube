@@ -17,10 +17,11 @@ bleach = "^6.0.0"
 humanize = "^4.6.0"
 google-auth = "^2.18.1"
 google-api-python-client = "^2.86.0"
-django-allauth = "^0.54.0"
+django-allauth ="^0.47.0"  # "^0.54.0"
 whitenoise = "^6.4.0"
 django-split-settings = "^1.2.0"
 pyyaml = "^6.0"
+django-import-export = "^3.2.0"
 
 
 [build-system]
