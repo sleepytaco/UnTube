@@ -1,6 +1,3 @@
-import re
-from django.contrib.auth.hashers import make_password, check_password
-
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Count, Q
@@ -57,6 +54,9 @@ class Profile(models.Model):
     create_playlist_add_vids_from_collection = models.CharField(max_length=50, default="")
     create_playlist_add_vids_from_links = models.CharField(max_length=50, default="")
 
+    def __str__(self):
+        return f"{self.untube_user.username} ({self.untube_user.email})"
+
     def get_channels_list(self):
         channels_list = []
         videos = self.untube_user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
@@ -71,6 +71,7 @@ class Profile(models.Model):
 
     def get_playlists_list(self):
         return self.untube_user.playlists.all().filter(is_in_db=True)
+
 
 # as soon as one User object is created, create an associated profile object
 @receiver(post_save, sender=User)
