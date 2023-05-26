@@ -4,13 +4,15 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from allauth.socialaccount.models import SocialToken
+from allauth.socialaccount.models import SocialToken, SocialApp
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from django.contrib import messages
 from backend.main.models import Playlist
 from .models import Untube
 from django.template import loader
+from django.conf import settings
+from django.contrib.sites.models import Site
 
 
 # Create your views here.
@@ -19,15 +21,35 @@ def index(request):
         untube = Untube.objects.create()
         untube.save()
 
+    if settings.GOOGLE_OAUTH_CLIENT_ID is NotImplemented or settings.GOOGLE_OAUTH_CLIENT_SECRET is NotImplemented:
+        messages.error(request, "Please fill in your Google OAuth credentials in the local/settings.dev.py file")
+    else:
+        # messages.success(request, "Thanks for filling in the YouTube API key")
+
+        if not Site.objects.filter(domain=settings.GOOGLE_OAUTH_URI).exists():
+            Site.objects.create(domain=settings.GOOGLE_OAUTH_URI, name=settings.GOOGLE_OAUTH_URI)
+
+        if not SocialApp.objects.filter(provider='google').exists():  # create google OAuth app
+            print("Creating Google social app...")
+            app = SocialApp.objects.create(provider="google",
+                                           name="UnTube OAuth",
+                                           client_id=settings.GOOGLE_OAUTH_CLIENT_ID,
+                                           secret=settings.GOOGLE_OAUTH_CLIENT_SECRET)
+            site_uri = Site.objects.get(domain=settings.GOOGLE_OAUTH_URI)
+            app.sites.add(site_uri)
+
     if not request.session.exists(request.session.session_key):
         request.session.create()
         request.session['liked_untube'] = False
 
-    if request.user.is_anonymous:
-        return render(request, 'index.html', {"likes": Untube.objects.all().first().page_likes,
-                                              "users_joined": User.objects.all().count()})
-    else:
-        return redirect('home')
+    return render(request, 'index.html', {"likes": Untube.objects.all().first().page_likes,
+                                          "users_joined": User.objects.all().count()})
+
+    # if request.user.is_anonymous:
+    #     return render(request, 'index.html', {"likes": Untube.objects.all().first().page_likes,
+    #                                           "users_joined": User.objects.all().count()})
+    # else:
+    #     return redirect('home')
 
 
 def about(request):
@@ -69,7 +91,7 @@ def profile(request):
 
 
 @login_required
-def settings(request):
+def user_settings(request):
     return render(request, 'settings.html')
 
 
