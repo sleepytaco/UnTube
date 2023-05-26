@@ -5,12 +5,13 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.template import loader
 from django.views.decorators.http import require_POST
+from backend.general.utils.misc import print_
 
 
 @login_required
 def search(request):
     if request.method == "GET":
-        print(request.GET)
+        print_(request.GET)
         if 'mode' in request.GET:
             mode = bleach.clean(request.GET['mode'])
         else:
@@ -155,7 +156,7 @@ def search_UnTube(request):
 @login_required
 @require_POST
 def search_library(request, library_type):
-    # print(request.POST)  # prints <QueryDict: {'search': ['aa']}>
+    # print_(request.POST)  # prints <QueryDict: {'search': ['aa']}>
 
     search_query = bleach.clean(request.POST["search"])
     watching = False

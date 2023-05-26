@@ -1,4 +1,5 @@
 import yaml
+from django.conf import settings
 
 
 def yaml_coerce(value):
@@ -12,3 +13,8 @@ def yaml_coerce(value):
         return yaml.load(f'dummy: {value}', Loader=yaml.SafeLoader)['dummy']
 
     return value
+
+
+def print_(*args, **kwargs):
+    if settings.ENABLE_PRINT_STATEMENTS:
+        print(*args, **kwargs)
