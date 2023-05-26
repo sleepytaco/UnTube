@@ -17,9 +17,6 @@ from .util import *
 @login_required
 def home(request):
     user_profile = request.user
-    watching = user_profile.playlists.filter(Q(marked_as="watching") & Q(is_in_db=True)).order_by("-num_of_accesses")
-    recently_accessed_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-updated_at")[:6]
-    recently_added_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-created_at")[:6]
 
     #### FOR NEWLY JOINED USERS ######
     channel_found = True
@@ -32,32 +29,24 @@ def home(request):
         
         show_import_page is only set false in the import_in_progress.html page, i.e when user cancels YT import
         """
-        # user_profile.show_import_page = False
-        if user_profile.profile.access_token.strip() == "" or user_profile.profile.refresh_token.strip() == "":
-            user_social_token = SocialToken.objects.get(account__user=request.user)
-            user_profile.profile.access_token = user_social_token.token
-            user_profile.profile.refresh_token = user_social_token.token_secret
-            user_profile.profile.expires_at = user_social_token.expires_at
-            user_profile.save()
-            Playlist.objects.getUserYTChannelID(request.user)
-
+        # after user imports all their YT playlists no need to show_import_page again
         if user_profile.profile.imported_yt_playlists:
-            user_profile.profile.show_import_page = False  # after user imports all their YT playlists no need to show_import_page again
+            user_profile.profile.show_import_page = False
             user_profile.profile.save(update_fields=['show_import_page'])
             imported_playlists_count = request.user.playlists.filter(Q(is_user_owned=True) & Q(is_in_db=True)).exclude(
                 playlist_id="LL").count()
-            return render(request, "home.html",
-                          {"import_successful": True, "imported_playlists_count": imported_playlists_count})
+            return render(request, "home.html", {"import_successful": True, "imported_playlists_count": imported_playlists_count})
 
+        Playlist.objects.getUserYTChannelID(request.user)
         return render(request, "import_in_progress.html")
     ##################################
 
+    watching = user_profile.playlists.filter(Q(marked_as="watching") & Q(is_in_db=True)).order_by("-num_of_accesses")
+    recently_accessed_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-updated_at")[:6]
+    recently_added_playlists = user_profile.playlists.filter(is_in_db=True).order_by("-created_at")[:6]
     playlist_tags = request.user.playlist_tags.filter(times_viewed_per_week__gte=1).order_by('-times_viewed_per_week')
-
     videos = request.user.videos.filter(Q(is_unavailable_on_yt=False) & Q(was_deleted_on_yt=False))
-
-    channels = videos.values(
-        'channel_name').annotate(channel_videos_count=Count('video_id'))
+    channels = videos.values('channel_name').annotate(channel_videos_count=Count('video_id'))
 
     return render(request, 'home.html', {"channel_found": channel_found,
                                          "playlist_tags": playlist_tags,

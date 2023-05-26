@@ -3,11 +3,12 @@ from django.contrib.auth.models import User
 from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from allauth.socialaccount.models import SocialApp
+from allauth.socialaccount.models import SocialToken
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
+from django.conf import settings
 
-# Create your models here.
+
 class Untube(models.Model):
     page_likes = models.IntegerField(default=0)
 
@@ -60,13 +61,24 @@ class Profile(models.Model):
         return f"{self.untube_user.username} ({self.untube_user.email})"
 
     def get_credentials(self):
-        app = SocialApp.objects.get(provider='google')
+        """
+        Returns Google OAuth credentials object by using user's OAuth token
+        """
+        # if the profile model does not hold the tokens, retrieve them from user's SocialToken entry and save them into profile
+        if self.access_token.strip() == "" or self.refresh_token.strip() == "":
+            user_social_token = SocialToken.objects.get(account__user=self.untube_user)
+            self.access_token = user_social_token.token
+            self.refresh_token = user_social_token.token_secret
+            self.expires_at = user_social_token.expires_at
+            self.save(update_fields=['access_token', 'refresh_token', 'expires_at'])
+
+        # app = SocialApp.objects.get(provider='google')
         credentials = Credentials(
             token=self.access_token,
             refresh_token=self.refresh_token,
             token_uri="https://oauth2.googleapis.com/token",
-            client_id=app.client_id,
-            client_secret=app.secret,
+            client_id=settings.GOOGLE_OAUTH_CLIENT_ID,  # app.client_id,
+            client_secret=settings.GOOGLE_OAUTH_CLIENT_SECRET,  # app.secret,
             scopes=['https://www.googleapis.com/auth/youtube']
         )
 

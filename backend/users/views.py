@@ -170,15 +170,6 @@ def log_out(request):
 
 def cancel_import(request):
     user_profile = request.user.profile
-
-    if user_profile.access_token.strip() == "" or user_profile.refresh_token.strip() == "":
-        user_social_token = SocialToken.objects.get(account__user=request.user)
-        user_profile.access_token = user_social_token.token
-        user_profile.refresh_token = user_social_token.token_secret
-        user_profile.expires_at = user_social_token.expires_at
-
-        # request.user.save()
-
     user_profile.imported_yt_playlists = False
     user_profile.show_import_page = False
     user_profile.save()
@@ -202,14 +193,6 @@ def start_import(request):
     :return:
     """
     user_profile = request.user.profile
-
-    if user_profile.access_token.strip() == "" or user_profile.refresh_token.strip() == "":
-        user_social_token = SocialToken.objects.get(account__user=request.user)
-        user_profile.access_token = user_social_token.token
-        user_profile.refresh_token = user_social_token.token_secret
-        user_profile.expires_at = user_social_token.expires_at
-
-        request.user.save()
 
     result = Playlist.objects.initializePlaylist(request.user)
     if result["status"] == -1:
