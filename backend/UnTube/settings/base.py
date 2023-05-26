@@ -9,9 +9,6 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-import os
-from backend.UnTube.settings import BASE_DIR
-
 DEBUG = False
 SECRET_KEY = NotImplemented
 
@@ -40,6 +37,8 @@ INSTALLED_APPS = [
     'backend.manage_playlists',
     'backend.charts',
     'backend.search',
+
+    'import_export',
 ]
 
 MIDDLEWARE = [
@@ -57,7 +56,7 @@ ROOT_URLCONF = 'backend.UnTube.urls'  # path to the urls.py file in root UnTube 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'backend' / 'templates'],
+        'DIRS': [BASE_DIR / 'backend', BASE_DIR / 'backend' / 'templates'],  # type: ignore
         # 'DIRS': [os.path.join(BASE_DIR, "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -78,9 +77,6 @@ AUTHENTICATION_BACKENDS = [
 
 LOGIN_URL = '/'
 
-LOGIN_REDIRECT_URL = '/home/'
-LOGOUT_REDIRECT_URL = '/home/'
-
 WSGI_APPLICATION = 'backend.UnTube.wsgi.application'  # path to the wsgi.py file in root UnTube app folder
 
 # Database
@@ -88,7 +84,7 @@ WSGI_APPLICATION = 'backend.UnTube.wsgi.application'  # path to the wsgi.py file
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',  # type: ignore
     }
 }
 
@@ -124,7 +120,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = BASE_DIR / 'backend' / 'static'  # type: ignore
 # STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
@@ -132,4 +128,4 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR / 'media')
+MEDIA_ROOT = BASE_DIR / 'backend' / 'media'  # type: ignore

@@ -1,4 +1,4 @@
-import os.path
+import os
 from pathlib import Path
 from split_settings.tools import include, optional
 
@@ -31,4 +31,3 @@ include(
     'docker.py',
     'pythonanywhere.py',
 )
-

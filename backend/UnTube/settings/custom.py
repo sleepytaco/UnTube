@@ -3,6 +3,7 @@ Settings specific to this application only (no Django or third party settings)
 """
 
 YOUTUBE_V3_API_KEY = NotImplemented
+GOOGLE_OAUTH_URI = NotImplemented
 GOOGLE_OAUTH_CLIENT_ID = NotImplemented
 GOOGLE_OAUTH_CLIENT_SECRET = NotImplemented
 CRISPY_TEMPLATE_PACK = 'bootstrap4'

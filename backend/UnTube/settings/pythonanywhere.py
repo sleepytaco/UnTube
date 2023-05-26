@@ -3,7 +3,7 @@ if IN_PYTHONANYWHERE:  # type: ignore
     # from dotenv import load_dotenv
     # project_folder = os.path.expanduser('/home/bakaabu')
     # load_dotenv(os.path.join(project_folder, '.env'))
-
+    GOOGLE_OAUTH_URI = os.environ['GOOGLE_OAUTH_URI']  # type: ignore #  "bakaabu.pythonanywhere.com"
     SECRET_KEY = os.environ['SECRET_KEY']  # type: ignore
     YOUTUBE_V3_API_KEY = os.environ['YOUTUBE_V3_API_KEY']   # type: ignore
 
