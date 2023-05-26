@@ -3,7 +3,9 @@ from django.contrib.auth.models import User
 from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+from allauth.socialaccount.models import SocialApp
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
 
 # Create your models here.
 class Untube(models.Model):
@@ -56,6 +58,25 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.untube_user.username} ({self.untube_user.email})"
+
+    def get_credentials(self):
+        app = SocialApp.objects.get(provider='google')
+        credentials = Credentials(
+            token=self.access_token,
+            refresh_token=self.refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=app.client_id,
+            client_secret=app.secret,
+            scopes=['https://www.googleapis.com/auth/youtube']
+        )
+
+        if not credentials.valid:
+            credentials.refresh(Request())
+            self.access_token = credentials.token
+            self.refresh_token = credentials.refresh_token
+            self.save(update_fields=['access_token', 'refresh_token'])
+
+        return credentials
 
     def get_channels_list(self):
         channels_list = []

@@ -1,11 +1,7 @@
-import requests
 from django.contrib.auth.models import User
-from allauth.socialaccount.models import SocialApp
 from .util import *
 import pytz
 from django.db import models
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 import googleapiclient.errors
 from django.db.models import Q, Sum
@@ -16,24 +12,24 @@ def get_message_from_httperror(e):
 
 
 class PlaylistManager(models.Manager):
-    def getCredentials(self, user):
-        app = SocialApp.objects.get(provider='google')
-        credentials = Credentials(
-            token=user.profile.access_token,
-            refresh_token=user.profile.refresh_token,
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id=app.client_id,
-            client_secret=app.secret,
-            scopes=['https://www.googleapis.com/auth/youtube']
-        )
-
-        if not credentials.valid:
-            credentials.refresh(Request())
-            user.profile.access_token = credentials.token
-            user.profile.refresh_token = credentials.refresh_token
-            user.save()
-
-        return credentials
+    # def getCredentials(self, user):
+    #     app = SocialApp.objects.get(provider='google')
+    #     credentials = Credentials(
+    #         token=user.profile.access_token,
+    #         refresh_token=user.profile.refresh_token,
+    #         token_uri="https://oauth2.googleapis.com/token",
+    #         client_id=app.client_id,
+    #         client_secret=app.secret,
+    #         scopes=['https://www.googleapis.com/auth/youtube']
+    #     )
+    #
+    #     if not credentials.valid:
+    #         credentials.refresh(Request())
+    #         user.profile.access_token = credentials.token
+    #         user.profile.refresh_token = credentials.refresh_token
+    #         user.save()
+    #
+    #     return credentials
 
     def getPlaylistId(self, playlist_link):
         if "?" not in playlist_link:
@@ -48,7 +44,7 @@ class PlaylistManager(models.Manager):
     # Used to check if the user has a vaild YouTube channel
     # Will return -1 if user does not have a YouTube channel
     def getUserYTChannelID(self, user):
-        credentials = self.getCredentials(user)
+        credentials = user.profile.get_credentials()
 
         with build('youtube', 'v3', credentials=credentials) as youtube:
             pl_request = youtube.channels().list(
@@ -86,7 +82,7 @@ class PlaylistManager(models.Manager):
                   "error_message": "",
                   "playlist_ids": []}
 
-        credentials = self.getCredentials(user)
+        credentials = user.profile.get_credentials()
 
         playlist_ids = []
         with build('youtube', 'v3', credentials=credentials) as youtube:
@@ -191,7 +187,7 @@ class PlaylistManager(models.Manager):
         return result
 
     def getAllVideosForPlaylist(self, user, playlist_id):
-        credentials = self.getCredentials(user)
+        credentials = user.profile.get_credentials()
 
         playlist = user.playlists.get(playlist_id=playlist_id)
 
@@ -458,7 +454,7 @@ class PlaylistManager(models.Manager):
         If full_scan is False, only the playlist count difference on YT and UT is checked on every visit
         to the playlist page. This is done everytime.
         """
-        credentials = self.getCredentials(user)
+        credentials = user.profile.get_credentials()
 
         playlist = user.playlists.get(playlist_id=pl_id)
 
@@ -603,7 +599,7 @@ class PlaylistManager(models.Manager):
         return [0, "no change"]
 
     def updatePlaylist(self, user, playlist_id):
-        credentials = self.getCredentials(user)
+        credentials = user.profile.get_credentials()
 
         playlist = user.playlists.get(playlist_id__exact=playlist_id)
 
@@ -909,7 +905,7 @@ class PlaylistManager(models.Manager):
         """
         Takes in playlist itemids for the videos in a particular playlist
         """
-        credentials = self.getCredentials(user)
+        credentials = user.profile.get_credentials()
         playlist = user.playlists.get(playlist_id=playlist_id)
 
         # new_playlist_duration_in_seconds = playlist.playlist_duration_in_seconds
@@ -943,7 +939,7 @@ class PlaylistManager(models.Manager):
         """
         Takes in playlist itemids for the videos in a particular playlist
         """
-        credentials = self.getCredentials(user)
+        credentials = user.profile.get_credentials()
         playlist = user.playlists.get(playlist_id=playlist_id)
         playlist_items = user.playlists.get(playlist_id=playlist_id).playlist_items.select_related('video').filter(
             playlist_item_id__in=playlist_item_ids)
@@ -1027,7 +1023,7 @@ class PlaylistManager(models.Manager):
         """
         Takes in playlist details and creates a new private playlist in the user's account
         """
-        credentials = self.getCredentials(user)
+        credentials = user.profile.get_credentials()
         result = {
             "status": 0,
             "playlist_id": None
@@ -1061,7 +1057,7 @@ class PlaylistManager(models.Manager):
         """
         Takes in playlist itemids for the videos in a particular playlist
         """
-        credentials = self.getCredentials(user)
+        credentials = user.profile.get_credentials()
         playlist = user.playlists.get(playlist_id=playlist_id)
 
         with build('youtube', 'v3', credentials=credentials) as youtube:
@@ -1104,7 +1100,7 @@ class PlaylistManager(models.Manager):
         """
         Takes in playlist itemids for the videos in a particular playlist
         """
-        credentials = self.getCredentials(user)
+        credentials = user.profile.get_credentials()
         playlist_items = user.playlists.get(playlist_id=from_playlist_id).playlist_items.select_related('video').filter(
             playlist_item_id__in=playlist_item_ids)
 
@@ -1174,7 +1170,7 @@ class PlaylistManager(models.Manager):
         """
         Takes in playlist itemids for the videos in a particular playlist
         """
-        credentials = self.getCredentials(user)
+        credentials = user.profile.get_credentials()
 
         result = {
             "num_added": 0,
