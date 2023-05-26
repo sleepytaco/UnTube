@@ -22,7 +22,13 @@ Apart from the base features mentioned above, UnTube offers more:
 
 ## Walkthroughs
 
+Perform bulk playlist operations:
+
 ![UnTube bulk playlist operations](https://bakaabu.pythonanywhere.com/static/assets/imgs/features.70cfacf34e92.gif)
+
+Organize your playlists using Tags and search for videos and playlist within your UnTube collection:
+
+![UnTube search](https://bakaabu.pythonanywhere.com/static/assets/imgs/organize.86ab05c2015f.gif)
 
 Check out the [landing page for UnTube](https://bakaabu.pythonanywhere.com/) for more GIF walkthroughs.
 
