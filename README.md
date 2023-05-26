@@ -2,7 +2,11 @@
 
 A simple, comprehensive YouTube playlist manager web app powered by [YouTube Data API V3](https://developers.google.com/youtube/v3/). Built with ❤ using Django, htmx and Bootstrap. 
 
+![UnTube Dashboard](walkthroughs/dashboard.gif)
+
+
 ### _Update: I have revised the project structure to make it easier to run locally. Instructions to run UnTube locally can be found below._
+
 
 ## About
 
@@ -19,18 +23,24 @@ Apart from the base features mentioned above, UnTube offers more:
 - Import public playlists to your own UnTube collection. After importing, you can copy videos from that playlist into your own playlists.
 - Set a gradient background ;)
 
-
 ## Walkthroughs
 
-Perform bulk playlist operations:
+### Organize your playlists using Tags + Search for videos and playlist found in your UnTube collection
+
+![UnTube Organize and Search](walkthroughs/organize-and-search.gif)
+
+### Import public playlists into your UnTube collection
+
+![UnTube Import Public Playlists](walkthroughs/import-public.gif)
+
+### Perform bulk playlist operations
 
 ![UnTube bulk playlist operations](https://bakaabu.pythonanywhere.com/static/assets/imgs/features.70cfacf34e92.gif)
 
-Organize your playlists using Tags and search for videos and playlist within your UnTube collection:
+### Mark playlists as watching
 
-![UnTube search](https://bakaabu.pythonanywhere.com/static/assets/imgs/organize.86ab05c2015f.gif)
+![UnTube Mark Watching](walkthroughs/mark-watching.gif?raw=true)
 
-Check out the [landing page for UnTube](https://bakaabu.pythonanywhere.com/) for more GIF walkthroughs.
 
 ## Running UnTube locally
 
@@ -43,6 +53,22 @@ Check out the [landing page for UnTube](https://bakaabu.pythonanywhere.com/) for
 
 _Optional:_ If see a `SocialApp matching query does not exist` error, please go into the `local/local-settings.py` file and increment the `SITE_ID` by one. Then, when the server re-runs the error should go away when you try to log in. If it still does not go away, keep incrementing it until it does...
 
+## Libraries/Resources Used
+
+- [Poetry](https://python-poetry.org/docs/) - Tool to manage my Python dependencies 
+- [django-split-settings](https://pypi.org/project/django-split-settings/) - Tool to help aggregate mulitple setting files into one 
+- [Bootstrap5](https://blog.getbootstrap.com/2021/05/05/bootstrap-5/) - Whole UI of the site was built using Bootstrap.
+- [htmx](https://htmx.org) - Used this JS library all throughout my site to help simplify making AJAX calls and focus on building highly interactive site with just a little bit of code.
+- [fontawesome](fontawesome.com/) - All the lovely icons are provided by fontawesome.
+- [Charts.js](https://www.chartjs.org/) - All the charts that you see on the site were made using Charts.js
+- [Choices.js](https://github.com/Choices-js/Choices) - The search bar uses this library to effectively search through 100s of channels or tags.
+- [Clipboard.js](https://clipboardjs.com/) - The copy-paste buttons on the site were made possible because of this library.
+- [robohash](https://robohash.org/) - Used robohash to generate a unique robot profile picture for users based on their username.
+- [SVG Loaders](https://github.com/SamHerbert/SVG-Loaders) - SVG loader signs found all over the site were taken from SamHerbert. All the previews of the loaders can be found at [his site](https://samherbert.net/svg-loaders/)
+- [Bleach](https://pypi.org/project/bleach/) - Utilized this wherever I took in input from the user (import playlists, video notes, labels, tags, etc.)
+- [djhtml](https://github.com/rtts/djhtml) - Django/Jinja template indenter. My HTML templates were getting messy pretty quickly, so using an indenter saved me a lot of time.
+
+
 ## Notes
 
 Most of the dynamic interactivity on this site was made possible due to [htmx](htmx.org). When I began implementing core site features like moving, deleting, checking for updates, etc., and tried to make it interactive, I found myself writing a lot of AJAX code each and every time, for even the simplest of interactivity. It was when I found htmx my development process sped up quite a bit. Who would have thought that instead of replacing the whole page with the response, just replacing a particular target element within the page with the HttpResponse would do wonders? Some of the major places I've used htmx on this site:
@@ -54,22 +80,6 @@ Most of the dynamic interactivity on this site was made possible due to [htmx](h
     The main advantage of this feature was that for playlists with 100s or even 1000s of videos, it only needs to load the first 50 videos every time, vastly improving the playlist page load speed.
     
 Additional interactive features such as the progress bar and tagging playlist were all made possible because of htmx. Any questions on how I've implemented some of the features on this site? Please send me an email at [abukhan363@gmail.com](mailto:abukhan363@gmail.com) with your feedback and questions. I will be happy to share my code and thought process to illustrate how I implemented the site's features using htmx. 
-
-
-## Libraries/Resources Used
-
-- [Poetry](https://python-poetry.org/docs/) - Tool to manage my Python dependencies 
-- [django-split-settings](https://pypi.org/project/django-split-settings/) - Tool to help aggregate mulitple setting files into one 
-- [Bootstrap5](https://blog.getbootstrap.com/2021/05/05/bootstrap-5/) - Whole UI of the site was built using Bootstrap.
-- [htmx](https://htmx.org) - Used this beautiful library all throughout my site to help simplify making AJAX calls and focus on building highly interactive site with just a little bit of code.
-- [fontawesome](fontawesome.com/) - All the lovely icons are provided by fontawesome.
-- [Charts.js](https://www.chartjs.org/) - All the charts that you see on the site were made using Charts.js
-- [Choices.js](https://github.com/Choices-js/Choices) - The search bar uses this library to effectively search through 100s of channels or tags.
-- [Clipboard.js](https://clipboardjs.com/) - The copy-paste buttons on the site were made possible because of this library.
-- [robohash](https://robohash.org/) - Used robohash to generate a unique robot profile picture for users based on their username.
-- [SVG Loaders](https://github.com/SamHerbert/SVG-Loaders) - SVG loader signs found all over the site were taken from SamHerbert. All the previews of the loaders can be found at [his site](https://samherbert.net/svg-loaders/)
-- [Bleach](https://pypi.org/project/bleach/) - Utilized this wherever I took in input from the user (import playlists, video notes, labels, tags, etc.)
-- [djhtml](https://github.com/rtts/djhtml) - Django/Jinja template indenter. My HTML templates were getting messy pretty quickly, so using an indenter saved me a lot of time.
 
 
 ## To Do 
