@@ -3,7 +3,7 @@ Django AllAuth package related settings
 """
 
 SITE_ID = 2  # increment/decrement site ID as necessary
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/home/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Additional configuration settings
