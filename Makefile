@@ -14,6 +14,10 @@ migrate:
 run-server:
 	poetry run python3 -m backend.manage runserver
 
+.PHONY: shell
+shell:
+	poetry run python -m backend.manage shell
+
 .PHONY: superuser
 superuser:
 	poetry run python3 -m backend.manage createsuperuser
