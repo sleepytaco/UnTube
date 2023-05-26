@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 DEBUG = False
 SECRET_KEY = NotImplemented
 
+SITE_ID = 1
 ALLOWED_HOSTS = ['127.0.0.1']
 
 # Application definition
