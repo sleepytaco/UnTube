@@ -1,4 +1,3 @@
-from django.conf.urls import include
 from django.urls import path
 from . import views
 
@@ -11,9 +10,8 @@ urlpatterns = [
     path("about/", views.about, name='about'),
     path("logout/", views.log_out, name='log_out'),
     path("update/settings", views.update_settings, name='update_settings'),
-    path('accounts/', include('allauth.urls')),
     path("delete/account", views.delete_account, name='delete_account'),
-    path('settings/', views.settings, name="settings"),
+    path('settings/', views.user_settings, name="settings"),
 
     path("import/liked-videos-playlist", views.get_user_liked_videos_playlist, name="get_user_liked_videos_playlist"),
     path("import/init", views.import_user_yt_playlists, name='import_user_yt_playlists'),

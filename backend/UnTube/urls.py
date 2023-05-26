@@ -18,6 +18,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),
     path('', include("backend.users.urls")),
     path('', include("backend.main.urls")),
     path('manage/', include("backend.manage_playlists.urls")),
