@@ -6,6 +6,7 @@ from backend.users.models import Profile
 
 # Register your models here.
 class ProfileResource(resources.ModelResource):
+
     class Meta:
         model = Profile
 

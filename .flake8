@@ -1,0 +1,16 @@
+[flake8]
+ignore = C101,D403,E126,E251,F403,F405,I100,I201,W291,W503,W504
+exclude =
+    **/migrations/*,
+    .git,
+    .mypy_cache,
+    __pycache__,
+    venv
+filename = *.py
+accept-encodings = utf-8
+inline-quotes = single
+max-linenumber = 500
+max-line-length = 150
+multiline-quotes = double
+per-file-ignores =
+    backend/UnTube/settings/templates/settings.dev.py:F821

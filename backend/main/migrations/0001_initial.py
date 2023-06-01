@@ -83,7 +83,15 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('video_details_modified', models.BooleanField(default=False)),
                 ('video_details_modified_at', models.DateTimeField(auto_now_add=True)),
-                ('untube_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='videos', to=settings.AUTH_USER_MODEL)),
+                (
+                    'untube_user',
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='videos',
+                        to=settings.AUTH_USER_MODEL
+                    )
+                ),
             ],
         ),
         migrations.CreateModel(
@@ -96,7 +104,15 @@ class Migration(migrations.Migration):
                 ('last_views_reset', models.DateTimeField(default=datetime.datetime.now)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='playlist_tags', to=settings.AUTH_USER_MODEL)),
+                (
+                    'created_by',
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='playlist_tags',
+                        to=settings.AUTH_USER_MODEL
+                    )
+                ),
             ],
         ),
         migrations.CreateModel(
@@ -113,7 +129,15 @@ class Migration(migrations.Migration):
                 ('num_of_accesses', models.IntegerField(default=0)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('playlist', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='playlist_items', to='main.playlist')),
+                (
+                    'playlist',
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='playlist_items',
+                        to='main.playlist'
+                    )
+                ),
                 ('video', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='main.video')),
             ],
         ),
@@ -125,7 +149,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='playlist',
             name='untube_user',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='playlists', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='playlists',
+                to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AddField(
             model_name='playlist',
@@ -137,8 +166,19 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('kind', models.CharField(max_length=100)),
-                ('playlist', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='main.playlist')),
-                ('untube_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='pins', to=settings.AUTH_USER_MODEL)),
+                (
+                    'playlist',
+                    models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='main.playlist')
+                ),
+                (
+                    'untube_user',
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name='pins',
+                        to=settings.AUTH_USER_MODEL
+                    )
+                ),
                 ('video', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='main.video')),
             ],
         ),

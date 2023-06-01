@@ -9,4 +9,4 @@ if IN_DOCKER or os.path.isfile('/.dockerenv'):  # type: ignore # noqa: F821
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-    print("Using Docker settings...")
+    print('Using Docker settings...')

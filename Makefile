@@ -2,6 +2,14 @@
 install:
 	poetry install
 
+.PHONY: install-pre-commit
+install-pre-commit:
+	poetry run pre-commit uninstall; poetry run pre-commit install
+
+.PHONY: lint
+lint:
+	poetry run pre-commit run --all-files
+
 .PHONY: migrations
 migrations:
 	poetry run python3 -m backend.manage makemigrations
@@ -23,9 +31,8 @@ superuser:
 	poetry run python3 -m backend.manage createsuperuser
 
 .PHONY: update
-update: install migrate ;
+update: install migrate install-pre-commit ;
 
 .PHONY: local-settings
 local-settings:
-	mkdir -p local
-	cp ./backend/UnTube/settings/templates/settings.dev.py ./local/settings.dev.py
+	mkdir -p local; cp ./backend/UnTube/settings/templates/settings.dev.py ./local/settings.dev.py

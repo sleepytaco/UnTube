@@ -25,14 +25,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',  # A set of Django template filters useful for adding a “human touch” to data.
     'django.contrib.sites',
-
     'crispy_forms',
     'import_export',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',  # specifies google as OAuth provider
-
     'backend.users.apps.UsersConfig',  # has stuff related to user management in it (login, signup, show homepage, import)
     'backend.main.apps.MainConfig',  # main app, shows user their homepage
     'backend.manage_playlists.apps.ManagePlaylistsConfig',
@@ -55,7 +53,7 @@ ROOT_URLCONF = 'backend.UnTube.urls'  # path to the urls.py file in root UnTube 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'backend' / 'templates'],  # type: ignore
+        'DIRS': [BASE_DIR / 'backend' / 'templates'],  # type: ignore  # noqa: F821
         # 'DIRS': [BASE_DIR / 'backend', BASE_DIR / 'backend' / 'templates'],
         # 'DIRS': [os.path.join(BASE_DIR, "templates")],
         'APP_DIRS': True,
@@ -71,8 +69,7 @@ TEMPLATES = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend'
+    'django.contrib.auth.backends.ModelBackend', 'allauth.account.auth_backends.AuthenticationBackend'
 ]
 
 LOGIN_URL = '/'
@@ -84,7 +81,7 @@ WSGI_APPLICATION = 'backend.UnTube.wsgi.application'  # path to the wsgi.py file
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',  # type: ignore
+        'NAME': BASE_DIR / 'db.sqlite3',  # type: ignore # noqa: F821
     }
 }
 
@@ -120,13 +117,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'  # type: ignore
+STATIC_ROOT = BASE_DIR / 'static'  # type: ignore # noqa: F821
 # STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # STATICFILES_DIRS = (
 #     BASE_DIR / 'backend' / 'main',  # type: ignore
 # )
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'backend', 'main', 'static'),  # type: ignore
+    os.path.join(BASE_DIR, 'backend', 'main', 'static'),  # type: ignore # noqa: F821
 )
 
 # Default primary key field type
@@ -134,4 +131,4 @@ STATICFILES_DIRS = (
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'  # type: ignore
+MEDIA_ROOT = BASE_DIR / 'media'  # type: ignore # noqa: F821
