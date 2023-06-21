@@ -20,7 +20,7 @@ if not os.path.isabs(LOCAL_SETTINGS_PATH):  # always make sure to have the absol
 
 include(
     'base.py',
-    # 'logging.py',
+    'logging.py',
     # 'rest_framework.py',
     # 'channels.py',
     # 'aws.py',

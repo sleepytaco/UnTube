@@ -11,11 +11,11 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 from django.views.decorators.http import require_POST
-
 from backend.main.models import Playlist
-
-from ..general.utils.misc import print_
 from .models import Untube
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # Create your views here.
@@ -258,18 +258,18 @@ def continue_import(request):
         return redirect('home')
 
     num_of_playlists = request.user.playlists.filter(Q(is_user_owned=True)).exclude(playlist_id='LL').count()
-    print_('NUM OF PLAYLISTS', num_of_playlists)
+    logger.debug('NUM OF PLAYLISTS', num_of_playlists)
     try:
         remaining_playlists = request.user.playlists.filter(Q(is_user_owned=True) &
                                                             Q(is_in_db=False)).exclude(playlist_id='LL')
-        print_(remaining_playlists.count(), 'REMAINING PLAYLISTS')
+        logger.debug(remaining_playlists.count(), 'REMAINING PLAYLISTS')
         playlists_imported = num_of_playlists - remaining_playlists.count() + 1
         playlist = remaining_playlists.order_by('created_at')[0]
         playlist_name = playlist.name
         playlist_id = playlist.playlist_id
         Playlist.objects.getAllVideosForPlaylist(request.user, playlist_id)
     except Exception:
-        print_('NO REMAINING PLAYLISTS')
+        logger.debug('NO REMAINING PLAYLISTS')
         playlist_id = -1
 
     if playlist_id != -1:
@@ -316,7 +316,7 @@ def user_playlists_updates(request, action):
 
         result = Playlist.objects.initializePlaylist(request.user)
 
-        print_(result)
+        logger.debug(result)
         youtube_playlist_ids = result['playlist_ids']
         untube_playlist_ids = []
         for playlist in user_playlists_on_UnTube:
@@ -332,15 +332,15 @@ def user_playlists_updates(request, action):
                 pl.delete()
 
         if result['num_of_playlists'] == user_playlists_on_UnTube.count() and len(deleted_playlist_ids) == 0:
-            print_('No new updates')
+            logger.info('No new updates')
             playlists = []
         else:
             playlists = request.user.playlists.filter(Q(is_user_owned=True) &
                                                       Q(is_in_db=False)).exclude(playlist_id='LL')
-            print_(
+            logger.info(
                 f'New updates found! {playlists.count()} newly added and {len(deleted_playlist_ids)} playlists deleted!'
             )
-            print_(deleted_playlist_names)
+            logger.info(deleted_playlist_names)
 
         return HttpResponse(
             loader.get_template('intercooler/user_playlist_updates.html').render({

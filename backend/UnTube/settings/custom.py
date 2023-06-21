@@ -12,6 +12,5 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 IN_PYTHONANYWHERE = False  # PA has PYTHONANYWHERE_SITE in its env
 IN_DOCKER = False
 
-ENABLE_PRINT_STATEMENTS = False  # runs the custom print_() statement that will log outputs to terminal
 STOKEN_EXPIRATION_SECONDS = 10
 USE_ON_COMMIT_HOOK = True

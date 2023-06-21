@@ -5,7 +5,9 @@ from django.db import models
 from googleapiclient.discovery import build
 import googleapiclient.errors
 from django.db.models import Q, Sum
-from ..general.utils.misc import print_
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_message_from_httperror(e):
@@ -60,10 +62,10 @@ class PlaylistManager(models.Manager):
 
             pl_response = pl_request.execute()
 
-            print_(pl_response)
+            logger.debug(pl_response)
 
             if pl_response['pageInfo']['totalResults'] == 0:
-                print_(
+                logger.warning(
                     'Looks like do not have a channel on youtube. Create one to import all of your playlists. Retry?'
                 )
                 return -1
@@ -103,7 +105,7 @@ class PlaylistManager(models.Manager):
                     maxResults=50
                 )
             else:
-                print_('GETTING ALL USER AUTH PLAYLISTS')
+                logger.debug('GETTING ALL USER AUTH PLAYLISTS')
                 pl_request = youtube.playlists().list(
                     part='contentDetails, snippet, id, player, status',
                     mine=True,  # get playlist details for this playlist id
@@ -114,15 +116,15 @@ class PlaylistManager(models.Manager):
             try:
                 pl_response = pl_request.execute()
             except googleapiclient.errors.HttpError as e:
-                print_('YouTube channel not found if mine=True')
-                print_('YouTube playlist not found if id=playlist_id')
+                logger.debug('YouTube channel not found if mine=True')
+                logger.debug('YouTube playlist not found if id=playlist_id')
                 result['status'] = -1
                 result['error_message'] = get_message_from_httperror(e)
                 return result
 
-            print_(pl_response)
+            logger.debug(pl_response)
             if pl_response['pageInfo']['totalResults'] == 0:
-                print_('No playlists created yet on youtube.')
+                logger.warning('No playlists created yet on youtube.')
                 result['status'] = -2
                 return result
 
@@ -151,7 +153,7 @@ class PlaylistManager(models.Manager):
             # check if this playlist already exists in user's untube collection
             if user.playlists.filter(Q(playlist_id=playlist_id) & Q(is_in_db=True)).exists():
                 playlist = user.playlists.get(playlist_id=playlist_id)
-                print_(f'PLAYLIST {playlist.name} ({playlist_id}) ALREADY EXISTS IN DB')
+                logger.debug(f'PLAYLIST {playlist.name} ({playlist_id}) ALREADY EXISTS IN DB')
 
                 # POSSIBLE CASES:
                 # 1. PLAYLIST HAS DUPLICATE VIDEOS, DELETED VIDS, UNAVAILABLE VIDS
@@ -165,7 +167,7 @@ class PlaylistManager(models.Manager):
                     result['status'] = -3
                     return result
             else:  # no such playlist in database
-                print_(f'CREATING {item["snippet"]["title"]} ({playlist_id})')
+                logger.debug(f'CREATING {item["snippet"]["title"]} ({playlist_id})')
                 if user.playlists.filter(Q(playlist_id=playlist_id) & Q(is_in_db=False)).exists():
                     unimported_playlist = user.playlists.filter(Q(playlist_id=playlist_id) & Q(is_in_db=False)).first()
                     unimported_playlist.delete()
@@ -263,7 +265,7 @@ class PlaylistManager(models.Manager):
 
                 else:  # video found in user's db
                     if playlist.playlist_items.filter(playlist_item_id=playlist_item_id).exists():
-                        print_('PLAYLIST ITEM ALREADY EXISTS')
+                        logger.debug('PLAYLIST ITEM ALREADY EXISTS')
                         continue
 
                     video = user.videos.get(video_id=video_id)
@@ -454,7 +456,7 @@ class PlaylistManager(models.Manager):
         # if its been a week since the last full scan, do a full playlist scan
         # basically checks all the playlist video for any updates
         if playlist.last_full_scan_at + datetime.timedelta(minutes=1) < datetime.datetime.now(pytz.utc):
-            print_('DOING A FULL SCAN')
+            logger.debug('DOING A FULL SCAN')
             current_playlist_item_ids = [
                 playlist_item.playlist_item_id for playlist_item in playlist.playlist_items.all()
             ]
@@ -542,7 +544,7 @@ class PlaylistManager(models.Manager):
 
             return [1, deleted_videos, unavailable_videos, added_videos]
         else:
-            print_(
+            logger.warning(
                 'YOU CAN DO A FULL SCAN AGAIN IN',
                 str(datetime.datetime.now(pytz.utc) - (playlist.last_full_scan_at + datetime.timedelta(minutes=1)))
             )
@@ -625,10 +627,10 @@ class PlaylistManager(models.Manager):
             try:
                 pl_response = pl_request.execute()
             except googleapiclient.errors.HttpError:
-                print_('Playist was deleted on YouTube')
+                logger.info('Playist was deleted on YouTube')
                 return [-1, [], [], []]
 
-            print_('ESTIMATED VIDEO IDS FROM RESPONSE', len(pl_response['items']))
+            logger.debug('ESTIMATED VIDEO IDS FROM RESPONSE', len(pl_response['items']))
             updated_playlist_video_count += len(pl_response['items'])
             for item in pl_response['items']:
                 playlist_item_id = item['id']
@@ -928,13 +930,13 @@ class PlaylistManager(models.Manager):
             pl_request = youtube.playlists().delete(id=playlist_id)
             try:
                 pl_response = pl_request.execute()
-                print_(pl_response)
+                logger.debug(pl_response)
             except googleapiclient.errors.HttpError as e:  # failed to delete playlist
                 # possible causes:
                 # playlistForbidden (403)
                 # playlistNotFound  (404)
                 # playlistOperationUnsupported (400)
-                print_(e.error_details, e.status_code)
+                logger.debug(e.error_details, e.status_code)
                 return [-1, get_message_from_httperror(e), e.status_code]
 
             # playlistItem was successfully deleted if no HttpError, so delete it from db
@@ -962,16 +964,16 @@ class PlaylistManager(models.Manager):
         with build('youtube', 'v3', credentials=credentials) as youtube:
             for playlist_item in playlist_items:
                 pl_request = youtube.playlistItems().delete(id=playlist_item.playlist_item_id)
-                print_(pl_request)
+                logger.debug(pl_request)
                 try:
                     pl_response = pl_request.execute()
-                    print_(pl_response)
+                    logger.debug(pl_response)
                 except googleapiclient.errors.HttpError as e:  # failed to delete playlist item
                     # possible causes:
                     # playlistItemsNotAccessible (403)
                     # playlistItemNotFound (404)
                     # playlistOperationUnsupported (400)
-                    print_(e, e.error_details, e.status_code)
+                    logger.debug(e, e.error_details, e.status_code)
                     continue
 
                 # playlistItem was successfully deleted if no HttpError, so delete it from db
@@ -1055,7 +1057,7 @@ class PlaylistManager(models.Manager):
             try:
                 pl_response = pl_request.execute()
             except googleapiclient.errors.HttpError as e:  # failed to create playlist
-                print_(e.status_code, e.error_details)
+                logger.debug(e.status_code, e.error_details)
                 if e.status_code == 400:  # maxPlaylistExceeded
                     result['status'] = 400
                 result['status'] = -1
@@ -1085,7 +1087,7 @@ class PlaylistManager(models.Manager):
                 },
             )
 
-            print_(details['description'])
+            logger.debug(details['description'])
             try:
                 pl_response = pl_request.execute()
             except googleapiclient.errors.HttpError as e:  # failed to update playlist details
@@ -1095,10 +1097,10 @@ class PlaylistManager(models.Manager):
                 # playlistOperationUnsupported (400)
                 # errors i ran into:
                 # runs into HttpError 400 'Invalid playlist snippet.' when the description contains <, >
-                print_('ERROR UPDATING PLAYLIST DETAILS', e, e.status_code, e.error_details)
+                logger.debug('ERROR UPDATING PLAYLIST DETAILS', e, e.status_code, e.error_details)
                 return -1
 
-            print_(pl_response)
+            logger.debug(pl_response)
             playlist.name = pl_response['snippet']['title']
             playlist.description = pl_response['snippet']['description']
             playlist.is_private_on_yt = True if pl_response['status']['privacyStatus'] == 'private' else False
@@ -1148,7 +1150,7 @@ class PlaylistManager(models.Manager):
                         # playlistOperationUnsupported (400)
                         # errors i ran into:
                         # runs into HttpError 400 'Invalid playlist snippet.' when the description contains <, >
-                        print_('ERROR UPDATING PLAYLIST DETAILS', e.status_code, e.error_details)
+                        logger.debug('ERROR UPDATING PLAYLIST DETAILS', e.status_code, e.error_details)
                         if e.status_code == 400:
                             pl_request = youtube.playlistItems().insert(
                                 part='snippet',
@@ -1167,7 +1169,7 @@ class PlaylistManager(models.Manager):
                                 # pl_response = pl_request.execute()
                                 pl_request.execute()
                             except googleapiclient.errors.HttpError as e:
-                                print_(e)
+                                logger.debug(e)
                                 result['status'] = -1
                         elif e.status_code == 403:
                             result['playlistContainsMaximumNumberOfVideos'] = True
@@ -1213,7 +1215,7 @@ class PlaylistManager(models.Manager):
                     # pl_response = pl_request.execute()
                     pl_request.execute()
                 except googleapiclient.errors.HttpError as e:  # failed to update add video to playlis
-                    print_('ERROR ADDDING VIDEOS TO PLAYLIST', e.status_code, e.error_details)
+                    logger.debug('ERROR ADDDING VIDEOS TO PLAYLIST', e.status_code, e.error_details)
                     if e.status_code == 400:  # manualSortRequired - see errors https://developers.google.com/youtube/v3/docs/playlistItems/insert
                         pl_request = youtube.playlistItems().insert(
                             part='snippet',
@@ -1231,7 +1233,7 @@ class PlaylistManager(models.Manager):
                             # pl_response = pl_request.execute()
                             pl_request.execute()
                         except googleapiclient.errors.HttpError as e:  # failed to update playlist details
-                            print_(e)
+                            logger.debug(e)
                             pass
                     elif e.status_code == 403:
                         result['playlistContainsMaximumNumberOfVideos'] = True

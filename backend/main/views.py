@@ -8,10 +8,11 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
 from django.views.decorators.http import require_POST
-
-from ..general.utils.misc import print_
 from .models import Playlist, Tag
 from .util import *
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # Create your views here.
@@ -143,7 +144,7 @@ def view_playlist(request, playlist_id):
         # if its been 1 days since the last full scan, force refresh the playlist
         if playlist.last_full_scan_at + datetime.timedelta(days=2) < datetime.datetime.now(pytz.utc):
             playlist.has_playlist_changed = True
-            print_('ITS BEEN 15 DAYS, FORCE REFRESHING PLAYLIST')
+            logger.info('ITS BEEN 15 DAYS, FORCE REFRESHING PLAYLIST')
 
         # only note down that the playlist as been viewed when 30s has passed since the last access
         if playlist.last_accessed_on + datetime.timedelta(seconds=30) < datetime.datetime.now(pytz.utc):
@@ -488,7 +489,7 @@ def playlist_delete_videos(request, playlist_id, command):
             """
         )
     elif command == 'start':
-        print_('Deleting', len(playlist_item_ids), 'videos')
+        logger.info('Deleting', len(playlist_item_ids), 'videos')
         Playlist.objects.deletePlaylistItems(request.user, playlist_id, playlist_item_ids)
         if all_:
             help_text = 'Finished emptying this playlist.'
@@ -599,7 +600,7 @@ def load_more_videos(request, playlist_id, order_by, page):
     playlist_items = None
     if order_by == 'all':
         playlist_items = playlist.playlist_items.select_related('video').order_by('video_position')
-        print_(f'loading page 1: {playlist_items.count()} videos')
+        logger.debug(f'loading page 1: {playlist_items.count()} videos')
     elif order_by == 'favorites':
         playlist_items = playlist.playlist_items.select_related('video').filter(video__is_favorite=True
                                                                                 ).order_by('video_position')
@@ -703,13 +704,13 @@ def update_playlist(request, playlist_id, command):
     playlist = request.user.playlists.get(playlist_id=playlist_id)
 
     if command == 'checkforupdates':
-        print_('Checking if playlist changed...')
+        logger.debug('Checking if playlist changed...')
         result = Playlist.objects.checkIfPlaylistChangedOnYT(request.user, playlist_id)
 
         if result[0] == 1:  # full scan was done (full scan is done for a playlist if a week has passed)
             deleted_videos, unavailable_videos, added_videos = result[1:]
 
-            print_('CHANGES', deleted_videos, unavailable_videos, added_videos)
+            logger.debug('CHANGES', deleted_videos, unavailable_videos, added_videos)
 
             # playlist_changed_text = ['The following modifications happened to this playlist on YouTube:']
             if deleted_videos != 0 or unavailable_videos != 0 or added_videos != 0:
@@ -738,7 +739,7 @@ def update_playlist(request, playlist_id, command):
                 """
                 )
         elif result[0] == -1:  # playlist changed
-            print_('Playlist was deleted from YouTube')
+            logger.debug('Playlist was deleted from YouTube')
             playlist.videos.all().delete()
             playlist.delete()
             return HttpResponse(
@@ -779,7 +780,7 @@ def update_playlist(request, playlist_id, command):
         )
 
     if command == 'manual':
-        print_('MANUAL')
+        logger.debug('MANUAL')
         return HttpResponse(
             f"""<div hx-get='/playlist/{playlist_id}/update/auto' hx-trigger='load' hx-swap='outerHTML'>
                     <div class='d-flex justify-content-center mt-4 mb-3' id='loading-sign'>
@@ -790,7 +791,7 @@ def update_playlist(request, playlist_id, command):
                 </div>"""
         )
 
-    print_('Attempting to update playlist')
+    logger.debug('Attempting to update playlist')
     status, deleted_playlist_item_ids, unavailable_videos, added_videos = Playlist.objects.updatePlaylist(
         request.user, playlist_id
     )
@@ -809,7 +810,7 @@ def update_playlist(request, playlist_id, command):
             """
         )
 
-    print_('Updated playlist')
+    logger.debug('Updated playlist')
     playlist_changed_text = []
 
     if len(added_videos) != 0:
@@ -977,7 +978,7 @@ def remove_playlist_tag(request, playlist_id, tag_name):
     if playlist_tags.filter(name__iexact=tag_name).exists():  # tag on this playlist, remove it it
         tag = Tag.objects.filter(Q(created_by=request.user) & Q(name__iexact=tag_name)).first()
 
-        print_('Removed tag', tag_name)
+        logger.debug('Removed tag', tag_name)
         # remove it from the playlist
         playlist.tags.remove(tag)
     else:

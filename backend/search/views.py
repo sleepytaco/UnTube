@@ -5,14 +5,15 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template import loader
 from django.views.decorators.http import require_POST
+import logging
 
-from backend.general.utils.misc import print_
+logger = logging.getLogger(__name__)
 
 
 @login_required
 def search(request):
     if request.method == 'GET':
-        print_(request.GET)
+        logger.debug(request.GET)
         if 'mode' in request.GET:
             mode = bleach.clean(request.GET['mode'])
         else:
